@@ -5,6 +5,7 @@
 
 @using EventX.Models
 @model EventX.ViewModels.HomeViewModel
+
 <style>
 
     .swiper-slide {
@@ -36,35 +37,91 @@
         overflow: hidden; /* Ngăn ngừa việc nội dung bị tràn */
     }
 
+    .banner-swiper-container {
+        position: relative;
+        width: 100%;
+        height: 500px;
+        margin-bottom: 30px;
+        border-radius: 10px;
+        overflow: hidden;
+        
+    }
 
+    .swiper-slide img {
+        width: 100%; /* Đảm bảo ảnh chiếm hết chiều rộng */
+        height: 100%; /* Đảm bảo ảnh chiếm hết chiều cao */
+        object-fit: contain; /* Đảm bảo ảnh không bị méo mà vẫn đầy đủ */
+    }
+    .swiper-pagination {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10; /* Đảm bảo pagination nằm trên các ảnh */
+        color: white;
+    }
+
+    .swiper-button-next, .swiper-button-prev {
+        font-size: 20px;
+        z-index: 10;
+        
+        padding: 10px; /* Tạo khoảng cách giữa biểu tượng và viền */
+        transition: background-color 0.3s ease, transform 0.3s ease; /* Thêm hiệu ứng khi hover */
+    }
+
+        .swiper-button-next:hover, .swiper-button-prev:hover {
+            color: white !important;
+            background-color: rgba(0, 0, 0, 0.5);
+            transform: scale(1.2); /* Phóng to nút một chút khi hover */
+        }
+
+    .swiper-button-next {
+        right: 20px;
+    }
+
+    .swiper-button-prev {
+        left: 20px;
+    }
+
+    .btn-detail {
+        position: absolute;
+        bottom: 20px; /* Đặt nút ở phía dưới của ảnh */
+        left: 25%;
+        transform: translateX(-50%); /* Canh giữa */
+        background-color: rgba(0, 0, 0, 0.5); /* Màu nền bán trong suốt */
+        color: white;
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 5px;
+        text-align: center;
+        cursor: pointer;
+        z-index: 10; /* Đảm bảo nút không bị che khuất */
+        transition: background-color 0.3s ease; /* Hiệu ứng khi hover */
+        text-decoration: none;
+    }
+
+        .btn-detail:hover {
+            background-color: rgba(0, 0, 0, 0.7); /* Thay đổi màu nền khi hover */
+        }
 </style>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-<!-- Slider Section -->
-<div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
-    <div class="carousel-inner">
-        @for (int i = 0; i < Model.Sliders.Count; i++)
+<div class="swiper-container banner-swiper-container mb-5">
+    <div class="swiper-wrapper">
+        @foreach (var slider in Model.Sliders)
         {
-            var slider = Model.Sliders[i];
-            <div class="carousel-item @(i == 0 ? "active" : "")">
-                <a href="@slider.Link">
-                    <img src="@slider.ImagePath" class="d-block w-100" style="height: 400px; object-fit: cover;" alt="@slider.Title">
-                </a>
-                <div class="carousel-caption d-none d-md-block">
-                    <h5>@slider.Title</h5>
-                    <p>@slider.Description</p>
-                </div>
+            <div class="swiper-slide banner-swiper-slide">
+                    <img src="@Url.Content(slider.ImageUrl)" alt="@slider.Title" />
+                    <a href="@slider.Link" target="_blank" class="btn-detail">Xem chi tiết</a>
             </div>
         }
     </div>
-    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-    </button>
+
+    <!-- Các nút điều khiển -->
+    <div class="swiper-button-next banner-swiper-button-next text-secondary"></div>
+    <div class="swiper-button-prev banner-swiper-button-prev text-secondary"></div>
+    <div class="swiper-pagination"></div> <!-- Nếu bạn muốn sử dụng pagination -->
 </div>
 
-<div class="container mt-4 mb-5">
     @{
         var workshops = Model.Events.Where(e => e.Category.CategoryId == 6).ToList();
         var seminars = Model.Events.Where(e => e.Category.CategoryId == 5).ToList();
@@ -186,7 +243,7 @@
         </div>
     }
     
-</div>
+
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <!-- Khởi tạo sau khi đã load JS -->
 <script>
@@ -213,4 +270,46 @@
             loop: false,
         });
     });
+
+          document.addEventListener('DOMContentLoaded', function () {
+        // Initialize swiper for banner section
+        var swiperBanner = new Swiper('.banner-swiper-container', {
+            loop: true, // Quay lại đầu khi đến cuối
+            autoplay: {
+                delay: 5000, // Thời gian chuyển banner (5s)
+                disableOnInteraction: false, // Đảm bảo autoplay không bị dừng khi người dùng tương tác
+            },
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true, // Cho phép người dùng nhấn vào các chấm pagination
+            },
+        });
+
+        // Initialize swiper for workshops section
+        const swiper1 = new Swiper('.mySwiper', {
+            slidesPerView: 4,
+            spaceBetween: 20,
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+            loop: false,
+        });
+
+        // Initialize swiper for seminars section
+        const swiper2 = new Swiper('.mySwiper2', {
+            slidesPerView: 4,
+            spaceBetween: 20,
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+            loop: false,
+        });
+    });
+
 </script>

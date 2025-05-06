@@ -14,7 +14,10 @@ namespace EventX.Controllers
         private readonly IEventRepository _eventRepository;
         private readonly ICategoryRepository _categoryRepository;
         private readonly ApplicationDbContext _context;
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context, IEventRepository eventRepository, ICategoryRepository categoryRepository)
+        public HomeController(ILogger<HomeController> logger, 
+            ApplicationDbContext context, 
+            IEventRepository eventRepository, 
+            ICategoryRepository categoryRepository)
         {
             _logger = logger;
             _context = context;
@@ -25,10 +28,15 @@ namespace EventX.Controllers
         public async Task<IActionResult> Index()
         {
             var allEvents = await _eventRepository.GetAllAsync();
-            var sliders = _context.Sliders.Where(s => s.IsActive).ToList();
             var approvedEvents = allEvents
-                .Where(e => e.Status == Enums.EventStatus.Approved || e.Status == Enums.EventStatus.Ongoing)
-                .ToList();
+           .Where(e => e.Status == Enums.EventStatus.Approved || e.Status == Enums.EventStatus.Ongoing)
+           .ToList();
+
+            var sliders = await _context.Sliders
+                .Where(s => s.IsActive)
+                .OrderBy(s => s.Order)
+                .ToListAsync();
+
             var viewModel = new HomeViewModel
             {
                 Events = approvedEvents,

@@ -113,7 +113,7 @@
                     @foreach (var ticket in Model.Tickets)
                     {
                         <li class="list-group-item d-flex justify-content-between">
-                            <strong>@ticket.Description</strong>
+                            <strong>@ticket.Description [@ticket.StartDate.ToString("HH:mm dd/MM/yyyy")-@ticket.EndDate.ToString("HH:mm dd/MM/yyyy")]</strong>
                             <span class="badge bg-success">@ticket.Price.ToString("C")</span>
                         </li>
                     }

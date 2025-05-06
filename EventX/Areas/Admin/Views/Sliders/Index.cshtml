@@ -1,0 +1,48 @@
+﻿@{
+    ViewData["Title"] = "Slider Page";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+@using EventX.Models
+@model IEnumerable<Slider>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+<h2 class="ms-4">Danh sách Slider</h2>
+<a class="btn btn-primary ms-4" href="/Admin/Sliders/Create">+ Thêm Slider</a>
+<table class="table table-bordered mt-3 text-center">
+    <thead>
+        <tr>
+            <th>Ảnh</th>
+            <th>Tiêu đề</th>
+            <th>Thứ tự</th>
+            <th>Trạng thái</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td><img src="@item.ImageUrl" width="100" /></td>
+                <td>@item.Title</td>
+                <td>@item.Order</td>
+                <td>@(item.IsActive ? "Hiện" : "Ẩn")</td>
+                <td>
+                    <a href="/Admin/Sliders/Edit/@item.Id"  class="btn btn-sm btn-warning me-1">
+                        <i class="fas fa-edit"></i> Sửa
+                    </a>
+                    <a href="/Admin/Sliders/Delete/@item.Id"
+                       onclick="return confirm('Bạn chắc chắn muốn xoá?')"
+                       class="btn btn-sm btn-danger me-1">
+                        <i class="fas fa-trash-alt"></i> Xoá
+                    </a>
+                    <a href="/Admin/Sliders/Toggle/@item.Id"
+                       class="btn btn-sm btn-secondary">
+                        <i class="fas @(item.IsActive ? "fa-eye-slash" : "fa-eye")"></i>
+                        @(item.IsActive ? "Ẩn" : "Hiện")
+                    </a>
+                </td>
+
+            </tr>
+        }
+    </tbody>
+</table>

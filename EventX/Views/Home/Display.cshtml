@@ -100,8 +100,9 @@
     }
 
     .event-description {
-        max-height: 150px;
+        max-height: 300px;
         overflow: hidden;
+
         transition: max-height 0.5s ease;
     }
 
@@ -170,6 +171,17 @@
         .arrow-down.rotate {
             transform: rotate(180deg);
         }
+
+    .description-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 80px; /* độ cao lớp mờ */
+        background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%);
+        pointer-events: none; /* cho phép bấm nút bên trên */
+    }
+
 </style>
 
 <div class="ticket-wrapper shadow-lg mt-5">
@@ -188,7 +200,7 @@
         <p class="price">
             Giá từ @Model.Tickets.First().Price.ToString("C", new System.Globalization.CultureInfo("vi-VN"))
         </p>
-        <a href="javascript:history.back()" class="btn btn-outline-light btn-sm btn-back">Quay lại</a>
+        <a href="/Home/Index" class="btn btn-outline-light btn-sm btn-back">Quay lại</a>
     </div>
 
     @foreach (var image in Model.EventImages)
@@ -204,7 +216,11 @@
     <hr />
     <div class="col-md-12 text-center">
         
-        <div id="eventDescription" class="event-description mt-4">@Html.Raw(Model.Description)</div>
+        <div class="position-relative mt-4">
+            <div id="eventDescription" class="event-description">@Html.Raw(Model.Description)</div>
+            <div id="descOverlay" class="description-overlay"></div>
+        </div>
+
         <div id="toggleButtonContainer" class="text-center mt-3">
             <button id="toggleButton" class="btn btn-link">
                 <span class="text">Xem thêm</span> <span class="arrow">&#8595;</span>
@@ -216,25 +232,38 @@
 <div class="ticket-box mt-5">
     <h3 class="h5">Thông tin vé</h3>
     <hr />
-    <div class="event-time-toggle" onclick="toggleTicketInfo()">
-        <p>
-            <span id="toggleIcon" class="arrow-down">&#9660;</span>
-            @Model.EventStartTime.ToString("HH:mm") - @Model.EventEndTime.ToString("HH:mm"),
-            @Model.EventStartTime.ToString("dd/MM/yyyy")
-        </p>
-    </div>
+    @{
+        var ticketsByDate = Model.Tickets
+        .GroupBy(t => t.StartDate)
+        .OrderBy(g => g.Key);
+    }
 
-    <div id="ticketInfo" class="ticket-info ps-3 mt-2">
-        @foreach (var ticket in Model.Tickets.Select((ticket, index) => new { ticket, index }))
-        {
-            var rowClass = ticket.index % 2 == 0 ? "bg-dark text-white" : "bg-light-subtle text-dark";
-            <!-- Xám nhạt -->
-            <div class="d-flex justify-content-between p-2 @rowClass">
-                <span>@ticket.ticket.Description</span>
-                <strong class="text-bg-success">@ticket.ticket.Price.ToString("C", new System.Globalization.CultureInfo("vi-VN"))</strong>
-            </div>
-        }
-    </div>
+    @foreach (var group in ticketsByDate)
+    {
+        var dateString = group.Key.ToString("HH:mm dd/MM/yyyy");
+        var toggleId = "toggle_" + dateString.Replace("/", "");
+
+        <div class="event-time-toggle mt-2" onclick="toggleTicketInfo('@toggleId')">
+            <p>
+                <span id="icon_@toggleId" class="arrow-down">&#9660;</span>
+                @dateString
+            </p>
+        </div>
+
+        <div id="@toggleId" class="ticket-info ps-3 mt-2">
+            @foreach (var ticket in group.Select((ticket, index) => new { ticket, index }))
+            {
+                var rowClass = ticket.index % 2 == 0 ? "bg-dark text-white" : "bg-light-subtle text-dark";
+                <div class="d-flex justify-content-between p-2 @rowClass">
+                    <span>@ticket.ticket.Description</span>
+                    <strong class="text-bg-success">
+                        @ticket.ticket.Price.ToString("C", new System.Globalization.CultureInfo("vi-VN"))
+                    </strong>
+                </div>
+            }
+        </div>
+    }
+
 
 </div>
 <h3 class="h5 mt-5">Thông tin Ban tổ chức</h3>
@@ -262,21 +291,27 @@
     const arrow = toggleButton.querySelector(".arrow");
     const text = toggleButton.querySelector(".text");
 
-    toggleButton.addEventListener("click", () => {
+        toggleButton.addEventListener("click", () => {
         eventDesc.classList.toggle("expanded");
         arrow.classList.toggle("rotate");
 
+        const overlay = document.getElementById("descOverlay");
         if (eventDesc.classList.contains("expanded")) {
             text.textContent = "Ẩn bớt";
+            overlay.style.display = "none";
         } else {
             text.textContent = "Xem thêm";
+            overlay.style.display = "block";
         }
     });
 
-    function toggleTicketInfo() {
-        const info = document.getElementById("ticketInfo");
-        const icon = document.getElementById("toggleIcon");
-        info.classList.toggle("show");
-        icon.classList.toggle("rotate");
+
+        function toggleTicketInfo(id) {
+        const div = document.getElementById(id);
+        const icon = document.getElementById("icon_" + id);
+        div.classList.toggle("show");
+        icon.innerHTML = div.classList.contains("show") ? "&#9650;" : "&#9660;";
     }
+
+
 </script>

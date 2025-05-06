@@ -21,7 +21,7 @@ namespace EventX.Models
 
         public DbSet<PaymentInfo> PaymentInfos { get; set; }
         public DbSet<RedInvoice> RedInvoices { get; set; }
-        public DbSet<SliderModel> Sliders { get; set; }
+        public DbSet<Slider> Sliders { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

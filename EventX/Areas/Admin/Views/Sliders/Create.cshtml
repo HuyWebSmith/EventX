@@ -1,0 +1,69 @@
+﻿@model EventX.Models.Slider
+
+@{
+    ViewData["Title"] = "Thêm Slider";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h2 class="ms-4 mt-2">@ViewData["Title"]</h2>
+
+<form class="ms-4" asp-action="Create" enctype="multipart/form-data" method="post">
+    <!-- Tiêu đề -->
+    <div class="form-group mb-3">
+        <label for="Title">Title</label>
+        <input name="Title" class="form-control" />
+        <span class="text-danger"></span>
+    </div>
+
+    <!-- Mô tả -->
+    <div class="form-group mb-3">
+        <label for="Description">Description</label>
+        <textarea name="Description" class="form-control"></textarea>
+        <span class="text-danger"></span>
+    </div>
+
+    <!-- Link -->
+    <div class="form-group mb-3">
+        <label for="Link">Link</label>
+        <input name="Link" class="form-control" />
+        <span class="text-danger"></span>
+    </div>
+
+    <!-- Thứ tự -->
+    <div class="form-group mb-3">
+        <label for="Order">Vị trí</label>
+        <input name="Order" type="number" class="form-control" />
+        <span class="text-danger"></span>
+    </div>
+
+    <!-- Ảnh -->
+    <div class="form-group mb-3">
+        <label for="ImageFile">Ảnh</label>
+        <input name="ImageFile" type="file" class="form-control" />
+        <span class="text-danger"></span>
+    </div>
+
+    <!-- Hiển thị/Ẩn -->
+    <div class="form-group mb-3 mt-3">
+        <label for="IsActive">Hiển thị</label><br />
+
+        <!-- Radio button "Có" -->
+        <input type="radio" id="IsActiveYes" name="IsActive" value="true" />
+        <label for="IsActiveYes">Có</label>
+
+        <!-- Radio button "Không" -->
+        <input type="radio" id="IsActiveNo" name="IsActive" value="false" />
+        <label for="IsActiveNo">Không</label>
+    </div>
+
+
+
+    <button type="submit" class="btn btn-primary">Lưu</button>
+    <a href="/Admin/Sliders/Index" class="btn btn-secondary">Quay lại</a>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
