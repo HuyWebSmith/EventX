@@ -1,0 +1,52 @@
+﻿@using EventX.ViewModels
+
+@model EditRoleViewModel
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+<div class="container mt-4">
+    <div class="card shadow-sm border-0 p-4" style="max-width: 700px; margin: auto;">
+        <h3 class="fw-bold text-dark mb-3 text-center">Quản lý Vai Trò</h3>
+
+        <form asp-area="Admin" asp-controller="Home" asp-action="EditRole" method="post">
+            <input type="hidden" asp-for="UserId" />
+
+            <!-- Email -->
+            <div class="mb-3">
+                <label class="form-label fw-bold">User ID</label>
+                <div class="form-control bg-light">@Model.UserId</div>
+            </div>
+
+            <!-- Danh sách vai trò -->
+            <div class="mb-3">
+                <label class="form-label fw-bold">Chọn vai trò</label>
+                <select id="roleSelect" name="SelectedRoles" class="form-select select2" multiple>
+                    @foreach (var role in Model.Roles)
+                    {
+                        <option value="@role.RoleName" selected="@(role.Selected ? "selected" : null)">
+                            @role.RoleName
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <!-- Nút cập nhật -->
+            <div class="d-flex justify-content-between">
+                <a href="/Admin/ManageUser/ManageRoles" class="btn btn-light">Hủy</a>
+                <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Thêm Select2 (chỉ khi chưa có trong template Admin) -->
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#roleSelect').select2({
+                placeholder: "Chọn vai trò...",
+                allowClear: true
+            });
+        });
+    </script>
+}

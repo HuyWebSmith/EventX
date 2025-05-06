@@ -1,0 +1,55 @@
+﻿@model EventX.Models.SliderModel
+
+@{
+    ViewData["Title"] = "Thêm Slider";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div class="card-body">
+    <form asp-area="Admin" asp-action="Create" method="post" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="mb-3">
+            <label asp-for="Title" class="form-label fw-bold">Tiêu đề</label>
+            <input asp-for="Title" class="form-control" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label fw-bold">Mô tả</label>
+            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Link" class="form-label fw-bold">Đường dẫn</label>
+            <input asp-for="Link" class="form-control" />
+            <span asp-validation-for="Link" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="ImageUpLoad" class="form-label fw-bold">Ảnh Slider</label>
+            <input asp-for="ImageUpLoad" class="form-control" type="file" accept="image/*" />
+            <span asp-validation-for="ImageUpLoad" class="text-danger"></span>
+        </div>
+
+        <div class="form-check mb-3">
+            <input asp-for="IsActive" class="form-check-input" />
+            <label asp-for="IsActive" class="form-check-label">Hiển thị slider</label>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <a asp-action="Index" class="btn btn-secondary">← Trở về</a>
+            <button type="submit" class="btn btn-success">
+                <i class="fa fa-save me-1"></i> Lưu
+            </button>
+        </div>
+    </form>
+</div>
+
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

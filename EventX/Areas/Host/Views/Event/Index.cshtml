@@ -1,0 +1,61 @@
+﻿@using EventX.Enums
+@using EventX.Models
+@model List<EventX.Models.Event>
+@{
+    ViewData["Title"] = "Sự kiện của tôi";
+    Layout = "~/Areas/Host/Views/Shared/_HostLayout.cshtml";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Sự kiện của tôi</h2>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <input type="text" id="searchBox" class="form-control" placeholder="Tìm kiếm theo tên sự kiện...">
+        </div>
+        <div class="col-md-4">
+            <select id="statusFilter" class="form-select">
+                <option value="">-- Tất cả trạng thái --</option>
+                @foreach (var status in Enum.GetValues(typeof(EventX.Enums.EventStatus)).Cast<EventX.Enums.EventStatus>())
+                {
+                    <option value="@status">@status.ToVietnamese()</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <div id="eventList">
+        @Html.Partial("_EventCardPartial", Model)
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            function loadEvents() {
+                const keyword = $('#searchBox').val();
+                const status = $('#statusFilter').val();
+
+                $.ajax({
+                    url: '/Host/Event/SearchAndFilter',
+                    type: 'GET',
+                    data: { keyword: keyword, status: status },
+                    success: function (html) {
+                        $('#eventList').html(html);
+                    },
+                    error: function () {
+                        alert('Lỗi khi tải dữ liệu!');
+                    }
+                });
+            }
+
+            $('#searchBox').on('input', function () {
+                loadEvents();
+            });
+
+            $('#statusFilter').change(function () {
+                loadEvents();
+            });
+        });
+    </script>
+}

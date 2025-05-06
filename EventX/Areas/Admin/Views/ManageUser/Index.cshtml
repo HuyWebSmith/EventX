@@ -1,0 +1,66 @@
+﻿@model IEnumerable<EventX.Models.ApplicationUser>
+
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+}
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-center align-items-center mb-3">
+        <h2>Quản lý người dùng</h2>
+    </div>
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    <table class="table table-hover table-bordered shadow-sm ">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Tên</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Email Confirmed</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>@user.Id</td>
+                    <td>@user.FullName</td>
+                    <td>@(string.IsNullOrEmpty(user.PhoneNumber) ? "Unknown" : user.PhoneNumber)</td>
+                    <td>@user.Email</td>
+                    <td>@(user.EmailConfirmed ? "✔" : "✘")</td>
+                    <td class="fw-bold @(user.IsBlocked ? "text-danger" : "text-success")">
+                        @(user.IsBlocked ? "Đã khóa" : "Hoạt động")
+                    </td>
+                    <td>
+                        @if (!user.IsBlocked)
+                        {
+                            <a href="/Admin/ManageUser/Block/@user.Id" class="btn btn-sm btn-danger">Khóa</a>
+                        }
+                        else
+                        {
+                            <a href="/Admin/ManageUser/Unblock/@user.Id" class="btn btn-sm btn-success">Mở khóa</a>
+                        }
+
+                    </td>
+
+                </tr>
+            }
+
+        </tbody>
+
+    </table>
+
+</div>

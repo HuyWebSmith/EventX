@@ -1,0 +1,216 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@using EventX.Models
+@model EventX.ViewModels.HomeViewModel
+<style>
+
+    .swiper-slide {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        height: 400px;
+        width: 100%; 
+    }
+
+    .card {
+        display: flex;
+        flex-direction: column;
+        height: 100%; 
+        overflow: hidden;
+        border: none;
+    }
+
+    /* Xử lý hình ảnh card-img-top */
+    .card-img-top {
+        object-fit: cover; /* Đảm bảo hình ảnh không bị méo */
+        height: 180px; /* Chiều cao hình ảnh cố định */
+    }
+
+    /* Thiết lập cho phần card-body */
+    .card-body {
+        flex-grow: 1;
+        padding: 10px;
+        overflow: hidden; /* Ngăn ngừa việc nội dung bị tràn */
+    }
+
+
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+<!-- Slider Section -->
+<div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-inner">
+        @for (int i = 0; i < Model.Sliders.Count; i++)
+        {
+            var slider = Model.Sliders[i];
+            <div class="carousel-item @(i == 0 ? "active" : "")">
+                <a href="@slider.Link">
+                    <img src="@slider.ImagePath" class="d-block w-100" style="height: 400px; object-fit: cover;" alt="@slider.Title">
+                </a>
+                <div class="carousel-caption d-none d-md-block">
+                    <h5>@slider.Title</h5>
+                    <p>@slider.Description</p>
+                </div>
+            </div>
+        }
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    </button>
+</div>
+
+<div class="container mt-4 mb-5">
+    @{
+        var workshops = Model.Events.Where(e => e.Category.CategoryId == 6).ToList();
+        var seminars = Model.Events.Where(e => e.Category.CategoryId == 5).ToList();
+    }
+
+    <!-- PHẦN WORKSHOP -->
+    @if (workshops.Any())
+    {
+        <h4 class="mt-4">Workshop</h4>
+        <div class="swiper mySwiper">
+            <div class="swiper-wrapper">
+                @foreach (var eventItem in workshops)
+                {
+                    <div class="swiper-slide">
+                        <div class="swiper-slide">
+                            <a href="@Url.Action("Display", "Home", new { eventId = eventItem.EventID })"
+                               class="text-decoration-none text-dark">
+                                <div class="card" style="width: 18rem; cursor: pointer;">
+                                    @foreach (var image in eventItem.EventImages)
+                                    {
+                                        <img src="@image.ImageURL" class="card-img-top" alt="Event Image" style="object-fit: contain; height: 180px;">
+                                    }
+
+                                    <div class="card-body">
+                                        <h5 class="card-title" style="font-size: 16px; font-weight: bold;">@eventItem.Title</h5>
+
+                                        @if (eventItem.Tickets != null && eventItem.Tickets.Any())
+                                        {
+                                            <p class="card-text" style="font-size: 14px;">
+                                                Giá vé từ:
+                                                <strong>@eventItem.Tickets.Min(t => t.Price).ToString("N0")₫</strong>
+                                            </p>
+                                        }
+
+                                        <p class="card-text" style="font-size: 13px; color: gray;">
+                                            Bắt đầu: @eventItem.EventStartTime.ToString("dd/MM/yyyy HH:mm")
+                                        </p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+        </div>
+    }
+    else
+    {
+        <!-- Nếu không có sự kiện, hiển thị phần trống với thông báo -->
+        <h4 class="mt-4">Workshop</h4>
+        <div class="swiper-wrapper">
+            <div class="swiper-slide">
+                <div class="card" style="width: 18rem; height: 200px;">
+                    <div class="card-body d-flex justify-content-center align-items-center">
+                        <p class="text-center" style="font-size: 16px; color: gray;">Chưa có sự kiện nào</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- PHẦN HỘI THẢO -->
+    @if (seminars.Any())
+    {
+        <h4 class="mt-5 mb-4">Hội thảo</h4>
+        <div class="swiper mySwiper2">
+            <div class="swiper-wrapper">
+                @foreach (var eventItem in seminars)
+                {
+                    <div class="swiper-slide">
+                        <div class="swiper-slide">
+                            <a href="@Url.Action("Display", "Home", new { eventId = eventItem.EventID })"
+                               class="text-decoration-none text-dark">
+                                <div class="card" style="width: 18rem; cursor: pointer;">
+                                    @foreach (var image in eventItem.EventImages)
+                                    {
+                                        <img src="@image.ImageURL" class="card-img-top" alt="Event Image" style="object-fit: contain; height: 180px;">
+                                    }
+
+                                    <div class="card-body">
+                                        <h5 class="card-title" style="font-size: 16px; font-weight: bold;">@eventItem.Title</h5>
+
+                                        @if (eventItem.Tickets != null && eventItem.Tickets.Any())
+                                        {
+                                            <p class="card-text" style="font-size: 14px;">
+                                                Giá vé từ:
+                                                <strong>@eventItem.Tickets.Min(t => t.Price).ToString("N0")₫</strong>
+                                            </p>
+                                        }
+
+                                        <p class="card-text" style="font-size: 13px; color: gray;">
+                                            Bắt đầu: @eventItem.EventStartTime.ToString("dd/MM/yyyy HH:mm")
+                                        </p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+        </div>
+    }
+    else
+    {
+        <!-- Nếu không có sự kiện, hiển thị phần trống với thông báo -->
+        <h4 class="mt-5">Hội thảo</h4>
+        <div class="swiper-wrapper">
+            <div class="swiper-slide">
+                <div class="card" style="width: 18rem; height: 200px;">
+                    <div class="card-body d-flex justify-content-center align-items-center">
+                        <p class="text-center" style="font-size: 16px; color: gray;">Chưa có sự kiện nào</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    
+</div>
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<!-- Khởi tạo sau khi đã load JS -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize swiper for workshops section
+        const swiper1 = new Swiper('.mySwiper', {
+            slidesPerView: 4,
+            spaceBetween: 20,
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+            loop: false,
+        });
+
+        // Initialize swiper for seminars section
+        const swiper2 = new Swiper('.mySwiper2', {
+            slidesPerView: 4,
+            spaceBetween: 20,
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+            loop: false,
+        });
+    });
+</script>

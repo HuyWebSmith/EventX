@@ -1,0 +1,223 @@
+﻿@model EventX.Models.Event
+
+@{
+    ViewData["Title"] = Model.Title;
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@Model.Title</title>
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        .event-description {
+            overflow: hidden;
+            max-height: 500px; /* Giới hạn chiều cao ban đầu */
+            position: relative;
+            transition: max-height 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Mũi tên */
+        .arrow {
+            display: inline-block;
+            margin-left: 5px;
+            transition: transform 0.3s ease;
+        }
+
+        /* Làm mờ phần trên của mũi tên khi không đầy đủ nội dung */
+        .event-description:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 20px;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0));
+            pointer-events: none;
+        }
+
+        /* Khi mở rộng, thêm shadow cho phần mô tả */
+        .event-description.expanded {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Thêm shadow cho nút */
+        #toggleButton {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+            transition: box-shadow 0.3s ease;
+            text-decoration:none;
+        }
+
+            #toggleButton:hover {
+                box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.1);
+            }
+
+    </style>
+</head>
+<body>
+
+    <div class="container my-5">
+        <h1 class="text-center mb-4">@Model.Title</h1>
+        <p class="text-center text-muted"><i class="fa-solid fa-calendar"></i>Ngày tổ chức: @Model.EventDate.ToString("dd/MM/yyyy")</p>
+
+        <!-- Thông tin sự kiện -->
+        <div class="row mb-4">
+            <div class="text-center col-6">
+                <h3 class="h5 text-primary">Thông tin tổ chức</h3>
+                <p><strong>Ban tổ chức:</strong> @Model.OrganizerName</p>
+                <p><strong>Email:</strong> @Model.OrganizerEmail</p>
+                <p><strong>Thông tin:</strong> @Model.OrganizerInfo</p>
+                @if (!string.IsNullOrEmpty(Model.OrganizerLogoUrl))
+                {
+                    <img src="@Model.OrganizerLogoUrl" alt="Logo" class="img-fluid mb-3" style="max-width: 200px;" />
+                }
+                @if (!string.IsNullOrEmpty(Model.OrganizerBannerUrl))
+                {
+                    <img src="@Model.OrganizerBannerUrl" alt="Banner" class="img-fluid mb-3" />
+                }
+            </div>
+
+            <div class="text-center col-6">
+                <h3 class="h5 text-primary">Hình ảnh sự kiện</h3>
+                @if (Model.EventImages != null && Model.EventImages.Any())
+                {
+                    @foreach (var image in Model.EventImages)
+                    {
+                        <img src="@image.ImageURL" alt="Hình ảnh sự kiện" class="img-fluid mb-3" />
+                    }
+                }
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-12 text-center">
+                <h3 class="h5 text-primary">Mô tả sự kiện</h3>
+                <div id="eventDescription" class="event-description mt-5">@Html.Raw(Model.Description)</div>
+                <div id="toggleButtonContainer" class="text-center">
+                    <button id="toggleButton" class="btn btn-link">Xem thêm <span class="arrow">&#8595;</span></button>
+                </div>
+            </div>
+        </div>
+        <p><strong>Thời gian bắt đầu:</strong> @Model.EventStartTime.ToString("HH:mm dd/MM/yyyy")</p>
+        <p><strong>Thời gian kết thúc:</strong> @Model.EventEndTime.ToString("HH:mm dd/MM/yyyy")</p>
+
+        <!-- Các phần khác của trang (Địa điểm, Vé, Thanh toán, Hình ảnh, v.v.) -->
+        <!-- Vé sự kiện -->
+        <div class="mb-4">
+            <h3 class="h5 text-primary">Vé sự kiện</h3>
+            <div id="ticketSection" class="event-section">
+                <ul class="list-group">
+                    @foreach (var ticket in Model.Tickets)
+                    {
+                        <li class="list-group-item d-flex justify-content-between">
+                            <div>
+                                <strong>@ticket.Description</strong>
+                                <p><strong>Loại vé:</strong> @ticket.Type</p>
+                                <p><strong>Số lượng:</strong> @ticket.Quantity</p>
+                                <p><strong>Số vé đã bán:</strong> @ticket.Sold</p>
+                                <p><strong>Thời gian bán:</strong> @ticket.StartDate.ToString("dd/MM/yyyy") - @ticket.EndDate.ToString("dd/MM/yyyy")</p>
+                                <p><strong>Mã vé:</strong> @ticket.TicketCode</p>
+                                <p><strong>Giảm giá:</strong> @ticket.Discount.HasValue ? ticket.Discount.Value.ToString("C") : "Không có"</p>
+                                <p><strong>Tiền tệ:</strong> @ticket.Currency</p>
+                            </div>
+                            <span class="badge bg-success d-flex"><span class="align-content-center">@ticket.Price.ToString("C")</span></span>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+
+        <!-- Địa điểm -->
+        <div class="mb-4">
+            <h3 class="h5 text-primary">Địa điểm</h3>
+            <div id="locationSection" class="event-section">
+                <ul class="list-group">
+                    @foreach (var location in Model.Locations)
+                    {
+                        <li class="list-group-item">
+                            <strong>@location.Name</strong> - @location.FullAddress, @location.Ward, @location.District, @location.City
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+        <!-- Thông tin thanh toán -->
+        <div class="mb-4">
+            <h3 class="h5 text-primary">Thông tin thanh toán</h3>
+            <div id="paymentSection" class="event-section">
+                <ul class="list-group">
+                    @foreach (var payment in Model.PaymentInfos)
+                    {
+                        <li class="list-group-item">
+                            <strong>Tên chủ tài khoản:</strong> @payment.AccountHolder <br />
+                            <strong>Số tài khoản:</strong> @payment.AccountNumber <br />
+                            <strong>Tên ngân hàng:</strong> @payment.BankName <br />
+                            @if (!string.IsNullOrEmpty(payment.Branch))
+                            {
+                                <strong>Chi nhánh:</strong> @payment.Branch<br />
+                            }
+                            @if (!string.IsNullOrEmpty(payment.CreatorId))
+                            {
+                                <strong>Người tạo:</strong> @payment.CreatorId<br />
+                            }
+                        </li>
+                    }
+                </ul>
+            </div>
+
+        </div>
+
+        <!-- Hóa đơn đỏ -->
+        <div class="mb-4">
+            <h3 class="h5 text-primary">Hóa Đơn Đỏ</h3>
+            <div id="invoiceSection" class="event-section">
+                <ul class="list-group">
+                    @foreach (var invoice in Model.RedInvoices)
+                    {
+                        <li class="list-group-item">
+                            <strong>@invoice.FullName</strong> - <span class="text-muted">Mã số thuế: @invoice.TaxCode</span>
+                            <br />
+                            <strong>Địa chỉ:</strong> @invoice.Address
+                            <br />
+                            <strong>Loại hình kinh doanh:</strong> @invoice.BusinessType
+                            <br />
+                            <!-- Thêm các thông tin bổ sung nếu cần -->
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+        <div class="text-center">
+            <a href="javascript:history.back()" class="btn btn-secondary">Quay lại</a>
+        </div>
+    </div>
+
+    <!-- Thêm JavaScript cho "Xem thêm" -->
+    <script>
+        document.getElementById('toggleButton').addEventListener('click', function() {
+            var description = document.getElementById('eventDescription');
+            var button = document.getElementById('toggleButton');
+            var arrow = document.querySelector('.arrow');
+
+            // Kiểm tra xem đoạn mô tả có đang hiển thị đầy đủ không
+            if (description.style.maxHeight) {
+                description.style.maxHeight = null;
+                description.classList.remove('expanded');
+                button.textContent = 'Xem thêm';
+                arrow.style.transform = 'rotate(0deg)';
+            } else {
+                description.style.maxHeight = 'none'; // Mở rộng chiều cao không giới hạn
+                description.classList.add('expanded'); // Thêm shadow khi mở rộng
+                button.textContent = 'Xem ít';
+                arrow.style.transform = 'rotate(180deg)'; // Mũi tên quay lên khi ẩn lại
+            }
+        });
+    </script>
+
+</body>
+</html>

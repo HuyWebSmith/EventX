@@ -1,0 +1,282 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@using EventX.Models
+@model EventX.Models.Event
+
+<style>
+    .ticket-wrapper {
+        width: 1280px;
+        height: 470px;
+        margin: auto;
+        display: flex;
+        background: #1f1f1f;
+        border-radius: 20px;
+        overflow: hidden;
+        color: white;
+        font-family: 'Segoe UI', sans-serif;
+        position: relative;
+    }
+
+    .ticket-left {
+        width: 470px;
+        height: 470px;
+        padding: 20px;
+        background-color: #38383D;
+        position: relative;
+        color: white;
+        z-index: 1;
+    }
+
+        .ticket-left h2 {
+            font-weight: bold;
+            font-size: 24px;
+        }
+
+        .ticket-left p {
+            margin: 10px 0;
+            color: #ccc;
+        }
+
+        .ticket-left .price {
+            font-size: 24px;
+            color: #00e676;
+            font-weight: bold;
+        }
+
+        .ticket-left .btn-back {
+            margin-top: 20px;
+            color: white;
+        }
+
+        /* Đường răng cưa giữa với nét đứt to hơn */
+        .ticket-left::after {
+            content: "";
+            position: absolute;
+            width: 20px; /* Chiều rộng đường răng cưa */
+            height: 100%;
+            top: 0;
+            right: -18px;
+            border-left: 5px dashed #1f1f1f; /* Đường nét đứt to hơn */
+        }
+
+    .ticket-right {
+        width: calc(100% - 470px);
+        height: 470px;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+    }
+
+    /* Bán hình tròn đầu bên trái */
+    .half-circle-top {
+        width: 80px; /* Kích thước bán hình tròn */
+        height: 75px;
+        top: 0px;
+        right: -10px;
+        transform: translate(2.15rem, -2rem);
+        background-color: #fff;
+        position: absolute;
+        border-bottom-right-radius: 50%;
+        border-bottom-left-radius: 50%;
+        z-index:2;
+    }
+
+    /* Bán hình tròn đầu bên phải */
+    .half-circle-bottom {
+        width: 80px; /* Kích thước bán hình tròn */
+        height: 75px;
+        bottom: -38px;
+        right: -41px;
+        /* transform: translate(25.75rem, 25rem); */
+        background-color: #fff;
+        position: absolute;
+        border-top-left-radius: 50%;
+        border-top-right-radius: 50%;
+
+        z-index: 2;
+    }
+
+    .event-description {
+        max-height: 150px;
+        overflow: hidden;
+        transition: max-height 0.5s ease;
+    }
+
+        .event-description.expanded {
+            max-height: none;
+        }
+
+    .arrow {
+        display: inline-block;
+        transition: transform 0.3s ease;
+    }
+
+        .arrow.rotate {
+            transform: rotate(180deg);
+        }
+
+    #toggleButton {
+        font-weight: bold;
+        color: #007bff;
+        text-decoration: none;
+        border: none;
+        background: none;
+        cursor: pointer;
+    }
+
+        #toggleButton:hover {
+            text-decoration: underline;
+        }
+
+    .ticket-box {
+        margin: auto;
+        width:60%;
+        background-color: #222;
+        color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+    }
+
+    .ticket-info {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease;
+        color: #ddd;
+    }
+
+        .ticket-info.show {
+            max-height: 300px;
+        }
+
+    .event-time-toggle {
+        cursor: pointer;
+        user-select: none;
+        transition: color 0.2s;
+    }
+
+        .event-time-toggle:hover {
+            color: #0d6efd;
+        }
+
+    .arrow-down {
+        transition: transform 0.3s ease;
+        display: inline-block;
+        margin-left: 5px;
+    }
+
+        .arrow-down.rotate {
+            transform: rotate(180deg);
+        }
+</style>
+
+<div class="ticket-wrapper shadow-lg mt-5">
+    
+
+    <div class="ticket-left">
+        <div class="half-circle-top"></div>
+        <div class="half-circle-bottom"></div>
+        <h2>[@Model.Locations.First().City] @Model.Title</h2>
+        <p><i class="fa fa-calendar me-2"></i>@Model.EventStartTime.ToString("HH:mm") - @Model.EventEndTime.ToString("HH:mm"),@Model.EventStartTime.ToString("dd/MM/yyyy")</p>
+        <p><strong></strong><p><i class="fa-solid fa-location-dot me-2"></i>@Model.Locations.First().Name</p>@Model.Locations.First().FullAddress,@Model.Locations.First().Ward,@Model.Locations.First().District,@Model.Locations.First().City</p>
+        <hr style="border-color: #444;">
+
+        <hr class="" style="border: none; height: 2px; background-color: white; margin-top:120px;" />
+
+        <p class="price">
+            Giá từ @Model.Tickets.First().Price.ToString("C", new System.Globalization.CultureInfo("vi-VN"))
+        </p>
+        <a href="javascript:history.back()" class="btn btn-outline-light btn-sm btn-back">Quay lại</a>
+    </div>
+
+    @foreach (var image in Model.EventImages)
+    {
+        <div class="ticket-right" style="background-image: url('@image.ImageURL');">
+            <!-- Background sẽ là banner -->
+        </div>
+    }
+</div>
+
+<div class="row mb-4">
+    <h3 class="h5 mt-5">Giới thiệu</h3>
+    <hr />
+    <div class="col-md-12 text-center">
+        
+        <div id="eventDescription" class="event-description mt-4">@Html.Raw(Model.Description)</div>
+        <div id="toggleButtonContainer" class="text-center mt-3">
+            <button id="toggleButton" class="btn btn-link">
+                <span class="text">Xem thêm</span> <span class="arrow">&#8595;</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="ticket-box mt-5">
+    <h3 class="h5">Thông tin vé</h3>
+    <hr />
+    <div class="event-time-toggle" onclick="toggleTicketInfo()">
+        <p>
+            <span id="toggleIcon" class="arrow-down">&#9660;</span>
+            @Model.EventStartTime.ToString("HH:mm") - @Model.EventEndTime.ToString("HH:mm"),
+            @Model.EventStartTime.ToString("dd/MM/yyyy")
+        </p>
+    </div>
+
+    <div id="ticketInfo" class="ticket-info ps-3 mt-2">
+        @foreach (var ticket in Model.Tickets.Select((ticket, index) => new { ticket, index }))
+        {
+            var rowClass = ticket.index % 2 == 0 ? "bg-dark text-white" : "bg-light-subtle text-dark";
+            <!-- Xám nhạt -->
+            <div class="d-flex justify-content-between p-2 @rowClass">
+                <span>@ticket.ticket.Description</span>
+                <strong class="text-bg-success">@ticket.ticket.Price.ToString("C", new System.Globalization.CultureInfo("vi-VN"))</strong>
+            </div>
+        }
+    </div>
+
+</div>
+<h3 class="h5 mt-5">Thông tin Ban tổ chức</h3>
+<hr />
+<div class="col-12 d-flex mt-4 justify-content-start gap-5 mb-5">
+    
+    <div>
+        @if (!string.IsNullOrEmpty(Model.OrganizerLogoUrl))
+        {
+            <img src="@Model.OrganizerLogoUrl" alt="Logo" style="max-width: 150px; border-radius: 10px;" />
+        }
+    </div>
+    <div class="mt-2">
+
+        <p><strong>@Model.OrganizerName</strong> </p>
+        <p><strong>Email:</strong> @Model.OrganizerEmail</p>
+        <p> @Model.OrganizerInfo</p>
+    </div>
+</div>
+
+
+<script>
+    const toggleButton = document.getElementById("toggleButton");
+    const eventDesc = document.getElementById("eventDescription");
+    const arrow = toggleButton.querySelector(".arrow");
+    const text = toggleButton.querySelector(".text");
+
+    toggleButton.addEventListener("click", () => {
+        eventDesc.classList.toggle("expanded");
+        arrow.classList.toggle("rotate");
+
+        if (eventDesc.classList.contains("expanded")) {
+            text.textContent = "Ẩn bớt";
+        } else {
+            text.textContent = "Xem thêm";
+        }
+    });
+
+    function toggleTicketInfo() {
+        const info = document.getElementById("ticketInfo");
+        const icon = document.getElementById("toggleIcon");
+        info.classList.toggle("show");
+        icon.classList.toggle("rotate");
+    }
+</script>

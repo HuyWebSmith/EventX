@@ -1,0 +1,642 @@
+﻿@using EventX.Enums
+@using EventX.Models
+@using System.ComponentModel.DataAnnotations
+@model EventX.Models.Event
+@{
+        ViewData["Title"] = "Home Page";
+        Layout = "~/Areas/Host/Views/Shared/_HostLayout.cshtml";
+    }
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+        .nav-link {
+             /* Ngừng sự kiện click */
+            color: #ccc; /* Màu xám cho các liên kết không thể click */
+        }
+
+        .step-content {
+            display: none;
+            transition: opacity 0.5s ease-in-out; /* Thêm hiệu ứng mờ dần */
+        }
+
+            .step-content.active {
+                display: block;
+                opacity: 1;
+            }
+
+        /* Thêm hiệu ứng cho các vòng tròn */
+        .step-circle {
+            width: 32px;
+            height: 32px;
+            font-weight: bold;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #ccc; /* Màu nền ban đầu */
+            color: white;
+            transition: background-color 0.3s ease-in-out; /* Hiệu ứng chuyển màu */
+        }
+
+            .step-circle.active {
+                background-color: yellowgreen; /* Màu khi chọn */
+            }
+
+        .nav-link.active {
+            color: yellowgreen;
+        }
+
+            .image-upload-container {
+                position: relative;
+                width: 100%;
+                max-width: 400px; /* Giới hạn chiều rộng cho gọn */
+                aspect-ratio: 1 / 1; /* Tỷ lệ 1:1 cho logo */
+                aspect-ratio: 16 / 9; /* Tỷ lệ mặc định 16:9 cho các ảnh */
+                border: 2px dashed #007bff;
+                border-radius: 8px;
+                background-color: #f0f0f0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                cursor: pointer;
+                overflow: hidden;
+                transition: border-color 0.3s, background-color 0.3s ease;
+                margin-bottom: 10px;
+            }
+
+                .image-upload-container:hover {
+                    border-color: #0056b3;
+                    background-color: #e6e6e6;
+                }
+
+            .file-input {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                opacity: 0;
+                cursor: pointer;
+            }
+
+            .image-upload-box {
+                text-align: center;
+                color: #007bff;
+                font-size: 16px;
+            }
+
+            .upload-text {
+                font-weight: bold;
+                margin-bottom: 10px;
+            }
+
+            .preview-img {
+                max-width: 100%;
+                max-height: 100%;
+                object-fit: contain;
+                display: none;
+                border-radius: 6px;
+                border: 1px solid #ddd;
+            }
+
+            .image-preview-wrapper {
+                display: flex;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+
+                .image-preview-wrapper img {
+                    width: 120px;
+                    height: 120px;
+                    object-fit: cover;
+                    border-radius: 6px;
+                    border: 1px solid #ddd;
+                }
+
+        </style>
+
+    </head>
+
+    <body>
+    <!-- Top Tabs -->
+    <div class="bg-white border-bottom px-3 py-2 d-flex justify-content-between">
+        <ul class="nav nav-underline d-flex gap-5" id="stepNav">
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center gap-2" id="step1" href="#" onclick="goToStep(1)" style="pointer-events: none;">
+                    <div class="step-circle" id="circle1">
+                        1
+                    </div>
+                    <span>Thông tin sự kiện</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center gap-2" id="step2" href="#" onclick="goToStep(2)" style="pointer-events: none;">
+                    <div class="step-circle" id="circle2">
+                        2
+                    </div>
+                    Thời gian & Loại vé
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center gap-2" id="step3" href="#" onclick="goToStep(3)" style="pointer-events: none;">
+                    <div class="step-circle" id="circle3">
+                        3
+                    </div>
+                    Thông tin thanh toán
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center gap-2" id="step4" href="#" onclick="goToStep(4)" style="pointer-events: none;">
+                    <div class="step-circle" id="circle3">
+                        4
+                    </div>
+                    Thêm vé
+                </a>
+            </li>
+
+
+        </ul>
+
+        <div>
+            <button class="btn btn-primary" id="nextButton" onclick="goToNextStep()">Tiếp theo</button>
+            <button class="btn btn-secondary" onclick="goToPreviousStep()">Quay lại</button>
+        </div>
+    </div>
+    <form id="eventForm" method="post" enctype="multipart/form-data" asp-action="Add" asp-controller="Event" asp-area="Host">
+        @Html.AntiForgeryToken()
+            <div id="stepContent1" class="step-content">
+
+                <!-- Thông tin sự kiện -->
+                <!-- Form for event images (many images) -->
+                <div class="mb-3">
+                    <label class="form-label"><span class="text-danger fw-bold">*</span>Ảnh sự kiện (Nhiều ảnh)</label>
+                    <div class="image-upload-container" onclick="triggerFileInput()">
+                    <input type="file" class="file-input" id="eventImagesInput" name="imageUrls" multiple accept="image/*" style="display:none;" />
+                        <div class="image-upload-box">
+                            <span class="upload-text">Click để chọn ảnh (1280x720)</span>
+                            <img id="previewImage" src="" alt="Preview" class="preview-img" />
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="mb-3">
+                    <label class="form-label"><span class="text-danger fw-bold">*</span>Tên sự kiện</label>
+                    <input type="text" class="form-control" name="Title" required />
+                </div>
+
+
+                <div class="mb-3">
+                    <label class="form-label"><span class="text-danger fw-bold">*</span>Mô tả sự kiện</label>
+                    <textarea name="Description" id="content" rows="10" cols="80" class="form-control">
+                    <b>Giới thiệu sự kiện:</b><br>
+                [Tóm tắt ngắn gọn về sự kiện: Nội dung chính của sự kiện, điểm đặc sắc nhất và lý do khiến người tham gia không nên bỏ lỡ]<br><br>
+
+                    <b>Chi tiết sự kiện:</b><br>
+                    <b> Chương trình chính:</b> [Liệt kê những hoạt động nổi bật trong sự kiện: các phần trình diễn, khách mời đặc biệt, lịch trình các tiết mục cụ thể nếu có.]<br><br>
+                    <b>Khách mời:</b>[Thông tin về các khách mời đặc biệt, nghệ sĩ, diễn giả sẽ tham gia sự kiện. Có thể bao gồm phần mô tả ngắn gọn về họ và những gì họ sẽ mang lại cho sự kiện.]<br><br>
+                    <b>Trải nghiệm đặc biệt:</b> [Nếu có các hoạt động đặc biệt khác như workshop, khu trải nghiệm, photo booth, khu vực check-in hay các phần quà/ưu đãi dành riêng cho người tham dự.]<br><br>
+
+                    <b>Điều khoản và điều kiện:</b><br>
+                [TnC] sự kiện<br>   
+                Lưu ý về điều khoản trẻ em<br>
+                Lưu ý về điều khoản VAT
+        </textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><span class="text-danger fw-bold">*</span>Tên ban tổ chức</label>
+                    <input type="text" class="form-control" name="OrganizerName" required />
+                </div>
+                @using System.Security.Claims
+
+                <input type="hidden" name="OrganizerId" value="@User.FindFirstValue(ClaimTypes.NameIdentifier)" />
+
+                <div class="mb-3">
+                    <label class="form-label"><span class="text-danger fw-bold">*</span>Email ban tổ chức</label>
+                    <input type="text" class="form-control" name="OrganizerEmail" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><span class="text-danger fw-bold">*</span>Giới thiệu ban tổ chức</label>
+                    <textarea class="form-control" name="OrganizerInfo" rows="2"></textarea>
+                </div>
+
+
+                <div class="mb-3">
+                    <label class="form-label"><span class="text-danger fw-bold">*</span>Logo ban tổ chức</label>
+                    <div class="image-upload-container" onclick="triggerLogoFileInput()">
+                        <input type="file" class="file-input" id="organizerLogoInput" name="OrganizerLogoFile" accept="image/*" />
+                        <div class="image-upload-box">
+                            <span class="upload-text">Click để chọn logo (275x275)</span>
+                            <img id="previewLogoImage" src="" alt="Logo Preview" class="preview-img" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Danh mục -->
+                <h5>Danh mục sự kiện</h5>
+            <div class="mb-3">
+                <label for="CategoryId">Chọn danh mục:</label>
+                @{
+                    var categories = ViewBag.Categories as SelectList;
+                }
+                <select name="CategoryId" id="CategoryId" class="form-control">
+                    <option value="">-- Chọn danh mục --</option>
+                    @if (categories != null && categories.Any())  // Kiểm tra categories không null và có phần tử
+                    {
+                        foreach (var item in categories)
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+                    }
+                    else
+                    {
+                        <option disabled>No categories available</option>
+                        // Nếu không có danh mục, thông báo
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="EventStartTime" class="form-label">Thời gian bắt đầu</label>
+                @Html.EditorFor(model => model.EventStartTime, new { htmlAttributes = new { @class = "form-control", type = "datetime-local" } })
+                <span asp-validation-for="EventStartTime" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label for="EventEndTime" class="form-label">Thời gian kết thúc</label>
+                @Html.EditorFor(model => model.EventEndTime, new { htmlAttributes = new { @class = "form-control", type = "datetime-local" } })
+                <span asp-validation-for="EventEndTime" class="text-danger"></span>
+            </div>
+
+                
+            </div>
+
+            <div class="step-content" id="stepContent2">
+            <!-- Địa điểm -->
+            <h5>Địa điểm tổ chức</h5>
+            <div class="mb-3">
+                <label class="form-label"><span class="text-danger fw-bold">*</span>Tên địa điểm</label>
+                <input type="text" class="form-control" name="Location.Name" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label"><span class="text-danger fw-bold">*</span>Số nhà,Đường</label>
+                <input type="text" class="form-control" name="Location.FullAddress" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label"><span class="text-danger fw-bold">*</span>Phường / Xã</label>
+                <input type="text" class="form-control" name="Location.Ward" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label"><span class="text-danger fw-bold">*</span>Quận / Huyện</label>
+                <input type="text" class="form-control" name="Location.District" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label"><span class="text-danger fw-bold">*</span>Thành phố</label>
+                <input type="text" class="form-control" name="Location.City" required />
+            </div>
+
+
+            </div>
+        <div class="step-content" id="stepContent3">
+            <h4>Thông tin thanh toán</h4>
+            <p>EventX sẽ chuyển tiền bán vé đến tài khoản ngân hàng của bạn</p>
+            <p>Tiền bán vé (sau khi trừ phí dịch vụ cho EventX) sẽ vào tài khoản của bạn sau khi xác nhận sale report sau 7-10 ngày. Nếu bạn muốn nhận tiền sớm hơn, 
+                vui lòng liên hệ chúng tôi qua số xxxx.xx </p>
+            <div class="mb-3">
+                <label for="AccountHolder" class="form-label">Chủ tài khoản:</label>
+                <input type="text" class="form-control" id="AccountHolder" name="paymentInfo.AccountHolder" required />
+            </div>
+
+            <div class="mb-3">
+            <label for="AccountNumber" class="form-label">Số tài khoản:</label>
+                <input type="text" class="form-control" id="AccountNumber" name="paymentInfo.AccountNumber" required />
+            </div>
+
+            <div class="mb-3">
+            <label for="BankName" class="form-label">Tên ngân hàng:</label>
+                <input type="text" class="form-control" id="BankName" name="paymentInfo.BankName" required />
+            </div>
+
+            <div class="mb-3">
+            <label for="Branch" class="form-label">Chi nhánh:</label>
+            <input type="text" class="form-control" id="Branch" name="paymentInfo.Branch" required />
+            </div>
+            
+            <!-- Hóa đơn đỏ -->
+                <h4>Thông tin hóa đơn đỏ</h4>
+
+                <div class="mb-3">
+                    <label for="BusinessType" class="form-label">Loại hình kinh doanh:</label>
+                    <select class="form-control" id="BusinessType" name="redInvoice.BusinessType" required>
+                        <option value="">-- Chọn loại hình --</option>
+                        @foreach (var item in (List<BusinessType>)ViewBag.BusinessTypes)
+                        {
+                            var field = item.GetType().GetField(item.ToString());
+                            var displayName = (DisplayAttribute)field.GetCustomAttributes(typeof(DisplayAttribute), false).FirstOrDefault();
+
+                            <option value="@item" @(item == (BusinessType?)ViewBag.SelectedBusinessType ? "selected" : "")>
+                                @(displayName != null ? displayName.Name : item.ToString())
+                            </option>
+                        }
+
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="FullName" class="form-label">Họ tên:</label>
+                    <input type="text" class="form-control" id="FullName" name="redInvoice.FullName" required />
+                </div>
+
+                <div class="mb-3">
+                    <label for="Address" class="form-label">Địa chỉ:</label>
+                    <input type="text" class="form-control" id="Address" name="redInvoice.Address" required />
+                </div>
+
+                <div class="mb-3">
+                    <label for="TaxCode" class="form-label">Mã số thuế:</label>
+                    <input type="text" class="form-control" id="TaxCode" name="redInvoice.TaxCode" required />
+                </div>
+
+                <div class="mb-3">
+                    <label for="BuyerMessage" class="form-label">Tin nhắn cho người mua vé khi đặt thành công:</label>
+                    <textarea class="form-control"  rows="10" cols="80" name="BuyerMessage" maxlength="1000"></textarea>
+                </div>
+
+        </div>
+
+        <div class="step-content" id="stepContent4">
+            <button type="button" class="btn btn-outline-success mb-3 mt-3" onclick="addTicket()">Thêm Vé</button>
+                <div id="ticketList">
+                    
+                </div>
+            </div>
+        </form>
+       
+  
+    </body>
+    </html>
+    <!-- Thêm CKEditor vào trang của bạn -->
+    <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
+
+    <script>
+
+             CKEDITOR.replace('content', {
+            toolbar: [
+                { name: 'clipboard', items: [ 'Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo' ] },
+                { name: 'editing', items: [ 'Scayt' ] },
+                { name: 'links', items: [ 'Link', 'Unlink', 'Anchor' ] },
+                { name: 'insert', items: [ 'Image', 'Table', 'HorizontalRule', 'SpecialChar' ] },
+                { name: 'tools', items: [ 'Maximize' ] },
+                { name: 'document', items: [ 'Source' ] },
+                '/',
+                { name: 'basicstyles', items: [ 'Bold', 'Italic', 'Strike', '-', 'RemoveFormat' ] },
+                { name: 'paragraph', items: [ 'NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote' ] },
+                { name: 'styles', items: [ 'Styles', 'Format' ] },
+                { name: 'about', items: [ 'About' ] }
+            ]
+        });
+
+            document.addEventListener('DOMContentLoaded', function () {
+        // Gán sự kiện sau khi DOM đã load xong
+        document.getElementById('eventImagesInput').addEventListener('change', previewImage);
+        document.getElementById('organizerLogoInput').addEventListener('change', previewLogoImage);
+        document.getElementById('organizerLogoInput').addEventListener('click', function (e) {
+            e.stopPropagation();
+        });
+
+        // Hàm preview nhiều ảnh
+        function previewImage() {
+            const fileInput = document.getElementById('eventImagesInput');
+            const previewImg = document.getElementById('previewImage');
+            const uploadText = document.querySelector('.upload-text');
+
+            const files = fileInput.files;
+            if (files.length > 0) {
+                const file = files[0];
+                const img = new Image();
+
+                img.onload = function () {
+                    if (img.width === 1280 && img.height === 720) {
+                        uploadText.style.display = 'none';
+                        previewImg.style.display = 'block';
+                        previewImg.src = URL.createObjectURL(file);
+                    } else {
+                        alert('Ảnh phải có kích thước 1280x720.');
+                        previewImg.style.display = 'none';
+                        uploadText.style.display = 'block';
+                    }
+                };
+
+                img.src = URL.createObjectURL(file);
+            } else {
+                previewImg.style.display = 'none';
+                uploadText.style.display = 'block';
+            }
+        }
+
+        // Hàm preview logo
+        function previewLogoImage() {
+            const fileInput = document.getElementById('organizerLogoInput');
+            const previewLogoImg = document.getElementById('previewLogoImage');
+            const uploadText = document.querySelector('.upload-text');
+
+            const files = fileInput.files;
+
+            if (files.length > 0) {
+                const file = files[0];
+                const img = new Image();
+
+                img.onload = function () {
+                    if (img.width === 275 && img.height === 275) {
+                        uploadText.style.display = 'none';
+                        previewLogoImg.style.display = 'block';
+                        previewLogoImg.src = URL.createObjectURL(file);
+                    } else {
+                        alert('Logo phải có kích thước 275x275.');
+                        previewLogoImg.style.display = 'none';
+                        uploadText.style.display = 'block';
+                    }
+                };
+
+                img.src = URL.createObjectURL(file);
+            } else {
+                previewLogoImg.style.display = 'none';
+                uploadText.style.display = 'block';
+            }
+        }
+
+        // Trigger file chọn ảnh
+        window.triggerFileInput = function () {
+            const fileInput = document.getElementById('eventImagesInput');
+            fileInput.value = '';
+            fileInput.click();
+        }
+
+        // Trigger file chọn logo
+        window.triggerLogoFileInput = function () {
+            const fileInput = document.getElementById('organizerLogoInput');
+            fileInput.value = '';
+            fileInput.click();
+        }
+    });
+
+
+     let currentStep = parseInt(localStorage.getItem('activeStep')) || 1;  // Mặc định là bước 1
+
+            // Hàm chuyển đến bước
+                function goToStep(stepNumber) {
+                // Cập nhật màu sắc cho các vòng tròn
+                document.querySelectorAll(".step-circle").forEach(circle => {
+                    circle.classList.remove("active");  // Loại bỏ màu active ở tất cả vòng tròn
+                            // Thay đổi nội dung nút "Tiếp theo" thành "Lưu sự kiện" nếu đang ở bước 3
+                    const nextBtn = document.getElementById("nextButton");
+                    if (stepNumber === 4) {
+                        nextBtn.textContent = "Lưu sự kiện";
+                        nextBtn.classList.remove("btn-primary");
+                        nextBtn.classList.add("btn-success");
+                        nextBtn.onclick = function () {
+                        document.getElementById("eventForm").submit(); // Submit form khi bấm vào nút "Lưu sự kiện"
+                    };
+                    } else {
+                        nextBtn.textContent = "Tiếp theo";
+                        nextBtn.classList.remove("btn-success");
+                        nextBtn.classList.add("btn-primary");
+                        nextBtn.onclick = function () {
+                            goToNextStep();
+                        };
+                    }
+
+                });
+
+                // Thêm màu active cho vòng tròn hiện tại
+                const targetCircle = document.getElementById("circle" + stepNumber);
+                if (targetCircle) {
+                    targetCircle.classList.add("active");
+                }
+
+                // Cập nhật màu sắc cho các bước
+                document.querySelectorAll(".nav-link").forEach(link => {
+                    link.classList.remove("active");
+                });
+
+                const targetLink = document.getElementById("step" + stepNumber);
+                if (targetLink) {
+                    targetLink.classList.add("active");
+                }
+
+                // Chuyển đổi nội dung theo bước
+                document.querySelectorAll('.step-content').forEach(content => {
+                    content.style.display = 'none';
+                });
+                const stepContent = document.getElementById('stepContent' + stepNumber);
+                if (stepContent) {
+                    stepContent.style.display = 'block';
+                }
+
+                // Lưu trạng thái bước vào localStorage
+                localStorage.setItem('activeStep', stepNumber);
+
+                // Cập nhật currentStep
+                currentStep = stepNumber;
+            }
+
+            // Hàm chuyển tới bước tiếp theo
+            function goToNextStep() {
+                if (currentStep < 4) {
+                    currentStep++;
+                    goToStep(currentStep);
+                }
+            }
+
+            // Hàm chuyển tới bước trước
+            function goToPreviousStep() {
+                if (currentStep > 1) {
+                    currentStep--;
+                    goToStep(currentStep);
+                }
+            }
+
+            // Tải trạng thái bước khi trang được tải
+            window.onload = function () {
+                goToStep(1);  // Mặc định luôn bắt đầu từ bước 1 khi mở trang lại
+            };
+
+
+            var ticketIndex = 0;
+            var ticketTypes = @Html.Raw(Json.Serialize(
+                        ((List<EventX.Enums.TicketType>)ViewBag.TicketTypes)
+                        .Select(item => new
+                        {
+                                Value = item.ToString(),
+                                Name = item.GetType().GetField(item.ToString())
+                                                ?.GetCustomAttributes(typeof(DisplayAttribute), false)
+                                                .Cast<DisplayAttribute>()
+                                                .FirstOrDefault()
+                                                ?.Name ?? item.ToString()
+                        })
+                ));
+
+            function addTicket() {
+                const ticketOptions = ticketTypes.map(type =>
+                    `<option value="${type.value}">${type.name}</option>`
+                ).join('');
+
+                var ticketForm = `
+                    <div class="ticket-item border rounded p-3 mb-3">
+                        <h5>Ticket ${ticketIndex + 1}</h5>
+                        <div class="form-group">
+                            <label>Loại vé</label>
+                            <select class="form-control" name="Tickets[${ticketIndex}].Type" required>
+                                <option value="">-- Chọn loại vé --</option>
+                                ${ticketOptions}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Giá vé</label>
+                            <input type="number" name="Tickets[${ticketIndex}].Price" class="form-control" step="0.01" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Số lượng</label>
+                            <input type="number" name="Tickets[${ticketIndex}].Quantity" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Ngày bắt đầu bán vé</label>
+                            <input type="datetime-local" name="Tickets[${ticketIndex}].StartDate" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Ngày kết thúc bán vé</label>
+                            <input type="datetime-local" name="Tickets[${ticketIndex}].EndDate" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Mô tả vé</label>
+                            <input type="text" name="Tickets[${ticketIndex}].Description" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <label>Giảm giá (%)</label>
+                            <input type="number" name="Tickets[${ticketIndex}].Discount" class="form-control" step="0.01" />
+                        </div>
+                        <div class="form-group">
+                            <label>Tiền tệ</label>
+                            <input type="text" name="Tickets[${ticketIndex}].Currency" class="form-control" value="VND" required />
+                        </div>
+                        <button type="button" class="btn btn-danger btn-sm mt-2" onclick="removeTicket(this)">Xóa vé này</button>
+                    </div>
+                `;
+                document.getElementById('ticketList').insertAdjacentHTML('beforeend', ticketForm);
+                ticketIndex++;
+            }
+
+            function removeTicket(button) {
+                button.closest('.ticket-item').remove();
+            }
+</script>
+
+

@@ -1,0 +1,116 @@
+﻿@page
+@model RegisterModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+
+<div class="row">
+    <div class="col-md-4">
+        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+            <h2>Tạo tài khoản.</h2>
+            <hr />
+            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                <label asp-for="Input.Email">Email</label>
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="Mật khẩu" />
+                <label asp-for="Input.Password">Mật khẩu</label>
+                <span asp-validation-for="Input.Password" class="text-danger"></span>
+            </div>
+
+
+            <div class="form-floating mb-3">
+                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="Nhập lại mật khẩu" />
+                <label asp-for="Input.ConfirmPassword">Nhập lại mật khẩu</label>
+                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.FullName" class="form-control" placeholder="NGUYỄN VĂN A" />
+                <label asp-for="Input.FullName">Họ và tên</label>
+                <span asp-validation-for="Input.FullName" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <select asp-for="Input.Gender" class="form-control">
+                    <option value="">-- Chọn giới tính --</option>
+                    <option value="Male">Nam</option>
+                    <option value="Female">Nữ</option>
+                    <option value="Other">Khác</option>
+                </select>
+                <label asp-for="Input.Gender">Giới tính</label>
+                <span asp-validation-for="Input.Gender" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="Input.DateOfBirth" class="form-control" type="date" />
+                <label asp-for="Input.DateOfBirth">Ngày tháng năm sinh</label>
+                <span asp-validation-for="Input.DateOfBirth" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <select asp-for="Input.Role" asp-items="@Model.Input.RoleList" class="form-control">
+                    <option disabled selected>-- Chọn loại người dùng --</option>
+
+                </select>
+            </div>
+
+           
+            <div class="form-floating mb-3">
+                <input asp-for="Input.PhoneNumber" class="form-control" placeholder="Số điện thoại" />
+                <label asp-for="Input.PhoneNumber">SDT</label>
+                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+            </div>
+           
+            <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Đăng ký</button>
+        </form>
+    </div>
+    <div class="col-md-6 col-md-offset-2">
+        <section>
+            <h3>Use another service to register.</h3>
+            <hr />
+            @{
+                if ((Model.ExternalLogins?.Count ?? 0) == 0)
+                {
+                    <div>
+                        <p>
+                            There are no external authentication services configured. See this <a href="https://go.microsoft.com/fwlink/?LinkID=532715">article
+                            about setting up this ASP.NET application to support logging in via external services</a>.
+                        </p>
+                    </div>
+                }
+                else
+                {
+                    <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
+                        <div>
+                            <p>
+                                @foreach (var provider in Model.ExternalLogins!)
+                                {
+                                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
+                                }
+                            </p>
+                        </div>
+                    </form>
+                }
+            }
+        </section>
+        <div style="background-color: #f4f7fa; padding: 20px; border-radius: 8px; border: 1px solid #e2e6ea; font-family: Arial, sans-serif;">
+            <h3 style="color: #007bff; font-size: 1.2rem;">Thông báo quan trọng</h3>
+            <p style="font-size: 1rem; line-height: 1.6; color: #333;">Chúng tôi sẽ sử dụng địa chỉ email của bạn làm tên đăng nhập. Hãy chắc chắn rằng địa chỉ email bạn nhập là chính xác và có thể truy cập được. Sau khi đăng ký, bạn sẽ có thể đăng nhập bằng email và mật khẩu của mình.</p>
+
+            <p style="font-size: 1rem; line-height: 1.6; color: #333;">Vui lòng chọn mật khẩu an toàn để bảo vệ tài khoản của bạn.</p>
+
+            <p style="font-size: 1rem; color: #333;">Để bảo mật tài khoản, mật khẩu của bạn nên có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.</p>
+
+            <p style="font-size: 1rem; color: #28a745; font-weight: bold;">Hãy đảm bảo rằng bạn có thể nhớ mật khẩu của mình để dễ dàng đăng nhập trong tương lai.</p>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
