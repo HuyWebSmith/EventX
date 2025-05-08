@@ -18,20 +18,31 @@ public class EventService
         var completedEvents = _context.Event
                                       .Where(e => e.EventEndTime < currentDate && e.Status != EventStatus.Completed)
                                       .ToList();
+
         foreach (var eventItem in completedEvents)
         {
-            eventItem.Status = EventStatus.Completed;  // Cập nhật trạng thái hoàn thành
+            // Cập nhật trạng thái chỉ khi nó chưa được đánh dấu là hoàn thành
+            eventItem.Status = EventStatus.Completed;
         }
 
         // Tìm các sự kiện đang diễn ra (thời gian hiện tại nằm trong khoảng bắt đầu và kết thúc)
+        // Điều kiện thêm là sự kiện phải được duyệt (Status == Approved)
         var ongoingEvents = _context.Event
-                                     .Where(e => e.EventStartTime <= currentDate && e.EventEndTime >= currentDate && e.Status != EventStatus.Ongoing)
+                                     .Where(e => e.EventStartTime <= currentDate && e.EventEndTime >= currentDate
+                                                 && e.Status == EventStatus.Approved && e.Status != EventStatus.Ongoing)
                                      .ToList();
+
         foreach (var eventItem in ongoingEvents)
         {
-            eventItem.Status = EventStatus.Ongoing;  // Cập nhật trạng thái đang diễn ra
+            // Cập nhật trạng thái chỉ khi nó chưa được đánh dấu là đang diễn ra
+            eventItem.Status = EventStatus.Ongoing;
         }
 
-        _context.SaveChanges();  // Lưu lại thay đổi
+        // Lưu lại các thay đổi vào cơ sở dữ liệu
+        if (completedEvents.Any() || ongoingEvents.Any())
+        {
+            _context.SaveChanges();
+        }
     }
+
 }

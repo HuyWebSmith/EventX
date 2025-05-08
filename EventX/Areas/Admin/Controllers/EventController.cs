@@ -83,11 +83,25 @@ namespace EventX.Areas.Admin.Controllers
                 return Json(new { success = false, message = "Sự kiện không tồn tại." });
             }
 
+            // Chỉ cho phép chuyển sang "Đang diễn ra" nếu sự kiện đã được duyệt
+            if (status == EventStatus.Ongoing)
+            {
+                if (eventEntity.Status != EventStatus.Approved)
+                {
+                    return Json(new { success = false, message = "Sự kiện chưa được duyệt, không thể chuyển sang Đang diễn ra." });
+                }
+
+                // Kiểm tra thời gian nếu cần thiết (đang diễn ra hay không)
+                if (DateTime.Now < eventEntity.EventStartTime || DateTime.Now > eventEntity.EventEndTime)
+                {
+                    return Json(new { success = false, message = "Sự kiện chưa bắt đầu hoặc đã kết thúc." });
+                }
+            }
+
             // Cập nhật trạng thái sự kiện
             eventEntity.Status = status;
             await _context.SaveChangesAsync();
 
-            // Trả về phản hồi cho Ajax
             return Json(new { success = true });
         }
 

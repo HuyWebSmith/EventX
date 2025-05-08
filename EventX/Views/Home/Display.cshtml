@@ -191,8 +191,8 @@
         <div class="half-circle-top"></div>
         <div class="half-circle-bottom"></div>
         <h2>[@Model.Locations.First().City] @Model.Title</h2>
-        <p><i class="fa fa-calendar me-2"></i>@Model.EventStartTime.ToString("HH:mm") - @Model.EventEndTime.ToString("HH:mm"),@Model.EventStartTime.ToString("dd/MM/yyyy")</p>
-        <p><strong></strong><p><i class="fa-solid fa-location-dot me-2"></i>@Model.Locations.First().Name</p>@Model.Locations.First().FullAddress,@Model.Locations.First().Ward,@Model.Locations.First().District,@Model.Locations.First().City</p>
+        <p><i class="fa fa-calendar me-2"></i><span class="text-success fw-bold">@Model.EventStartTime.ToString("HH:mm") - @Model.EventEndTime.ToString("HH:mm"), @Model.EventStartTime.ToString($"dd.MM.yyyy")</span></p>
+        <p><strong></strong><p><i class="fa-solid fa-location-dot me-2"></i><span class="text-success fw-bold">@Model.Locations.First().Name</span></p>@Model.Locations.First().FullAddress,@Model.Locations.First().Ward,@Model.Locations.First().District,@Model.Locations.First().City</p>
         <hr style="border-color: #444;">
 
         <hr class="" style="border: none; height: 2px; background-color: white; margin-top:120px;" />
@@ -248,6 +248,7 @@
                 <span id="icon_@toggleId" class="arrow-down">&#9660;</span>
                 @dateString
             </p>
+            
         </div>
 
         <div id="@toggleId" class="ticket-info ps-3 mt-2">
