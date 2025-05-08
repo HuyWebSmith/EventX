@@ -13,7 +13,7 @@ namespace EventX.Repositories
 
         public async Task<List<Event>> GetAllAsync()
         {
-            // return await _context.Products.ToListAsync(); 
+            //return await _context.Products.ToListAsync(); 
             return await _context.Event
              .Include(e => e.Tickets)
              .Include(e => e.EventImages)

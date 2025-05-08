@@ -23,6 +23,7 @@ namespace EventX.Models
         public int Quantity { get; set; }
 
         public int Sold { get; set; } = 0;
+        public int Available => Quantity - Sold; // Số vé còn lại
 
         [Required]
         public DateTime StartDate { get; set; }  // Thời gian bắt đầu
@@ -44,6 +45,9 @@ namespace EventX.Models
         public decimal? Discount { get; set; }  // Giảm giá cho vé, nullable
 
         public string Currency { get; set; }  // Tiền tệ của giá vé (ví dụ: "VND", "USD")
-        
+
+        //public bool IsHeld { get; set; } = false;  // Đang giữ vé
+        //public DateTime? HoldUntil { get; set; }  // Thời gian hết giữ
+
     }
 }

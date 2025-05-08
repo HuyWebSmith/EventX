@@ -62,18 +62,31 @@
     }
 
     .swiper-button-next, .swiper-button-prev {
-        font-size: 20px;
+        font-size: 20px; 
         z-index: 10;
         
         padding: 10px; /* Tạo khoảng cách giữa biểu tượng và viền */
         transition: background-color 0.3s ease, transform 0.3s ease; /* Thêm hiệu ứng khi hover */
     }
 
-        .swiper-button-next:hover, .swiper-button-prev:hover {
+
+
+        .swiper-button-next:hover {
             color: white !important;
             background-color: rgba(0, 0, 0, 0.5);
-            transform: scale(1.2); /* Phóng to nút một chút khi hover */
+            transform: scale(1.2);
+            border-top-left-radius: 5px;
+            border-bottom-left-radius: 5px;
         }
+
+        .swiper-button-prev:hover {
+            color: white !important;
+            background-color: rgba(0, 0, 0, 0.5);
+            transform: scale(1.2);
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
+
 
     .swiper-button-next {
         right: 20px;
@@ -125,9 +138,66 @@
     @{
         var workshops = Model.Events.Where(e => e.Category.CategoryId == 6).ToList();
         var seminars = Model.Events.Where(e => e.Category.CategoryId == 5).ToList();
+        var events = Model.Events.Where(e => e.Category.CategoryId == 12).ToList();
     }
 
     <!-- PHẦN WORKSHOP -->
+@if (events.Any())
+    {
+        <h4 class="mt-4">Sự kiện</h4>
+        <div class="swiper mySwiper">
+            <div class="swiper-wrapper">
+            @foreach (var eventItem in events)
+                {
+                    <div class="swiper-slide">
+                        <div class="swiper-slide">
+                            <a href="@Url.Action("Display", "Home", new { eventId = eventItem.EventID })"
+                               class="text-decoration-none text-dark">
+                                <div class="card" style="width: 18rem; cursor: pointer;">
+                                    @foreach (var image in eventItem.EventImages)
+                                    {
+                                        <img src="@image.ImageURL" class="card-img-top" alt="Event Image" style="object-fit: contain; height: 180px;">
+                                    }
+
+                                    <div class="card-body">
+                                        <h5 class="card-title" style="font-size: 16px; font-weight: bold;">@eventItem.Title</h5>
+
+                                        @if (eventItem.Tickets != null && eventItem.Tickets.Any())
+                                        {
+                                            <p class="card-text" style="font-size: 14px;">
+                                                Giá vé từ:
+                                                <strong>@eventItem.Tickets.Min(t => t.Price).ToString("N0")₫</strong>
+                                            </p>
+                                        }
+
+                                        <p class="card-text" style="font-size: 13px; color: gray;">
+                                            Bắt đầu: @eventItem.EventStartTime.ToString("dd/MM/yyyy HH:mm")
+                                        </p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+        </div>
+    }
+    else
+    {
+        <!-- Nếu không có sự kiện, hiển thị phần trống với thông báo -->
+        <h4 class="mt-4">Sự kiện</h4>
+        <div class="swiper-wrapper">
+            <div class="swiper-slide">
+                <div class="card" style="width: 18rem; height: 200px;">
+                    <div class="card-body d-flex justify-content-center align-items-center">
+                        <p class="text-center" style="font-size: 16px; color: gray;">Chưa có sự kiện nào</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
     @if (workshops.Any())
     {
         <h4 class="mt-4">Workshop</h4>

@@ -112,11 +112,23 @@
                     border: 1px solid #ddd;
                 }
 
+        #timeError {
+            display: none;
+            margin-top: 4px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #dc3545; /* Bootstrap đỏ */
+            background-color: #f8d7da;
+            padding: 6px 10px;
+            border-left: 4px solid #dc3545;
+            border-radius: 4px;
+        }
         </style>
 
     </head>
 
     <body>
+    
     <!-- Top Tabs -->
     <div class="bg-white border-bottom px-3 py-2 d-flex justify-content-between">
         <ul class="nav nav-underline d-flex gap-5" id="stepNav">
@@ -270,8 +282,8 @@
                 <span asp-validation-for="EventEndTime" class="text-danger"></span>
             </div>
 
-                
-            </div>
+            <span id="timeError" class="text-danger"></span>
+        </div>
 
             <div class="step-content" id="stepContent2">
             <!-- Địa điểm -->
@@ -637,6 +649,27 @@
             function removeTicket(button) {
                 button.closest('.ticket-item').remove();
             }
+
+           document.addEventListener("DOMContentLoaded", function () {
+        const startInput = document.getElementById("EventStartTime");
+        const endInput = document.getElementById("EventEndTime");
+        const errorSpan = document.getElementById("timeError");
+
+        function validateTimes() {
+            const startTime = new Date(startInput.value);
+            const endTime = new Date(endInput.value);
+
+            if (startInput.value && endInput.value && startTime >= endTime) {
+                errorSpan.style.display = "block";
+                errorSpan.textContent = "Thời gian bắt đầu phải nhỏ hơn thời gian kết thúc.";
+            } else {
+                errorSpan.textContent = "";
+            }
+        }
+
+        startInput.addEventListener("change", validateTimes);
+        endInput.addEventListener("change", validateTimes);
+    });
 </script>
 
 
