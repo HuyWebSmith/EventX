@@ -1,6 +1,7 @@
 ﻿using EventX.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace EventX.Models
 {
@@ -32,6 +33,7 @@ namespace EventX.Models
         public DateTime EndDate { get; set; }  // Thời gian kết thúc
 
         // Quan hệ với Event
+        [JsonIgnore]
         public  Event? Event { get; set; }
 
         // Thông tin thêm

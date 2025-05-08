@@ -182,11 +182,36 @@
         pointer-events: none; /* cho phép bấm nút bên trên */
     }
 
+    /* Nút với màu nền xanh lá #2DC275 */
+    /* Nút với màu nền xanh lá #2DC275 */
+    .custom-btn {
+        background-color: #2DC275;
+        color: white;
+        font-weight: bold;
+        border: none;
+        padding: 10px 20px;
+        text-align: center;
+        border-radius: 5px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Hover effect */
+    .custom-btn:hover {
+        background-color: white; /* Đổi nền thành trắng khi hover */
+        color: #2DC275; /* Đổi màu chữ thành xanh lá */
+    }
+
+    /* Thêm hiệu ứng khi nhấn */
+    .custom-btn:active {
+        background-color: #22a157; /* Màu xanh lá khi nhấn */
+        color: white; /* Màu chữ giữ nguyên khi nhấn */
+    }
+
+
 </style>
 
 <div class="ticket-wrapper shadow-lg mt-5">
     
-
     <div class="ticket-left">
         <div class="half-circle-top"></div>
         <div class="half-circle-bottom"></div>
@@ -200,7 +225,11 @@
         <p class="price">
             Giá từ @Model.Tickets.First().Price.ToString("C", new System.Globalization.CultureInfo("vi-VN"))
         </p>
-        <a href="/Home/Index" class="btn btn-outline-light btn-sm btn-back">Quay lại</a>
+        
+        <a href="@Url.Action("Select", "Ticket", new { eventID = Model.EventID })" class="btn custom-btn w-100 mt-1">
+            Mua Vé Ngay
+        </a>
+
     </div>
 
     @foreach (var image in Model.EventImages)

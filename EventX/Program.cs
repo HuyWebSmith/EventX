@@ -11,6 +11,14 @@ builder.Services.AddHangfire(config => config.UseSqlServerStorage(connectionStri
 builder.Services.AddHangfireServer();
 
 
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -59,6 +67,7 @@ recurringJobManager.AddOrUpdate<EventService>(
     });
 app.UseHangfireServer();
 
+app.UseSession();
 app.UseRouting();
 
 app.UseAuthentication();
@@ -78,10 +87,6 @@ app.MapRazorPages();
 app.MapStaticAssets();
 app.UseStaticFiles(); // Cho phép truy c?p file t?nh t? wwwroot
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
 
 
 app.Run();

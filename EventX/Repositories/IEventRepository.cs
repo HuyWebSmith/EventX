@@ -10,6 +10,7 @@ namespace EventX.Repositories
         Task UpdateAsync(Event events);
         Task DeleteAsync(int id);
         Task RemoveImagesByMenuItemIdAsync(int eventId);
+        Task<Event> GetEventWithTicketsAsync(int eventId);
 
     }
 }

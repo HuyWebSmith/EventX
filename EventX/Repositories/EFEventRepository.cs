@@ -66,6 +66,11 @@ namespace EventX.Repositories
             }
         }
 
-
+        public async Task<Event> GetEventWithTicketsAsync(int eventId)
+        {
+            return await _context.Event
+                .Include(e => e.Tickets) // load kèm vé
+                .FirstOrDefaultAsync(e => e.EventID == eventId);
+        }
     }
 }

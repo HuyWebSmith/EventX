@@ -1,0 +1,171 @@
+﻿@using EventX.ViewModels
+@model TicketSelectionViewModel
+@using System.Text.Json
+
+@{
+    ViewData["Title"] = "Chọn Vé";
+}
+<style>
+    hr.dashed {
+        border: none;
+        border-top: 3px dashed #000; /* Nét đứt màu đen */
+        margin: 20px 0; /* Thêm khoảng cách trên và dưới */
+
+    }
+
+    /* Màu nền cho phần Title */
+    .title-section {
+        background-color: #27272A;
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+    }
+
+    /* Màu nền cho phần dưới đến nút */
+    .bg-light {
+        background-color: #38383D !important;
+        color: white; /*
+    }
+
+    /* Nút Tiếp tục */
+    #continueButton {
+
+        color: white;
+    }
+
+        #continueButton:hover {
+
+            color: white;
+        }
+
+</style>
+
+
+<div class="row">
+    <!-- Chọn loại vé -->
+    <div class="col-md-6">
+        <a href="@Url.Action("Index", "Home")" class="text-decoration-none text-dark fs-5 w-100 mt-3 ">
+            <i class="fa-solid fa-arrow-left"></i>
+            Quay Lại
+        </a>
+        <h4 class="mb-3 mt-4"><i class="fa-solid fa-ticket me-2"></i>Chọn loại vé</h4>
+        @foreach (var ticket in Model.Event.Tickets)
+        {
+            <div class="card mb-3  shadow-sm">
+                <div class="card-body">
+                    <h5 class="text-success card-title">@ticket.Description</h5>
+                    <p class="card-text text-muted">Giá: <strong>@ticket.Price.ToString("C", new System.Globalization.CultureInfo("vi-VN"))</strong></p>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="btn btn-outline-secondary" onclick="adjustQuantity(@ticket.TicketID, -1, @ticket.Quantity)">-</button>
+                        <input type="number" class="form-control text-center" style="width: 60px;" id="ticket-@ticket.TicketID" value="0" readonly />
+                        <button class="btn btn-outline-secondary" onclick="adjustQuantity(@ticket.TicketID, 1, @ticket.Quantity)">+</button>
+                        <span class="ms-3">Đã chọn: <span id="quantity-@ticket.TicketID">0</span> vé</span>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Thông tin sự kiện và giỏ vé -->
+    <div class="col-md-6">
+        <div class="border rounded p-3 bg-light shadow-sm" style="background-color: #38383D;">
+            <div class="title-section" style="background-color: #27272A;">
+                <p><strong>@Model.Event.Title</strong></p>
+                <p><i class="fa fa-calendar me-2"></i><span class="fw-bold">@Model.Event.EventStartTime.ToString("HH:mm") - @Model.Event.EventEndTime.ToString("HH:mm"), @Model.Event.EventStartTime.ToString($"dd.MM.yyyy")</span></p>
+                <hr />
+            </div>
+
+            <h5 class="mt-4 mb-3">🎟️ Giá vé</h5>
+            <div class="row d-flex">
+                @foreach (var ticket in Model.Event.Tickets)
+                {
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <!-- Mô tả vé và số lượng -->
+                        <div class="ticket-info">
+                            <h6 class="me-2 d-inline">@ticket.Description</h6>
+                            <span class="d-inline"><strong>x @ticket.Quantity</strong> <i class="fa-solid fa-ticket ms-1"></i></span>
+                            <p class="mt-2 text-muted">
+                                <i class="fa fa-calendar-alt me-2 text-white"></i>
+                                <strong style="color: white; ">
+                                    Vào lúc: @ticket.StartDate.ToString("dd.MM.yyyy HH:mm")
+                                </strong>
+                            </p>
+                        </div>
+
+                        <!-- Giá vé -->
+                        <p class="card-text text-muted mb-0">
+                            <strong class="text-success">@ticket.Price.ToString("C", new System.Globalization.CultureInfo("vi-VN"))</strong>
+                        </p>
+                    </div>
+                    <hr class="dashed">
+                }
+            </div>
+
+            <ul class="list-group mb-3">
+                @foreach (var item in Model.Cart.Items)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        @item.Name
+                        <span>@item.Quantity x @item.Price.ToString("C")</span>
+                    </li>
+                }
+            </ul>
+
+            <p class="fw-semibold mb-2 "><i class="fa-solid fa-ticket me-1"></i>x<span id="total-quantity">0</span></p>
+
+            <button id="continueButton" class="btn btn-secondary w-100 fw-bold mt-3" disabled onclick="window.location.href='@Url.Action("Confirm", "Ticket")'">
+                <span id="button-label">Vui lòng chọn vé</span>
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+        var tickets = @Html.Raw(JsonSerializer.Serialize(Model.Event.Tickets));
+
+    function adjustQuantity(ticketId, delta) {
+        var quantityField = document.getElementById("ticket-" + ticketId);
+        var ticket = tickets.find(ticket => ticket.TicketID === ticketId); // Tìm vé tương ứng từ mảng tickets
+        var quantity = parseInt(quantityField.value) + delta;
+
+        // Giới hạn số lượng vé không vượt quá số lượng có sẵn
+        if (quantity < 0) {
+            quantity = 0;
+        } else if (quantity > ticket.Quantity) { // ticket.Quantity là số lượng vé còn lại
+            quantity = ticket.Quantity;
+            alert("Không thể chọn vượt quá số lượng vé có sẵn.");
+        }
+
+        quantityField.value = quantity;
+        document.getElementById("quantity-" + ticketId).innerText = quantity;
+
+        var totalPrice = 0;
+        var totalQuantity = 0;
+
+        tickets.forEach(function(ticket) {
+            var ticketQuantity = parseInt(document.getElementById("ticket-" + ticket.TicketID).value) || 0;
+            totalQuantity += ticketQuantity;
+            totalPrice += ticketQuantity * ticket.Price;
+        });
+
+        document.getElementById("total-quantity").innerText = totalQuantity;
+
+        var continueBtn = document.getElementById("continueButton");
+        var buttonLabel = document.getElementById("button-label");
+
+            if (totalQuantity === 0) {
+        continueBtn.disabled = true;
+        buttonLabel.innerText = "Vui lòng chọn vé";
+        continueBtn.style.backgroundColor = "#ccc";  // Đặt màu nền thay vì màu chữ
+    } else {
+        continueBtn.style.backgroundColor = "#2DC275";
+        continueBtn.disabled = false;
+        buttonLabel.innerText = "Tiếp tục - " + totalPrice.toLocaleString() + " VND";
+    }
+
+}
+
+
+</script>

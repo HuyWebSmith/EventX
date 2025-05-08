@@ -33,7 +33,6 @@
     <Folder Include="Areas\Admin\Views\ManageUser\" />
     <Folder Include="Areas\Host\Models\" />
     <Folder Include="Areas\Host\Views\Ticket\" />
-    <Folder Include="Controllers\" />
     <Folder Include="Data\" />
     <Folder Include="Migrations\" />
     <Folder Include="wwwroot\images\sliders\" />
