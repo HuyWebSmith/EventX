@@ -145,15 +145,7 @@
                 }
             </div>
 
-            <ul class="list-group mb-3">
-                @foreach (var item in Model.Cart.Items)
-                {
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        @item.Name
-                        <span>@item.Quantity x @item.Price.ToString("C")</span>
-                    </li>
-                }
-            </ul>
+           
 
             <p class="fw-semibold mb-2 "><i class="fa-solid fa-ticket me-1"></i>x<span id="total-quantity">0</span></p>
 
@@ -173,7 +165,9 @@
     function adjustQuantity(ticketId, delta) {
         var quantityField = document.getElementById("ticket-" + ticketId);
         var ticket = tickets.find(ticket => ticket.TicketID === ticketId); // Tìm vé tương ứng từ mảng tickets
-        var quantity = parseInt(quantityField.value) + delta;
+               var currentQuantity = parseInt(quantityField.value) || 0;
+
+             var newQuantity = currentQuantity + delta;
 
         if (ticket.TrangThai === 'HetVe' || ticket.TrangThai === 'HetHan') {
             alert("Không thể thay đổi số lượng vì vé đã hết hoặc hết hạn.");
@@ -181,15 +175,15 @@
         }
 
         // Giới hạn số lượng vé không vượt quá số lượng có sẵn
-        if (quantity < 0) {
-            quantity = 0;
-        } else if (quantity > ticket.Quantity) { // ticket.Quantity là số lượng vé còn lại
-            quantity = ticket.Quantity;
+        if (newQuantity < 0) {
+                newQuantity = 0;
+            } else if (newQuantity > ticket.Quantity) { // ticket.Quantity là số lượng vé còn lại
+                newQuantity = ticket.Quantity;
             alert("Không thể chọn vượt quá số lượng vé có sẵn.");
         }
 
-        quantityField.value = quantity;
-        document.getElementById("quantity-" + ticketId).innerText = quantity;
+            quantityField.value = newQuantity;
+            document.getElementById("quantity-" + ticketId).innerText = newQuantity;
 
         var totalPrice = 0;
         var totalQuantity = 0;
@@ -222,13 +216,12 @@
 
         tickets.forEach(function(ticket) {
             var quantity = parseInt(document.getElementById("ticket-" + ticket.TicketID).value) || 0;
-                var price = (ticket.Price * quantity).toFixed(2);
             var ticketItem = {
             TicketId: ticket.TicketID,
             EventId: eventId,
             Name: ticket.Description,
             Quantity: quantity,
-            Price: price
+            Price: ticket.Price
         };
                 if (quantity > 0) {
                     cartItems.push(ticketItem);
@@ -253,6 +246,8 @@
 
     }
 
-
+         window.addEventListener("unload", function () {
+            @* navigator.sendBeacon("/Ticket/ClearSession"); *@
+        });
 
 </script>

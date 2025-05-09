@@ -4,37 +4,157 @@
     ViewData["Title"] = "Home Page";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-<h2>Xác nhận đặt vé</h2>
-<form asp-action="Checkout" method="post">
-    <div>
-        <label>Họ tên:</label>
-        <input asp-for="FullName" class="form-control" required />
-    </div>
-    <div>
-        <label>Email:</label>
-        <input asp-for="Email" class="form-control" required />
-    </div>
-    <div>
-        <label>Số điện thoại:</label>
-        <input asp-for="PhoneNumber" class="form-control" required />
-    </div>
-    <div>
-        <label>Phương thức thanh toán:</label>
-        <select asp-for="PaymentMethod" class="form-control">
-            <option value="COD">Thanh toán tại chỗ</option>
-            <option value="VNPAY">VNPAY</option>
-        </select>
+<h2 class="mb-4">Xác nhận đặt vé</h2>
+
+<div class="container">
+    <div class="row">
+        <!-- Cột bên trái: Form nhập thông tin -->
+        <div class="col-md-6">
+            <form id="checkoutForm" asp-action="Checkout" method="post">
+                <div class="mb-3">
+                    <label>Họ tên:</label>
+                    <input asp-for="FullName" class="form-control" required />
+                </div>
+                <div class="mb-3">
+                    <label>Email:</label>
+                    <input asp-for="Email" class="form-control" required />
+                </div>
+                <div class="mb-3">
+                    <label>Số điện thoại:</label>
+                    <input asp-for="PhoneNumber" class="form-control" required />
+                </div>
+                <div class="mb-3">
+                    <label>Phương thức thanh toán:</label>
+                    <div class="row d-flex flex-column">
+                        <div class="col-6 col-md-4 mb-2">
+                            <div class="form-check d-flex align-items-center">
+                                <input class="form-check-input me-2" type="radio" asp-for="PaymentMethod" value="COD" checked />
+                                <label class="form-check-label">
+                                    <img src="~/images/payments/cod.png" alt="COD" width="24" class="me-1" /> Tại chỗ
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="col-6 col-md-4 mb-2 ">
+                            <div class="form-check d-flex align-items-center">
+                                <input class="form-check-input me-2" type="radio" asp-for="PaymentMethod" value="VNPAY" />
+                                <label class="form-check-label">
+                                    <img src="~/images/payments/vnpay.png" alt="VNPay" width="24" class="me-1" /> VNPay
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="col-6 col-md-4 mb-2">
+                            <div class="form-check d-flex align-items-center">
+                                <input class="form-check-input me-2" type="radio" asp-for="PaymentMethod" value="MOMO" />
+                                <label class="form-check-label">
+                                    <img src="~/images/payments/momo.png" alt="MoMo" width="24" class="me-1" /> MoMo
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="col-6 col-md-4 mb-2">
+                            <div class="form-check d-flex align-items-center">
+                                <input class="form-check-input me-2" type="radio" asp-for="PaymentMethod" value="ZALOPAY" />
+                                <label class="form-check-label">
+                                    <img src="~/images/payments/zalopay.png" alt="ZaloPay" width="24" class="me-1" /> ZaloPay
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="col-6 col-md-4 mb-2">
+                            <div class="form-check d-flex align-items-center">
+                                <input class="form-check-input me-2" type="radio" asp-for="PaymentMethod" value="VIETQR" />
+                                <label class="form-check-label">
+                                    <img src="~/images/payments/vietqr.png" alt="VietQR" width="24" class="me-1" /> VietQR
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- Cột bên phải: Chi tiết vé -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    Thông tin đặt vé
+                    <a href="/Ticket/Select/@Model.Tickets.FirstOrDefault()?.EventId" class="float-end text-decoration-none">Chọn lại vé</a>
+                </div>
+                <strong class="ms-3">Loại vé</strong>
+                <div class="card-body">
+                    @foreach (var ticket in Model.Tickets)
+                    {
+                        <div class="d-flex justify-content-between mb-2">
+                            <h6 class="d-flex flex-column gap-2">
+                                 <span>@ticket.Name</span>
+                                <p>Giá: <span>@ticket.Price.ToString("N0") đ</span></p>
+                            </h6>
+                            <p class="d-flex flex-column gap-2 text-center">
+                                <strong>Số lượng</strong> <span>@ticket.Quantity</span>
+                            </p>
+                        </div>
+                        <div class="my-3" style="border-top: 1px dashed #ccc;"></div>
+                    }
+
+                   
+                    
+                    <div class="d-flex justify-content-between mt-3">
+                        <span><strong>Tạm tính</strong></span>
+                        <span class=" h6">@Model.TotalPrice.ToString("N0") đ</span>
+                    </div>
+                    <hr />
+                    <div class="d-flex justify-content-between mt-3">
+                        <span><strong>Tổng tiền</strong></span>
+                        <span class="text-success h5">@Model.TotalPrice.ToString("N0") đ</span>
+                    </div>
+                </div>
+                <div class="card-footer text-end">
+                    <button class="btn btn-success" onclick="document.getElementById('checkoutForm').submit();">Xác nhận & Thanh toán</button>
+
+                </div>
+            </div>
+        </div>
     </div>
 
-    <h4>Chi tiết vé:</h4>
-    <ul>
-        @foreach (var item in Model.Tickets)
-        {
-            <li>@item.Name - SL: @item.Quantity - Giá: @item.Price</li>
+   
+    <!-- Đồng hồ đếm ngược góc trên bên phải -->
+    <div class="text-end mt-3">
+        <h5>Thời gian giữ vé còn lại:</h5>
+        <p id="countdown" style="font-size: 1.5em; font-weight: bold;"></p> <!-- Đồng hồ đếm ngược -->
+    </div>
+</div>
+
+<script>
+    // Set thời gian đếm ngược (15 phút)
+    var countdownTime = 15 * 60; // 15 phút, tính bằng giây
+    var countdownElement = document.getElementById("countdown");
+
+    function updateCountdown() {
+        var minutes = Math.floor(countdownTime / 60);
+        var seconds = countdownTime % 60;
+
+        // Đảm bảo rằng các số có 2 chữ số
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        seconds = seconds < 10 ? '0' + seconds : seconds;
+
+        countdownElement.textContent = minutes + ":" + seconds;
+
+        if (countdownTime <= 0) {
+            clearInterval(countdownInterval); // Dừng đồng hồ khi hết thời gian
+            // Hiển thị thông báo khi hết thời gian giữ vé
+            alert("Thời gian giữ vé đã hết. Vui lòng tạo lại đơn hàng.");
+            // Thực hiện thêm hành động nếu cần, ví dụ: tự động chuyển hướng hoặc hủy đơn
         }
-    </ul>
-    <p>Tổng tiền: <strong>@Model.TotalPrice.ToString("N0")</strong></p>
 
-    <button type="submit" class="btn btn-primary">Xác nhận & Thanh toán</button>
-</form>
+        countdownTime--;
+    }
 
+    // Cập nhật đồng hồ mỗi giây
+    var countdownInterval = setInterval(updateCountdown, 1000);
+
+    // Hiển thị đồng hồ ban đầu
+    updateCountdown();
+</script>

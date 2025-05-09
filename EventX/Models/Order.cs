@@ -20,7 +20,6 @@ namespace EventX.Models
         public OrderStatus OrderStatus { get; set; } = OrderStatus.Pending;
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public required string Notes { get; set; }
 
         // Quan hệ với IdentityUser
         [ForeignKey("UserID")]
