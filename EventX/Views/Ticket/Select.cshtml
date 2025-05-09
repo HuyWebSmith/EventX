@@ -1,4 +1,5 @@
-﻿@using EventX.ViewModels
+﻿@using EventX.Enums
+@using EventX.ViewModels
 @model TicketSelectionViewModel
 @using System.Text.Json
 
@@ -38,6 +39,27 @@
             color: white;
         }
 
+    .alert {
+        display: inline-block; /* Để chiếm diện tích chỉ vừa đủ nội dung */
+        padding: 5px 10px; /* Padding vừa đủ cho chữ */
+        font-weight: bold;
+        border-radius: 5px;
+        text-align: center;
+        margin-bottom: 10px;
+        box-sizing: border-box; /* Đảm bảo padding không làm ảnh hưởng đến chiều rộng */
+    }
+
+    .alert-danger {
+        background-color: #f44336; /* Màu đỏ */
+        color: white;
+        font-size: 0.7em;
+    }
+
+    .alert-warning {
+        background-color: #ff9800; /* Màu cam */
+        color: white;
+        font-size: 0.7em;
+    }
 </style>
 
 
@@ -51,17 +73,30 @@
         <h4 class="mb-3 mt-4"><i class="fa-solid fa-ticket me-2"></i>Chọn loại vé</h4>
         @foreach (var ticket in Model.Event.Tickets)
         {
+            var isTicketExpiredOrSoldOut = ticket.TrangThai == TicketStatus.HetVe || ticket.TrangThai == TicketStatus.HetHan;
             <div class="card mb-3  shadow-sm">
                 <div class="card-body">
                     <h5 class="text-success card-title">@ticket.Description</h5>
                     <p class="card-text text-muted">Giá: <strong>@ticket.Price.ToString("C", new System.Globalization.CultureInfo("vi-VN"))</strong></p>
 
                     <div class="d-flex align-items-center gap-2">
-                        <button class="btn btn-outline-secondary" onclick="adjustQuantity(@ticket.TicketID, -1, @ticket.Quantity)">-</button>
+                        <button class="btn btn-outline-secondary"
+                                onclick="adjustQuantity(@ticket.TicketID, -1)"
+                                @(isTicketExpiredOrSoldOut ? "disabled" : "")>
+                            -
+                        </button>
                         <input type="number" class="form-control text-center" style="width: 60px;" id="ticket-@ticket.TicketID" value="0" readonly />
-                        <button class="btn btn-outline-secondary" onclick="adjustQuantity(@ticket.TicketID, 1, @ticket.Quantity)">+</button>
+                        <button class="btn btn-outline-secondary"
+                                onclick="adjustQuantity(@ticket.TicketID, 1)"
+                                @(isTicketExpiredOrSoldOut ? "disabled" : "")>
+                            +
+                        </button>
                         <span class="ms-3">Đã chọn: <span id="quantity-@ticket.TicketID">0</span> vé</span>
                     </div>
+                        @if (isTicketExpiredOrSoldOut)
+                        {
+                            <div class="alert alert-warning fw-bold text-center mt-2 h-25">Vé này đã hết hạn</div>
+                        }
                 </div>
             </div>
         }
@@ -73,10 +108,10 @@
             <div class="title-section" style="background-color: #27272A;">
                 <p><strong>@Model.Event.Title</strong></p>
                 <p><i class="fa fa-calendar me-2"></i><span class="fw-bold">@Model.Event.EventStartTime.ToString("HH:mm") - @Model.Event.EventEndTime.ToString("HH:mm"), @Model.Event.EventStartTime.ToString($"dd.MM.yyyy")</span></p>
-                <hr />
             </div>
 
             <h5 class="mt-4 mb-3">🎟️ Giá vé</h5>
+            <hr />
             <div class="row d-flex">
                 @foreach (var ticket in Model.Event.Tickets)
                 {
@@ -92,12 +127,20 @@
                                 </strong>
                             </p>
                         </div>
-
+                                  
                         <!-- Giá vé -->
                         <p class="card-text text-muted mb-0">
                             <strong class="text-success">@ticket.Price.ToString("C", new System.Globalization.CultureInfo("vi-VN"))</strong>
                         </p>
                     </div>
+                    @if (ticket.TrangThai == TicketStatus.HetVe)
+                    {
+                        <div class="alert alert-danger fw-bold text-center">HẾT VÉ</div>
+                    }
+                    else if (ticket.TrangThai == TicketStatus.HetHan)
+                    {
+                        <div class="alert alert-warning fw-bold text-center">ĐÃ HẾT HẠN</div>
+                    }
                     <hr class="dashed">
                 }
             </div>
@@ -114,13 +157,15 @@
 
             <p class="fw-semibold mb-2 "><i class="fa-solid fa-ticket me-1"></i>x<span id="total-quantity">0</span></p>
 
-            <button id="continueButton" class="btn btn-secondary w-100 fw-bold mt-3" disabled onclick="window.location.href='@Url.Action("Confirm", "Ticket")'">
+            <button id="continueButton" class="btn btn-secondary w-100 fw-bold mt-3" disabled onclick="window.location.href='@Url.Action("Checkout", "Ticket")'">
                 <span id="button-label">Vui lòng chọn vé</span>
             </button>
+
         </div>
     </div>
 
 </div>
+<!-- Tải jQuery từ CDN -->
 
 <script>
         var tickets = @Html.Raw(JsonSerializer.Serialize(Model.Event.Tickets));
@@ -129,6 +174,11 @@
         var quantityField = document.getElementById("ticket-" + ticketId);
         var ticket = tickets.find(ticket => ticket.TicketID === ticketId); // Tìm vé tương ứng từ mảng tickets
         var quantity = parseInt(quantityField.value) + delta;
+
+        if (ticket.TrangThai === 'HetVe' || ticket.TrangThai === 'HetHan') {
+            alert("Không thể thay đổi số lượng vì vé đã hết hoặc hết hạn.");
+            return;
+        }
 
         // Giới hạn số lượng vé không vượt quá số lượng có sẵn
         if (quantity < 0) {
@@ -164,8 +214,45 @@
         continueBtn.disabled = false;
         buttonLabel.innerText = "Tiếp tục - " + totalPrice.toLocaleString() + " VND";
     }
-
+        updateCart();
 }
+          function updateCart() {
+        var cartItems = [];
+        var eventId = @Model.Event.EventID;
+
+        tickets.forEach(function(ticket) {
+            var quantity = parseInt(document.getElementById("ticket-" + ticket.TicketID).value) || 0;
+                var price = (ticket.Price * quantity).toFixed(2);
+            var ticketItem = {
+            TicketId: ticket.TicketID,
+            EventId: eventId,
+            Name: ticket.Description,
+            Quantity: quantity,
+            Price: price
+        };
+                if (quantity > 0) {
+                    cartItems.push(ticketItem);
+            }
+        });
+
+        console.log("cartItems to send: ", cartItems);
+
+               $.ajax({
+        url: '@Url.Action("AddTicket", "Ticket")',
+        method: 'POST',
+        data: JSON.stringify(cartItems),
+        contentType: 'application/json',
+        success: function(response) {
+            console.log("Giỏ vé đã được cập nhật.");
+        },
+        error: function(xhr, status, error) {
+            console.log("Có lỗi xảy ra khi cập nhật giỏ vé: ", xhr.status, status, error);
+            console.log(xhr.responseText);
+        }
+    });
+
+    }
+
 
 
 </script>

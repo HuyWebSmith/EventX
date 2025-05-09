@@ -50,6 +50,7 @@ namespace EventX.Models
 
         //public bool IsHeld { get; set; } = false;  // Đang giữ vé
         //public DateTime? HoldUntil { get; set; }  // Thời gian hết giữ
+        public TicketStatus TrangThai { get; set; } = TicketStatus.ConVe;
 
     }
 }

@@ -2,58 +2,120 @@
 using EventX.Models;
 using EventX.Repositories;
 using EventX.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-public class TicketController : Controller
+namespace EventX.Controllers
 {
-    private readonly IEventRepository _eventRepository;
-
-    public TicketController(IEventRepository eventRepository)
+    [Authorize]
+    public class TicketController : Controller
     {
-        _eventRepository = eventRepository;
-    }
+        private readonly IEventRepository _eventRepository;
 
-    [Route("Ticket/Select/{eventId}")]
-    public async Task<IActionResult> Select(int eventId)
-    {
-        var evt = await _eventRepository.GetEventWithTicketsAsync(eventId);
-        if (evt == null) return NotFound();
-
-        // Lấy giỏ vé từ session, nếu chưa có thì tạo mới
-        var cart = HttpContext.Session.GetObjectFromJson<TicketSelection>("TicketCart") ?? new TicketSelection();
-
-        // Truyền sự kiện và giỏ vé hiện tại vào view
-        var model = new TicketSelectionViewModel
+        public TicketController(IEventRepository eventRepository)
         {
-            Event = evt,
-            Cart = cart
-        };
+            _eventRepository = eventRepository;
+        }
 
-        return View(model);
-    }
-
-    [HttpPost]
-    public IActionResult AddTicket(int ticketId, int quantity)
-    {
-        var tickets = HttpContext.Session.GetObjectFromJson<List<Ticket>>("Tickets");
-        var ticket = tickets?.FirstOrDefault(t => t.TicketID == ticketId);
-
-        if (ticket == null) return BadRequest();
-
-        var item = new TicketItem
+        [Route("Ticket/Select/{eventId}")]
+        public async Task<IActionResult> Select(int eventId)
         {
-            TicketId = ticket.TicketID,
-            Name = ticket.Description,
-            Price = ticket.Price,
-            Quantity = quantity
-        };
+            var evt = await _eventRepository.GetEventWithTicketsAsync(eventId);
+            if (evt == null) return NotFound();
 
-        var cart = HttpContext.Session.GetObjectFromJson<TicketSelection>("TicketCart") ?? new TicketSelection();
-        cart.AddTicket(item);
+            // Lấy giỏ vé từ session, nếu chưa có thì tạo mới
+            var cart = HttpContext.Session.GetObjectFromJson<TicketCart>("TicketCart") ?? new TicketCart();
 
-        // Lưu giỏ vé vào session
-        HttpContext.Session.SetObjectAsJson("TicketCart", cart);
+            // Truyền sự kiện và giỏ vé hiện tại vào view
+            var model = new TicketSelectionViewModel
+            {
+                Event = evt,
+                Cart = cart
+            };
 
-        return RedirectToAction("Select", new { eventId = ticket.EventID });
+            return View(model);
+        }
+
+        [HttpPost]
+        public IActionResult AddTicket([FromBody] List<TicketItem> cartItems)
+        {
+            if (cartItems == null || cartItems.Count == 0)
+                return BadRequest("Không có vé nào được gửi lên.");
+
+            var cart = HttpContext.Session.GetObjectFromJson<TicketCart>("TicketCart") ?? new TicketCart();
+
+            foreach (var item in cartItems)
+            {
+                var existing = cart.Items.FirstOrDefault(i => i.TicketId == item.TicketId);
+                if (existing != null)
+                {
+                    existing.Quantity += item.Quantity;
+                }
+                else
+                {
+                    cart.Items.Add(item);
+                }
+            }
+
+            HttpContext.Session.SetObjectAsJson("TicketCart", cart);
+            return Ok();
+        }
+
+
+
+        [HttpGet]
+        public IActionResult Checkout()
+        {
+            var cart = HttpContext.Session.GetObjectFromJson<TicketCart>("TicketCart");
+            if (cart == null || !cart.Items.Any()) return RedirectToAction("Index", "Home");
+
+            // Lưu thời gian giữ vé
+            HttpContext.Session.SetString("HoldStartTime", DateTime.UtcNow.ToString());
+
+            var model = new CheckoutViewModel
+            {
+                Tickets = cart.Items
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public IActionResult Checkout(CheckoutViewModel model)
+        {
+            var cart = HttpContext.Session.GetObjectFromJson<TicketCart>("TicketCart");
+
+            // Kiểm tra thời gian giữ vé
+            var holdStart = HttpContext.Session.GetString("HoldStartTime");
+            if (DateTime.TryParse(holdStart, out var startTime))
+            {
+                if (DateTime.UtcNow - startTime > TimeSpan.FromMinutes(15))
+                {
+                    HttpContext.Session.Remove("TicketCart");
+                    return RedirectToAction("Timeout");
+                }
+            }
+
+            if (!ModelState.IsValid) return View(model);
+
+            // Lưu thông tin booking vào DB (thực hiện lưu thông tin vào cơ sở dữ liệu)
+
+            HttpContext.Session.Remove("TicketCart");
+            HttpContext.Session.Remove("HoldStartTime");
+
+            return RedirectToAction("Success");
+        }
+
+        public IActionResult Success()
+        {
+            return View();
+        }
+
+        public IActionResult Timeout()
+        {
+            return View();
+        }
+
+
     }
 }

@@ -65,6 +65,16 @@ recurringJobManager.AddOrUpdate<EventService>(
     {
         TimeZone = TimeZoneInfo.Local  // Thi?t l?p múi gi? ??a ph??ng
     });
+
+// T?o công vi?c ??nh k? ?? c?p nh?t tr?ng thái vé
+recurringJobManager.AddOrUpdate<TicketService>(
+    recurringJobId: "update-ticket-status", // ID công vi?c
+    methodCall: service => service.UpdateTicketStatus(), // Ph??ng th?c c?n g?i
+    cronExpression: Cron.Minutely(), // Ch?y m?i phút
+    options: new RecurringJobOptions
+    {
+        TimeZone = TimeZoneInfo.Local // Thi?t l?p múi gi? ??a ph??ng
+    });
 app.UseHangfireServer();
 
 app.UseSession();
@@ -82,6 +92,7 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}"
 );
+
 
 app.MapRazorPages();
 app.MapStaticAssets();

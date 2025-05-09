@@ -1,0 +1,40 @@
+﻿@using EventX.ViewModels
+@model CheckoutViewModel
+@{
+    ViewData["Title"] = "Home Page";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<h2>Xác nhận đặt vé</h2>
+<form asp-action="Checkout" method="post">
+    <div>
+        <label>Họ tên:</label>
+        <input asp-for="FullName" class="form-control" required />
+    </div>
+    <div>
+        <label>Email:</label>
+        <input asp-for="Email" class="form-control" required />
+    </div>
+    <div>
+        <label>Số điện thoại:</label>
+        <input asp-for="PhoneNumber" class="form-control" required />
+    </div>
+    <div>
+        <label>Phương thức thanh toán:</label>
+        <select asp-for="PaymentMethod" class="form-control">
+            <option value="COD">Thanh toán tại chỗ</option>
+            <option value="VNPAY">VNPAY</option>
+        </select>
+    </div>
+
+    <h4>Chi tiết vé:</h4>
+    <ul>
+        @foreach (var item in Model.Tickets)
+        {
+            <li>@item.Name - SL: @item.Quantity - Giá: @item.Price</li>
+        }
+    </ul>
+    <p>Tổng tiền: <strong>@Model.TotalPrice.ToString("N0")</strong></p>
+
+    <button type="submit" class="btn btn-primary">Xác nhận & Thanh toán</button>
+</form>
+

@@ -3,6 +3,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+@using EventX.Enums
 @using EventX.Models
 @model EventX.Models.Event
 
@@ -207,6 +208,27 @@
         color: white; /* Màu chữ giữ nguyên khi nhấn */
     }
 
+    .alert {
+       display: inline-block; /* Để chiếm diện tích chỉ vừa đủ nội dung */
+        padding: 5px 10px; /* Padding vừa đủ cho chữ */
+        font-weight: bold;
+        border-radius: 5px;
+        text-align: center;
+        margin-bottom: 10px;
+        box-sizing: border-box; /* Đảm bảo padding không làm ảnh hưởng đến chiều rộng */
+    }
+
+    .alert-danger {
+        background-color: #f44336; /* Màu đỏ */
+        color: white;
+        font-size: 0.7em;
+    }
+
+    .alert-warning {
+        background-color: #ff9800; /* Màu cam */
+        color: white;
+        font-size: 0.7em;
+    }
 
 </style>
 
@@ -259,7 +281,13 @@
 </div>
 
 <div class="ticket-box mt-5">
-    <h3 class="h5">Thông tin vé</h3>
+    <h3 class="h5 d-flex justify-content-between">
+        Thông tin vé
+        <a href="@Url.Action("Select", "Ticket", new { eventID = Model.EventID })" class="btn custom-btn w-25 h-25 mt-1">
+            Mua Vé Ngay
+        </a>
+    </h3>
+
     <hr />
     @{
         var ticketsByDate = Model.Tickets
@@ -286,12 +314,24 @@
                 var rowClass = ticket.index % 2 == 0 ? "bg-dark text-white" : "bg-light-subtle text-dark";
                 <div class="d-flex justify-content-between p-2 @rowClass">
                     <span>@ticket.ticket.Description</span>
-                    <strong class="text-bg-success">
-                        @ticket.ticket.Price.ToString("C", new System.Globalization.CultureInfo("vi-VN"))
-                    </strong>
+                     @if (ticket.ticket.TrangThai == TicketStatus.HetVe)
+                    {
+                        <div class="alert alert-danger fw-bold text-center">HẾT VÉ</div>
+                    }
+                    else if (ticket.ticket.TrangThai == TicketStatus.HetHan)
+                    {
+                        <div class="alert alert-warning fw-bold text-center">ĐÃ HẾT HẠN</div>
+                    }else if (ticket.ticket.TrangThai == TicketStatus.ConVe)
+                    {
+                         <strong class="text-success">
+                             @ticket.ticket.Price.ToString("C", new System.Globalization.CultureInfo("vi-VN"))
+                        </strong>
+                    }
+           
                 </div>
             }
         </div>
+
     }
 
 
