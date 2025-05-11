@@ -1,0 +1,38 @@
+﻿@using EventX.Extensions
+@model EventX.ViewModels.OrderListViewModel
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Mã đơn hàng</th>
+            <th>Khách hàng</th>
+            <th>Trạng thái</th>
+            <th>Tổng tiền</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var order in Model.Orders)
+        {
+            <tr>
+                <td>#@order.OrderID</td>
+                <td>@order.ApplicationUser.FullName</td>
+                <td>@order.OrderStatus.GetDisplayName()</td>
+                <td>@order.TotalAmount.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="pagination">
+    @if (Model.CurrentPage > 1)
+    {
+        <a href="#" class="page-link" data-page="@(@Model.CurrentPage - 1)">Trước</a>
+    }
+
+    <span>Trang @Model.CurrentPage / @Model.TotalPages</span>
+
+    @if (Model.CurrentPage < Model.TotalPages)
+    {
+        <a href="#" class="page-link" data-page="@(@Model.CurrentPage + 1)">Sau</a>
+    }
+</div>

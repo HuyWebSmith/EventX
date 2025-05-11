@@ -16,6 +16,9 @@ namespace EventX.Models
         [Column(TypeName = "decimal(10,2)")]
         public decimal TotalAmount { get; set; }
 
+        public string FullName { get; set; }
+        public string Email { get; set; }
+        public string PhoneNumber { get; set; }
         [Required]
         public OrderStatus OrderStatus { get; set; } = OrderStatus.Pending;
 

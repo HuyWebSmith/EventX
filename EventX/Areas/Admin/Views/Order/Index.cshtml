@@ -1,0 +1,84 @@
+﻿@using EventX.Enums
+@using EventX.Extensions
+@model EventX.ViewModels.OrderListViewModel
+@{
+    ViewData["Title"] = "Home Page";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+}
+<style>
+    .pagination-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: white; /* Màu nền của phân trang */
+        padding: 10px 0;
+        text-align: center;
+        box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* Tạo hiệu ứng bóng nhẹ cho phân trang */
+    }
+
+</style>
+<h2 class="ms-3">Danh sách đơn hàng chờ duyệt</h2>
+
+<table class="table ms-5">
+    <thead>
+        <tr>
+            <th>Mã đơn hàng</th>
+            <th>Tên khách hàng</th>
+            <th>Tổng tiền</th>
+            <th>Trạng thái</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var order in Model.Orders)
+        {
+            <tr>
+                <td>@order.OrderID</td>
+                <td>@order.ApplicationUser.FullName</td>
+                <td>@order.TotalAmount</td>
+                <td>@order.OrderStatus.GetDisplayName()</td>
+                <td>
+                    <a href="@Url.Action("Details", "Order", new { orderId = order.OrderID })" class="btn btn-info">Xem chi tiết</a>
+
+                    @if (order.OrderStatus == OrderStatus.Pending || order.OrderStatus == OrderStatus.Paid) // Nếu trạng thái đơn hàng là "Pending"
+                    {
+                        <a href="@Url.Action("Approve", "Order", new { orderId = order.OrderID })" class="btn btn-success">Duyệt đơn</a>
+                        <a href="@Url.Action("Cancel", "Order", new { orderId = order.OrderID })" class="btn btn-danger">Hủy</a>
+                    }
+                    else if (order.OrderStatus == OrderStatus.Confirmed) // Nếu trạng thái đơn hàng là "Approved"
+                    {
+                        <a href="@Url.Action("Cancel", "Order", new { orderId = order.OrderID })" class="btn btn-danger">Hủy</a>
+                    }
+                    else if (order.OrderStatus == OrderStatus.Cancelled) // Nếu trạng thái đơn hàng là "Cancelled"
+                    {
+                        <a href="@Url.Action("Approve", "Order", new { orderId = order.OrderID })" class="btn btn-success">Duyệt đơn</a>
+                        <span class="text-muted">Đơn đã hủy</span>
+
+                    }
+
+                </td>
+
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="pagination-container ms-5">
+    @if (Model.CurrentPage > 1)
+    {
+        <a href="@Url.Action("Index", "Order", new { page = Model.CurrentPage - 1 })" class="btn btn-primary">Trang trước</a>
+    }
+
+    @for (int i = 1; i <= Model.TotalPages; i++)
+    {
+        <a href="@Url.Action("Index", "Order", new { page = i })" class="btn btn-secondary">@i</a>
+    }
+
+    @if (Model.CurrentPage < Model.TotalPages)
+    {
+        <a href="@Url.Action("Index", "Order", new { page = Model.CurrentPage + 1 })" class="btn btn-primary">Trang sau</a>
+    }
+</div>
+

@@ -1,0 +1,119 @@
+﻿@using EventX.Enums
+@using EventX.Extensions
+@model EventX.ViewModels.OrderListViewModel
+@{
+    ViewData["Title"] = "Home Page";
+    Layout = "~/Areas/Host/Views/Shared/_HostLayout.cshtml";
+
+}
+
+<div class="tabs">
+    <ul class="nav nav-tabs" id="orderTabs" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="order-tab" data-bs-toggle="tab" href="#order" role="tab" aria-controls="order" aria-selected="true">Đơn hàng</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="ticket-tab" data-bs-toggle="tab" href="#ticket" role="tab" aria-controls="ticket" aria-selected="false">Vé</a>
+        </li>
+    </ul>
+    <div class="tab-content" id="orderTabsContent">
+        <!-- Tab Đơn hàng -->
+        <div class="tab-pane fade show active" id="order" role="tabpanel" aria-labelledby="order-tab">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Mã đơn hàng</th>
+                        <th>Khách hàng</th>
+                        <th>Trạng thái</th>
+                        <th>Tổng tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in Model.Orders)
+                    {
+                        <tr>
+                            <td>#@order.OrderID</td>
+                            <td>@order.ApplicationUser.FullName</td>
+                            <td>@order.OrderStatus.GetDisplayName()</td>
+                            <td>@order.TotalAmount.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</td>
+
+                          
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <!-- Phân trang -->
+            <div>
+                @if (Model.CurrentPage > 1)
+                {
+                    <a href="@Url.Action("Index", "Order", new { eventId = Model.EventID, page = Model.CurrentPage - 1 })">Trước</a>
+                }
+
+                <span>Trang @Model.CurrentPage của @Model.TotalPages</span>
+
+                @if (Model.CurrentPage < Model.TotalPages)
+                {
+                    <a href="@Url.Action("Index", "Order", new { eventId = Model.EventID, page = Model.CurrentPage + 1 })">Sau</a>
+                }
+            </div>
+        </div>
+
+        <!-- Tab Vé -->
+        <div class="tab-pane fade" id="ticket" role="tabpanel" aria-labelledby="ticket-tab">
+            <table class="table text-center">
+                <thead>
+                    <tr>
+                        <th scope="col">Họ và tên</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Điện thoại</th>
+                        <th scope="col">Loại vé</th>
+                        <th scope="col">Giá</th>
+                        <th scope="col">Số lượng</th>
+                        <th scope="col">Tổng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in Model.Orders)
+                    {
+                        foreach (var orderDetail in order.OrderDetails)
+                        {
+                            // Tính tổng tiền cho mỗi dòng (Số lượng * Giá)
+                            var totalAmount = orderDetail.Quantity * orderDetail.Ticket.Price;
+
+                            <tr>
+                                <td>@order.FullName</td>
+                                <td>@order.Email</td>
+                                <td>@order.PhoneNumber</td>
+                                <td>@orderDetail.Ticket.Description</td>
+                                <td>@orderDetail.Ticket.Price.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</td>
+                                <td>@orderDetail.Quantity</td> <!-- Cột số lượng -->
+                                <td>@totalAmount.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</td> <!-- Cột số tiền -->
+                            </tr>
+                        }
+                    }
+                </tbody>
+                
+            </table>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        // Tải danh sách vé khi click vào tab Vé
+        $('#ticket-tab').on('click', function () {
+            var eventId = @Model.EventID;
+            $.ajax({
+                url: '@Url.Action("TicketDetails", "Order")',
+                type: 'GET',
+                data: { eventId: eventId },
+                success: function (data) {
+                    $('#ticketList').html(data);
+                }
+            });
+        });
+    });
+</script>
+

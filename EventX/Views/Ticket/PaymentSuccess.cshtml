@@ -1,0 +1,89 @@
+﻿@model EventX.Models.VNPAY.PaymentResponseModel
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="payment-success-container">
+    <div class="payment-success-content">
+        @if (Model.IsPaymentSuccessful())
+        {
+            <h2 class="payment-success-title">Thanh toán thành công!</h2>
+            <p class="payment-success-description">Cảm ơn bạn đã sử dụng dịch vụ. Đơn hàng của bạn đã được thanh toán thành công.</p>
+            <p><strong>Mã giao dịch:</strong> @Model.TransactionId</p>
+            <p><strong>Số tiền:</strong> @Model.OrderDescription</p>
+            <p><strong>Phương thức thanh toán:</strong> @Model.PaymentMethod</p>
+            <p><strong>Thời gian giao dịch:</strong> @DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")</p>
+            <a href="@Url.Action("Index", "Home")" class="btn btn-primary">Trở về trang chủ</a>
+        }
+        else
+        {
+            <h2 class="payment-fail-title">Thanh toán thất bại!</h2>
+            <p class="payment-fail-description">Giao dịch của bạn đã thất bại. Vui lòng thử lại sau.</p>
+            <a href="@Url.Action("Retry", "Checkout")" class="btn btn-danger">Thử lại</a>
+        }
+    </div>
+</div>
+
+<style>
+    .payment-success-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f4f4f4;
+    }
+
+    .payment-success-content {
+        text-align: center;
+        padding: 30px;
+        border-radius: 10px;
+        background-color: #fff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        width: 400px;
+    }
+
+    .payment-success-title, .payment-fail-title {
+        color: #28a745; /* Màu xanh cho thành công */
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .payment-fail-title {
+        color: #dc3545; /* Màu đỏ cho thất bại */
+    }
+
+    .payment-success-description, .payment-fail-description {
+        color: #555;
+        font-size: 16px;
+        margin-top: 10px;
+    }
+
+    .payment-success-container p {
+        font-size: 14px;
+        color: #333;
+        margin: 10px 0;
+    }
+
+    .btn {
+        margin-top: 20px;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        font-size: 16px;
+    }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+    .btn-danger {
+        background-color: #dc3545;
+    }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+</style>

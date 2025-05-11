@@ -1,9 +1,10 @@
 using EventX.Models;
 using EventX.Repositories;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using EventX.Services.VNPay;
 using Hangfire;
 using Hangfire.SqlServer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -35,10 +36,10 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LogoutPath = "/Identity/Account/AccessDenied";
 });
 
-
 builder.Services.AddRazorPages();
 builder.Services.AddScoped<IEventRepository, EFEventRepository>();
 builder.Services.AddScoped<ICategoryRepository, EFCategoryRepository>();
+builder.Services.AddScoped<IVnPayService, VnPayService>();
 builder.Services.AddScoped<EventService>();
 
 var app = builder.Build();

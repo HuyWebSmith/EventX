@@ -1,13 +1,18 @@
 ﻿using EventX.Enums;
 using EventX.Extensions;
 using EventX.Models;
+using EventX.Models.VNPAY;
 using EventX.Repositories;
+using EventX.Services.VNPay;
 using EventX.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace EventX.Controllers
 {
@@ -17,12 +22,21 @@ namespace EventX.Controllers
         private readonly IEventRepository _eventRepository;
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IVnPayService _vnPayService;
 
-        public TicketController(ApplicationDbContext context, UserManager<ApplicationUser> userManager,IEventRepository eventRepository)
+        private readonly IConfiguration _configuration;
+        public TicketController(ApplicationDbContext context,
+            UserManager<ApplicationUser> userManager,
+            IEventRepository eventRepository,
+            IConfiguration configuration,
+            IVnPayService vnPayService,
+            IConfiguration config)
         {
             _context = context;
             _userManager = userManager;
             _eventRepository = eventRepository;
+            _vnPayService = vnPayService;
+            _configuration = config;
         }
 
         [Route("Ticket/Select/{eventId}")]
@@ -87,7 +101,7 @@ namespace EventX.Controllers
             var model = new CheckoutViewModel
             {
                 Tickets = cart.Items,
-                EventID = eventId
+                EventID = eventId,
             };
 
             return View(model);
@@ -146,8 +160,14 @@ namespace EventX.Controllers
                 TotalAmount = totalAmount,
                 OrderStatus = OrderStatus.Pending, // Trạng thái mặc định
                 CreatedAt = DateTime.Now, // Thời gian tạo đơn hàng
-                OrderDetails = new List<OrderDetail>()
+                OrderDetails = new List<OrderDetail>(),
+                FullName = model.FullName,
+                Email = model.Email,
+                PhoneNumber = model.PhoneNumber,
             };
+
+            // Kiểm tra nếu chọn VNPAY thì chuyển hướng đến trang thanh toán
+          
 
             // Tạo OrderDetails từ các vé trong giỏ hàng
             // 1. Lấy danh sách TicketID từ giỏ hàng
@@ -174,29 +194,92 @@ namespace EventX.Controllers
                     Ticket = realTicket
                 });
             }
-
+            
             // Lưu order vào cơ sở dữ liệu
             _context.Order.Add(order);
+           
             _context.OrderDetail.AddRange(orderDetails);
             _context.SaveChanges();
 
             // Xoá giỏ hàng trong session
             HttpContext.Session.Remove("TicketCart");
             HttpContext.Session.Remove("HoldStartTime");
+            if (model.PaymentMethod == "VNPAY")
+            {
+                var paymentInfo = new PaymentInformationModel
+                {
+                    OrderType = "event",
+                    OrderDescription = $"Thanh toán đơn hàng #{order.OrderID} ",
+                    Amount = totalAmount,
+                    Name = user.FullName,
+                };
 
+                // Tạo URL thanh toán VNPay
+                var vnpayUrl = _vnPayService.CreatePaymentUrl(paymentInfo, HttpContext);
+
+                return Redirect(vnpayUrl); // Chuyển hướng tới VNPay để thanh toán
+            }
             return RedirectToAction("Success");
         }
 
-        public IActionResult Success()
+        public IActionResult CreatePaymentUrlVnpay(PaymentInformationModel model)
         {
-            return View();
+            var url = _vnPayService.CreatePaymentUrl(model, HttpContext);
+
+            return Redirect(url);
         }
 
-        public IActionResult Timeout()
+        [HttpGet]
+        public IActionResult PaymentCallbackVnpay()
         {
-            return View();
-        }
+            var response = _vnPayService.PaymentExecute(Request.Query);
 
+            // Kiểm tra mã giao dịch có hợp lệ không
+            if (response.VnPayResponseCode == "00")
+            {
+                // Giao dịch thành công
+                var match = Regex.Match(response.OrderDescription, @"#(\d+)");
+                if (match.Success)
+                {
+                    var orderId = int.Parse(match.Groups[1].Value);
+                    var order = _context.Order.FirstOrDefault(o => o.OrderID == orderId);
+                    if (order != null)
+                    {
+                        order.OrderStatus = OrderStatus.Paid; // Đổi trạng thái đơn hàng thành đã xác nhận
+
+                        var ticket = _context.Order
+                        .Include(o => o.OrderDetails)
+                        .ThenInclude(od => od.Ticket)
+                        .FirstOrDefault(o => o.OrderID == orderId);
+
+                        foreach (var detail in order.OrderDetails)
+                        {
+                            detail.Ticket.Sold += detail.Quantity;
+
+                            if (detail.Ticket.Sold >= detail.Ticket.Quantity)
+                            {
+                                detail.Ticket.TrangThai = TicketStatus.HetVe;
+                            }
+                        }
+
+                        _context.SaveChanges();
+                    }
+
+                    // Trả về view thành công
+                    return View("PaymentSuccess", response);
+                }
+                else
+                {
+                    // Nếu không tìm thấy OrderID trong OrderDescription
+                    return View("PaymentFail", new { Message = "Không tìm thấy thông tin đơn hàng" });
+                }
+            }
+            else
+            {
+                // Giao dịch thất bại
+                return View("PaymentFail", new { Message = "Thanh toán thất bại" });
+            }
+        }
 
     }
 }

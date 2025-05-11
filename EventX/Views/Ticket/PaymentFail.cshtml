@@ -1,0 +1,66 @@
+﻿@model dynamic
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="payment-fail-container">
+    <div class="payment-fail-content">
+        <h2 class="payment-fail-title">Thanh toán thất bại!</h2>
+        <p class="payment-fail-description">@Model.Message</p>
+        <a href="@Url.Action("Retry", "Checkout")" class="btn btn-danger">Thử lại</a>
+    </div>
+</div>
+
+<style>
+    .payment-fail-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f8d7da;
+    }
+
+    .payment-fail-content {
+        text-align: center;
+        padding: 30px;
+        border-radius: 10px;
+        background-color: #fff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        width: 400px;
+    }
+
+    .payment-fail-title {
+        color: #dc3545; /* Màu đỏ cho thất bại */
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .payment-fail-description {
+        color: #555;
+        font-size: 16px;
+        margin-top: 10px;
+    }
+
+    .btn {
+        margin-top: 20px;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        font-size: 16px;
+    }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+    .btn-danger {
+        background-color: #dc3545;
+    }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+</style>
