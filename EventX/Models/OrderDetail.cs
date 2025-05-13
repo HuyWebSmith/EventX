@@ -28,5 +28,8 @@ namespace EventX.Models
 
         // Quan hệ với Ticket
         public required Ticket Ticket { get; set; }
+
+        // Quan hệ với IssuedTicket
+        public List<IssuedTicket> IssuedTickets { get; set; }
     }
 }

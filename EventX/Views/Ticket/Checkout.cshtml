@@ -83,7 +83,11 @@
                     Thông tin đặt vé
                     <a href="/Ticket/Select/@Model.Tickets.FirstOrDefault()?.EventId" class="float-end text-decoration-none">Chọn lại vé</a>
                 </div>
-                <strong class="ms-3">Loại vé</strong>
+                <div class="d-flex justify-content-between">
+                    <strong class="ms-3">Loại vé</strong>
+                    <strong class="me-3">Số lượng</strong>
+                </div>
+                
                 <div class="card-body">
                     @foreach (var ticket in Model.Tickets)
                     {
@@ -93,7 +97,7 @@
                                 <p>Giá: <span>@ticket.Price.ToString("N0") đ</span></p>
                             </h6>
                             <p class="d-flex flex-column gap-2 text-center">
-                                <strong>Số lượng</strong> <span>@ticket.Quantity</span>
+                                 <span>x @ticket.Quantity</span>
                             </p>
                         </div>
                         <div class="my-3" style="border-top: 1px dashed #ccc;"></div>

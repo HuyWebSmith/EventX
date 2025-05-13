@@ -1,5 +1,7 @@
 using EventX.Models;
 using EventX.Repositories;
+using EventX.Services;
+using EventX.Services.Email;
 using EventX.Services.VNPay;
 using Hangfire;
 using Hangfire.SqlServer;
@@ -35,13 +37,18 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LogoutPath = "/Identity/Account/Logout";
     options.LogoutPath = "/Identity/Account/AccessDenied";
 });
+// ??m b?o thêm t?p c?u hình appsettings.json
+builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
 builder.Services.AddRazorPages();
 builder.Services.AddScoped<IEventRepository, EFEventRepository>();
 builder.Services.AddScoped<ICategoryRepository, EFCategoryRepository>();
 builder.Services.AddScoped<IVnPayService, VnPayService>();
-builder.Services.AddScoped<EventService>();
 
+builder.Services.AddScoped<QrCodeService>();
+builder.Services.AddScoped<EventService>();
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddScoped<IEmailSender, EmailSender>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

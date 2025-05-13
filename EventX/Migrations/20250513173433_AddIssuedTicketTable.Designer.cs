@@ -4,6 +4,7 @@ using EventX.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EventX.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250513173433_AddIssuedTicketTable")]
+    partial class AddIssuedTicketTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -711,7 +714,7 @@ namespace EventX.Migrations
             modelBuilder.Entity("EventX.Models.IssuedTicket", b =>
                 {
                     b.HasOne("EventX.Models.OrderDetail", "OrderDetail")
-                        .WithMany("IssuedTickets")
+                        .WithMany()
                         .HasForeignKey("OrderDetailID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -861,11 +864,6 @@ namespace EventX.Migrations
             modelBuilder.Entity("EventX.Models.Order", b =>
                 {
                     b.Navigation("OrderDetails");
-                });
-
-            modelBuilder.Entity("EventX.Models.OrderDetail", b =>
-                {
-                    b.Navigation("IssuedTickets");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,0 +1,88 @@
+﻿@model EventX.ViewModels.TicketListViewModel
+<style>
+    .table {
+        width: 100%;
+        margin: 20px 0;
+        border-collapse: collapse;
+    }
+
+        .table th, .table td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .table td {
+            font-size: 1rem;
+        }
+
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        padding: 10px;
+    }
+
+    .page-link {
+        padding: 5px 15px;
+        border: 1px solid #007bff;
+        border-radius: 5px;
+        color: #007bff;
+        text-decoration: none;
+    }
+
+        .page-link:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+</style>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Họ tên</th>
+            <th>Email</th>
+            <th>Số điện thoại</th>
+            <th>Tên vé</th>
+            <th>Số lượng</th>
+            <th>Giá</th>
+            <th>Tổng tiền</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var orderDetail in Model.Tickets)
+        {
+            var totalAmount = orderDetail.Price * orderDetail.Quantity;  // Tính tổng tiền
+
+            <tr>
+                <td>@orderDetail.Order?.FullName</td>  
+                <td>@orderDetail.Order?.Email</td>  
+                <td>@orderDetail.Order?.PhoneNumber</td>  
+                <td>@orderDetail.Ticket.Description</td>
+                <td>@orderDetail.Quantity</td>
+                <td>@orderDetail.Price.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</td>
+               
+                <td>@totalAmount.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</td>  <!-- Cột tổng tiền -->
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div id="ticketPagination" class="d-flex gap-3">
+    @if (Model.CurrentPage > 1)
+    {
+        <a href="javascript:void(0);" class="page-link" data-page="@(@Model.CurrentPage - 1)">Trước</a>
+    }
+
+    <span>Trang @Model.CurrentPage của @Model.TotalPages</span>
+
+    @if (Model.CurrentPage < Model.TotalPages)
+    {
+        <a href="javascript:void(0);" class="page-link" data-page="@(@Model.CurrentPage + 1)">Sau</a>
+    }
+</div>

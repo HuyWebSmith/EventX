@@ -1,10 +1,10 @@
 ﻿@using EventX.Enums
 @using EventX.Extensions
-@model EventX.ViewModels.OrderListViewModel
+@model EventX.ViewModels.CombinedViewModel
+
 @{
     ViewData["Title"] = "Home Page";
     Layout = "~/Areas/Host/Views/Shared/_HostLayout.cshtml";
-
 }
 
 <div class="tabs">
@@ -16,104 +16,131 @@
             <a class="nav-link" id="ticket-tab" data-bs-toggle="tab" href="#ticket" role="tab" aria-controls="ticket" aria-selected="false">Vé</a>
         </li>
     </ul>
+    <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex justify-content-between align-items-center gap-2">
+            <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm..." style="height: 35px;">  <!-- Điều chỉnh chiều cao -->
+            <button id="searchButton" class="btn btn-outline-secondary" style="height: 35px;">Tìm </button>
+        </div>
+
+        <button id="sendConfirmationEmail" class="btn btn-primary mt-2">Gửi email xác nhận</button>
+    </div>
+
+
+    <!-- Đảm bảo chỉ có các phần tử liên quan trong tab -->
     <div class="tab-content" id="orderTabsContent">
         <!-- Tab Đơn hàng -->
         <div class="tab-pane fade show active" id="order" role="tabpanel" aria-labelledby="order-tab">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Mã đơn hàng</th>
-                        <th>Khách hàng</th>
-                        <th>Trạng thái</th>
-                        <th>Tổng tiền</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var order in Model.Orders)
-                    {
-                        <tr>
-                            <td>#@order.OrderID</td>
-                            <td>@order.ApplicationUser.FullName</td>
-                            <td>@order.OrderStatus.GetDisplayName()</td>
-                            <td>@order.TotalAmount.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</td>
-
-                          
-                        </tr>
-                    }
-                </tbody>
-            </table>
-
-            <!-- Phân trang -->
-            <div>
-                @if (Model.CurrentPage > 1)
-                {
-                    <a href="@Url.Action("Index", "Order", new { eventId = Model.EventID, page = Model.CurrentPage - 1 })">Trước</a>
-                }
-
-                <span>Trang @Model.CurrentPage của @Model.TotalPages</span>
-
-                @if (Model.CurrentPage < Model.TotalPages)
-                {
-                    <a href="@Url.Action("Index", "Order", new { eventId = Model.EventID, page = Model.CurrentPage + 1 })">Sau</a>
-                }
+            <div id="orderContent">
+                @Html.Partial("_OrderList", Model.OrderViewModel)
             </div>
         </div>
-
         <!-- Tab Vé -->
         <div class="tab-pane fade" id="ticket" role="tabpanel" aria-labelledby="ticket-tab">
-            <table class="table text-center">
-                <thead>
-                    <tr>
-                        <th scope="col">Họ và tên</th>
-                        <th scope="col">Email</th>
-                        <th scope="col">Điện thoại</th>
-                        <th scope="col">Loại vé</th>
-                        <th scope="col">Giá</th>
-                        <th scope="col">Số lượng</th>
-                        <th scope="col">Tổng</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var order in Model.Orders)
-                    {
-                        foreach (var orderDetail in order.OrderDetails)
-                        {
-                            // Tính tổng tiền cho mỗi dòng (Số lượng * Giá)
-                            var totalAmount = orderDetail.Quantity * orderDetail.Ticket.Price;
-
-                            <tr>
-                                <td>@order.FullName</td>
-                                <td>@order.Email</td>
-                                <td>@order.PhoneNumber</td>
-                                <td>@orderDetail.Ticket.Description</td>
-                                <td>@orderDetail.Ticket.Price.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</td>
-                                <td>@orderDetail.Quantity</td> <!-- Cột số lượng -->
-                                <td>@totalAmount.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</td> <!-- Cột số tiền -->
-                            </tr>
-                        }
-                    }
-                </tbody>
-                
-            </table>
-
+            <div id="ticketContent">
+                @Html.Partial("_TicketList", Model.TicketViewModel)
+            </div>
         </div>
     </div>
 </div>
 
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.0/js/bootstrap.bundle.min.js"></script>
+
 <script>
-    $(document).ready(function () {
-        // Tải danh sách vé khi click vào tab Vé
-        $('#ticket-tab').on('click', function () {
-            var eventId = @Model.EventID;
+       $(document).ready(function () {
+        // Hàm tải trang với Ajax
+        function loadPage(page, tabType) {
+            var eventId = @Model.EventID;  // Sử dụng EventID từ CombinedViewModel
+
             $.ajax({
-                url: '@Url.Action("TicketDetails", "Order")',
+                url: '@Url.Action("Index", "Order")',  // Gọi đúng action
                 type: 'GET',
-                data: { eventId: eventId },
+                data: {
+                    eventId: eventId,
+                    page: page,
+                    type: tabType === 'order' ? 'orders' : 'tickets'  // 👈 THÊM DÒNG NÀY!
+                },
+
                 success: function (data) {
-                    $('#ticketList').html(data);
+                    if (tabType === 'order') {
+                        $('#orderContent').html(data);  // Cập nhật phần đơn hàng
+                    }
+                    else if (tabType === 'ticket') {
+                        $('#ticketContent').html(data);  // Cập nhật phần vé
+                    }
+
+                     if (selectAllChecked) {
+                        $('#selectAll').prop('checked', true); // Chọn tất cả
+                        $('.order-checkbox').prop('checked', true); // Chọn tất cả các checkbox
+                    } else {
+                        $('#selectAll').prop('checked', false); // Bỏ chọn Select All
+                        $('.order-checkbox').prop('checked', false); // Bỏ chọn các checkbox
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error loading page:', error);
                 }
             });
+        }
+          // Sự kiện chọn/deselect tất cả checkbox
+        $('#selectAll').change(function () {
+            selectAllChecked = $(this).prop('checked'); // Lưu trạng thái Select All
+            $('.order-checkbox').prop('checked', selectAllChecked); // Chọn hoặc bỏ chọn tất cả checkbox
+        });
+
+        // Sự kiện thay đổi trên checkbox đơn hàng
+        $('.order-checkbox').change(function () {
+            if ($('.order-checkbox:checked').length === $('.order-checkbox').length) {
+                $('#selectAll').prop('checked', true); // Nếu tất cả được chọn thì chọn Select All
+            } else {
+                $('#selectAll').prop('checked', false); // Nếu không thì bỏ chọn Select All
+            }
+        });
+        // Sự kiện cho phân trang đơn hàng
+        $(document).on('click', '#orderPagination .page-link', function () {
+            var page = $(this).attr('data-page');
+            if (page) {
+                loadPage(page, 'order');  // Gọi loadPage cho tab "order"
+            }
+        });
+
+        // Sự kiện cho phân trang vé
+        $(document).on('click', '#ticketPagination .page-link', function () {
+            var page = $(this).attr('data-page');
+            if (page) {
+                loadPage(page, 'ticket');  // Gọi loadPage cho tab "ticket"
+            }
         });
     });
-</script>
 
+               $('#sendConfirmationEmail').click(function () {
+        // Lấy danh sách OrderID đã chọn từ các checkbox trong OrderList
+        var selectedOrderIds = $('.order-checkbox:checked').map(function () {
+            return $(this).data('order-id'); // Lấy OrderID từ thuộc tính data-order-id
+        }).get();
+
+        // Kiểm tra nếu không có đơn hàng nào được chọn
+        if (selectedOrderIds.length === 0) {
+            alert("Vui lòng chọn ít nhất một đơn hàng.");
+            return;
+        }
+
+        // Gửi AJAX để gửi email
+        $.ajax({
+            url: '/Host/Order/SendConfirmationEmails', // URL đến action SendConfirmationEmails
+            method: 'POST',
+           data: JSON.stringify(selectedOrderIds), // Gửi danh sách OrderID
+            contentType: 'application/json',
+            success: function (res) {
+                alert(res.message); // Hiển thị thông báo nếu gửi email thành công
+            },
+            error: function (err) {
+                alert("Có lỗi xảy ra khi gửi email!"); // Hiển thị thông báo lỗi nếu có sự cố
+            }
+        });
+    });
+
+
+
+</script>

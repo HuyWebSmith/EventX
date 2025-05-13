@@ -1,9 +1,13 @@
 ﻿using EventX.Enums;
+using EventX.Extensions;
 using EventX.Models;
+using EventX.Services;
+using EventX.Services.Email;
 using EventX.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace EventX.Areas.Host.Controllers
 {
@@ -12,22 +16,19 @@ namespace EventX.Areas.Host.Controllers
     public class OrderController : Controller
     {
         private readonly ApplicationDbContext _context;
-        //private readonly IEmailService _emailService; // Giả sử bạn đã có dịch vụ gửi email
+        private readonly IEmailSender _emailSender;
 
-        private const int PageSize = 10; // Số đơn hàng hiển thị trên mỗi trang
 
-        public OrderController(ApplicationDbContext context)
+        public OrderController(ApplicationDbContext context, IEmailSender emailSender)
         {
             _context = context;
-            //_emailService = emailService;
+            _emailSender = emailSender;
         }
-
-        public IActionResult Index(int eventId, int page = 1)
+        public IActionResult Index(int eventId, int page = 1, string type = "orders")
         {
-            // Số đơn hàng hiển thị trên mỗi trang
             int pageSize = 10;
 
-            // Truy vấn đơn hàng có ít nhất 1 vé thuộc EventID cần tìm
+            // Truy vấn đơn hàng
             var query = _context.Order
                 .Include(o => o.ApplicationUser)
                 .Include(o => o.OrderDetails)
@@ -35,26 +36,74 @@ namespace EventX.Areas.Host.Controllers
                 .Where(o => o.OrderDetails.Any(od => od.Ticket != null && od.Ticket.EventID == eventId))
                 .OrderByDescending(o => o.OrderID);
 
-            // Tính tổng số đơn hàng và tổng số trang
-            var totalOrders = query.Count();
-            var totalPages = (int)Math.Ceiling(totalOrders / (double)pageSize);
+            // Truy vấn vé
+            var query1 = _context.OrderDetail
+                .Include(od => od.Ticket)  // Bao gồm thông tin Ticket
+                .Where(od => od.Ticket.EventID == eventId)  // Lọc theo EventID của Ticket
+                .OrderByDescending(od => od.TicketID);
 
-            // Lấy danh sách đơn hàng với phân trang
+            // Tổng số đơn hàng và vé
+            var totalOrders = query.Count();
+            var totalTickets = query1.Count();
+            var totalPages = (int)Math.Ceiling(totalOrders / (double)pageSize);
+            var totalPages1 = (int)Math.Ceiling(totalTickets / (double)pageSize);
+
+            // Lấy danh sách đơn hàng
             var orders = query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToList();
 
-            var viewModel = new OrderListViewModel
+            // Lấy danh sách vé (thực tế là OrderDetail)
+            var tickets = query1
+                .Where(od => od.Order != null && od.Order.OrderStatus != null)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                 .Include(od => od.Order)
+                .ToList(); 
+
+            // ViewModel cho đơn hàng
+            var viewModelOrder = new OrderListViewModel
             {
-                Orders = orders,
+                Orders = orders, 
                 CurrentPage = page,
                 TotalPages = totalPages,
                 EventID = eventId
             };
 
-            return View(viewModel);
+            // ViewModel cho vé
+            var viewModelTicket = new TicketListViewModel
+            {
+                Tickets = tickets,
+                CurrentPage = page,
+                TotalPages = totalPages1,
+                EventID = eventId
+            };
+
+            // Nếu yêu cầu Ajax, trả về các PartialView riêng biệt cho mỗi phần
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                if (type == "orders")
+                {
+                    return PartialView("_OrderList", viewModelOrder);
+                }
+                else if (type == "tickets")
+                {
+                    return PartialView("_TicketList", viewModelTicket);
+                }
+            }
+
+            // Trả về toàn bộ trang khi không phải yêu cầu Ajax
+            var combinedViewModel = new CombinedViewModel
+            {
+                OrderViewModel = viewModelOrder,
+                TicketViewModel = viewModelTicket,
+                EventID = eventId
+            };
+
+            return View(combinedViewModel);
         }
+
 
 
         public IActionResult TicketDetails(int eventId)
@@ -114,42 +163,72 @@ namespace EventX.Areas.Host.Controllers
             return RedirectToAction("Index");
         }
 
-        // Gửi email khi duyệt đơn hàng
-        public IActionResult SendEmail(int orderId)
+        
+        [HttpPost]
+        public async Task<IActionResult> SendConfirmationEmails([FromBody] List<int> orderIds)
         {
-            var order = _context.Order.FirstOrDefault(o => o.OrderID == orderId);
-            if (order != null)
+            // Kiểm tra nếu orderIds có dữ liệu hay không
+            if (orderIds == null || orderIds.Count == 0)
             {
-                // Tạo nội dung email
-                var emailContent = GenerateEmailContent(order);
-                // Gửi email cho khách hàng
-                //_emailService.SendEmail(order.ApplicationUser.Email, "Xác nhận thanh toán", emailContent);
+                return BadRequest("Không có đơn hàng nào được chọn.");
             }
 
-            // Sau khi gửi email, quay lại danh sách đơn hàng
-            return RedirectToAction("Index");
+            foreach (var orderId in orderIds)
+            {
+                var order = await _context.OrderDetail
+                .Include(o => o.Order)
+                .Include(od => od.Ticket)
+                .Include(o => o.IssuedTickets)
+                .Where(o => o.OrderID == orderId)
+                .ToListAsync();
+
+
+                if (order == null || order.Count == 0 || string.IsNullOrEmpty(order[0].Order.Email))
+                    continue;
+
+                foreach (var orderDetail in order)
+                {
+                    foreach (var issued in orderDetail.IssuedTickets)
+                    {
+                        var events = await _context.Event
+                    .Include(e => e.Locations) // Load locations kèm theo event
+                    .Where(e => e.EventID == orderDetail.Ticket.EventID) // Lọc theo EventID
+                    .FirstOrDefaultAsync(); // Lấy sự kiện đầu tiên khớp
+
+                        var qrService = new QrCodeService();
+                        // Tạo QR code từ mã
+                        var qrImage = qrService.GenerateQrImage(issued.TicketCode);
+
+                        // Gửi email
+                        if (orderDetail.Ticket?.Event != null)
+                        {
+                            await _emailSender.SendEmailWithQrAsync(
+                                toEmail: orderDetail.Order.Email,
+                                subject: "Thông tin vé sự kiện",
+                                ticketCode: issued.TicketCode,
+                                qrImage: qrImage, // Đảm bảo qrImageBytes là byte[] của mã QR
+                                eventName: events.Title,
+                                eventId: events.EventID,
+                                eventDate: orderDetail.Ticket.StartDate.ToString(),
+                                ticketPrice: orderDetail.Ticket.Price,
+                                quantity: orderDetail.Quantity,
+                                totalAmount: orderDetail.Order.TotalAmount,
+                                eventLocation: events.Locations.First().Name + "," + events.Locations.First().FullAddress + "," + events.Locations.First().Ward + "," + events.Locations.First().District + "," + events.Locations.First().City,
+                                ticketName: orderDetail.Ticket.Description.ToString()
+                            );
+                        }
+                        else
+                        {
+                            // Xử lý trường hợp Event là null, có thể trả về thông báo lỗi hoặc log thông tin.
+                            Console.WriteLine("Event không tồn tại!");
+                        }
+
+                    }
+                }
+            }
+
+            return Json(new { message = "Gửi email thành công!" });
         }
 
-        // Tạo nội dung email cho việc xác nhận thanh toán
-        private string GenerateEmailContent(Order order)
-        {
-            var qrCode = GenerateQrCode(order);  // Giả sử bạn có phương thức tạo mã QR
-
-            return $@"
-                <h2>Đơn hàng đã được xác nhận</h2>
-                <p>Mã đơn hàng: {order.OrderID}</p>
-                <p>Tên khách hàng: {order.ApplicationUser.FullName}</p>
-                <p>Tổng tiền: {order.TotalAmount}</p>
-                <p>Trạng thái: Đã thanh toán</p>
-                <img src='data:image/png;base64,{qrCode}' alt='QR Code'/>
-            ";
-        }
-
-        // Giả sử có một phương thức tạo mã QR (bạn có thể dùng thư viện như QRCoder)
-        private string GenerateQrCode(Order order)
-        {
-            // Tạo mã QR (Giả sử bạn có một phương thức mã hóa QR cho đơn hàng)
-            return "base64-encoded-qrcode-string"; // Giả lập chuỗi mã QR base64
-        }
     }
 }
