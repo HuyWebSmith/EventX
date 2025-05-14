@@ -133,7 +133,7 @@
            data: JSON.stringify(selectedOrderIds), // Gửi danh sách OrderID
             contentType: 'application/json',
             success: function (res) {
-                alert(res.message); // Hiển thị thông báo nếu gửi email thành công
+                location.reload();
             },
             error: function (err) {
                 alert("Có lỗi xảy ra khi gửi email!"); // Hiển thị thông báo lỗi nếu có sự cố

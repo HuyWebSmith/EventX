@@ -404,6 +404,9 @@
                         {
                             <div class="ticket-item border rounded p-3 mb-3">
                                 <h5>Ticket @(index + 1)</h5>
+                                <input type="hidden" name="Tickets[@index].TicketID" value="@ticket.TicketID" />
+                                <input type="hidden" name="Tickets[@index].TicketCode" value="@ticket.TicketCode" />
+
                                 <div class="form-group">
                                     <label>Loại vé</label>
                                     <select class="form-control" name="Tickets[@index].Type" required>

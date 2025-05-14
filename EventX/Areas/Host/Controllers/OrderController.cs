@@ -163,11 +163,10 @@ namespace EventX.Areas.Host.Controllers
             return RedirectToAction("Index");
         }
 
-        
+
         [HttpPost]
         public async Task<IActionResult> SendConfirmationEmails([FromBody] List<int> orderIds)
         {
-            // Kiểm tra nếu orderIds có dữ liệu hay không
             if (orderIds == null || orderIds.Count == 0)
             {
                 return BadRequest("Không có đơn hàng nào được chọn.");
@@ -175,60 +174,80 @@ namespace EventX.Areas.Host.Controllers
 
             foreach (var orderId in orderIds)
             {
-                var order = await _context.OrderDetail
-                .Include(o => o.Order)
-                .Include(od => od.Ticket)
-                .Include(o => o.IssuedTickets)
-                .Where(o => o.OrderID == orderId)
-                .ToListAsync();
+                // Lấy tất cả OrderDetails thuộc đơn này
+                var orderDetails = await _context.OrderDetail
+                    .Include(od => od.Order)
+                    .Include(od => od.Ticket)
+                    .Include(od => od.IssuedTickets)
+                    .Where(od => od.OrderID == orderId)
+                    .ToListAsync();
 
-
-                if (order == null || order.Count == 0 || string.IsNullOrEmpty(order[0].Order.Email))
+                // Nếu không có hoặc email trống => bỏ qua
+                if (orderDetails == null || !orderDetails.Any() || string.IsNullOrEmpty(orderDetails[0].Order.Email))
                     continue;
 
-                foreach (var orderDetail in order)
+                var order = orderDetails[0].Order;
+
+                // Nếu đã gửi mail rồi thì bỏ qua
+                if (order.IsEmailSent)
+                    continue;
+
+                foreach (var orderDetail in orderDetails)
                 {
                     foreach (var issued in orderDetail.IssuedTickets)
                     {
-                        var events = await _context.Event
-                    .Include(e => e.Locations) // Load locations kèm theo event
-                    .Where(e => e.EventID == orderDetail.Ticket.EventID) // Lọc theo EventID
-                    .FirstOrDefaultAsync(); // Lấy sự kiện đầu tiên khớp
+                        // Tìm sự kiện
+                        var ev = await _context.Event
+                            .Include(e => e.Locations)
+                            .FirstOrDefaultAsync(e => e.EventID == orderDetail.Ticket.EventID);
 
+                        if (ev == null || orderDetail.Ticket == null)
+                            continue;
+
+                        // Cập nhật số lượng vé đã bán
+                        
+
+                        // Tạo mã QR cho vé
                         var qrService = new QrCodeService();
-                        // Tạo QR code từ mã
                         var qrImage = qrService.GenerateQrImage(issued.TicketCode);
 
-                        // Gửi email
-                        if (orderDetail.Ticket?.Event != null)
-                        {
-                            await _emailSender.SendEmailWithQrAsync(
-                                toEmail: orderDetail.Order.Email,
-                                subject: "Thông tin vé sự kiện",
-                                ticketCode: issued.TicketCode,
-                                qrImage: qrImage, // Đảm bảo qrImageBytes là byte[] của mã QR
-                                eventName: events.Title,
-                                eventId: events.EventID,
-                                eventDate: orderDetail.Ticket.StartDate.ToString(),
-                                ticketPrice: orderDetail.Ticket.Price,
-                                quantity: orderDetail.Quantity,
-                                totalAmount: orderDetail.Order.TotalAmount,
-                                eventLocation: events.Locations.First().Name + "," + events.Locations.First().FullAddress + "," + events.Locations.First().Ward + "," + events.Locations.First().District + "," + events.Locations.First().City,
-                                ticketName: orderDetail.Ticket.Description.ToString()
-                            );
-                        }
-                        else
-                        {
-                            // Xử lý trường hợp Event là null, có thể trả về thông báo lỗi hoặc log thông tin.
-                            Console.WriteLine("Event không tồn tại!");
-                        }
+                        // Gửi email xác nhận
+                        await _emailSender.SendEmailWithQrAsync(
+                            toEmail: order.Email,
+                            subject: "Thông tin vé sự kiện",
+                            ticketCode: issued.TicketCode,
+                            qrImage: qrImage,
+                            eventName: ev.Title,
+                            eventId: ev.EventID,
+                            eventDate: orderDetail.Ticket.StartDate.ToString(),
+                            ticketPrice: orderDetail.Ticket.Price,
+                            quantity: orderDetail.Quantity,
+                            totalAmount: order.TotalAmount,
+                            eventLocation: $"{ev.Locations.First().Name}, {ev.Locations.First().FullAddress}, {ev.Locations.First().Ward}, {ev.Locations.First().District}, {ev.Locations.First().City}",
+                            ticketName: orderDetail.Ticket.Description
+                        );
+                    }
+                    orderDetail.Ticket.Sold += orderDetail.Quantity;
 
+                    // Kiểm tra nếu số vé đã bán đủ số lượng thì đổi trạng thái vé thành hết vé
+                    if (orderDetail.Ticket.Sold >= orderDetail.Ticket.Quantity)
+                    {
+                        orderDetail.Ticket.TrangThai = TicketStatus.HetVe;  // Thay đổi trạng thái vé
                     }
                 }
+
+                // Sau khi gửi xong hết mail cho đơn hàng này => đánh dấu đã gửi
+                order.IsEmailSent = true;
             }
 
+            // Lưu lại thay đổi trong cơ sở dữ liệu
+            await _context.SaveChangesAsync();
+
+            TempData["success"] = "Gửi email thành công";
             return Json(new { message = "Gửi email thành công!" });
         }
+
+
 
     }
 }

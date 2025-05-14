@@ -1,4 +1,5 @@
-﻿using EventX.Models;
+﻿using EventX.Enums;
+using EventX.Models;
 using EventX.Repositories;
 using EventX.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -64,12 +65,21 @@ namespace EventX.Controllers
             }
 
             var eventDetails = await _context.Event
-                .Include(e => e.Category)         // Lấy thông tin thể loại sự kiện
-                .Include(e => e.EventImages)      // Lấy danh sách hình ảnh sự kiện
-                .Include(e => e.Tickets)          // Lấy danh sách vé sự kiện
-                .Include(e => e.Locations)        // Lấy thông tin địa điểm
-                .FirstOrDefaultAsync(e => e.EventID == eventId);  // Tìm sự kiện theo eventId
+            .Include(e => e.Category)
+            .Include(e => e.EventImages)
+            .Include(e => e.Tickets)
+            .Include(e => e.PaymentInfos)
+            .Include(e => e.RedInvoices)
+            .Include(e => e.Locations)
+            .FirstOrDefaultAsync(e => e.EventID == eventId);
 
+            // Sau khi load xong thì lọc vé
+            if (eventDetails != null)
+            {
+                eventDetails.Tickets = eventDetails.Tickets
+                    .Where(t => t.TrangThai != TicketStatus.NgungBan)
+                    .ToList();
+            }
             if (eventDetails != null)
             {
                 eventDetails.Description = HttpUtility.HtmlDecode(eventDetails.Description);

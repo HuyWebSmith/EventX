@@ -34,6 +34,11 @@ namespace EventX.Models
                 .WithMany() // Nếu Category có mối quan hệ ngược lại, bạn có thể thay đổi nó
                 .HasForeignKey(e => e.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict); // Không xóa Event khi xóa Category
+            modelBuilder.Entity<OrderDetail>()
+               .HasOne(od => od.Ticket)
+               .WithMany()  // Đảm bảo Ticket không có quan hệ ngược lại
+               .HasForeignKey(od => od.TicketID)
+               .OnDelete(DeleteBehavior.Restrict);
         }
 
     }

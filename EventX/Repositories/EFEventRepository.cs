@@ -1,4 +1,5 @@
-﻿using EventX.Models;
+﻿using EventX.Enums;
+using EventX.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventX.Repositories
@@ -68,9 +69,22 @@ namespace EventX.Repositories
 
         public async Task<Event> GetEventWithTicketsAsync(int eventId)
         {
-            return await _context.Event
-                .Include(e => e.Tickets) // load kèm vé
+            var evt = await _context.Event
+                .Include(e => e.Tickets)
+                .Include(e => e.Locations)
+                .Include(e => e.Category)
                 .FirstOrDefaultAsync(e => e.EventID == eventId);
+
+            // Lọc vé sau khi lấy xong
+            if (evt != null)
+            {
+                evt.Tickets = evt.Tickets
+                    .Where(t => t.TrangThai != TicketStatus.NgungBan)
+                    .ToList();
+            }
+
+            return evt;
         }
+
     }
 }

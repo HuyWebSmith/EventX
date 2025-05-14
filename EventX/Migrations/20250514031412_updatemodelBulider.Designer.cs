@@ -4,6 +4,7 @@ using EventX.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EventX.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250514031412_updatemodelBulider")]
+    partial class updatemodelBulider
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -334,9 +337,6 @@ namespace EventX.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsEmailSent")
-                        .HasColumnType("bit");
-
                     b.Property<int>("OrderStatus")
                         .HasColumnType("int");
 
@@ -375,7 +375,7 @@ namespace EventX.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<int>("TicketID")
+                    b.Property<int?>("TicketID")
                         .HasColumnType("int");
 
                     b.HasKey("OrderDetailID");
@@ -753,8 +753,7 @@ namespace EventX.Migrations
                     b.HasOne("EventX.Models.Ticket", "Ticket")
                         .WithMany()
                         .HasForeignKey("TicketID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Order");
 

@@ -159,8 +159,9 @@ namespace EventX.Areas.Host.Controllers
                         // Thêm vào cơ sở dữ liệu
                         _context.RedInvoices.Add(redInvoice);
                         await _context.SaveChangesAsync();
+                        
                     }
-
+                    TempData["success"] = "Đã gửi yêu cầu cho Admin";
                     // Quay lại trang Index
                     return RedirectToAction("Index");
                 }
@@ -186,6 +187,7 @@ namespace EventX.Areas.Host.Controllers
                 foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
                 {
                     Console.WriteLine($"Error: {error.ErrorMessage}");
+                    TempData["success"] = $"{error.ErrorMessage}";
                 }
                 return View(model);
             }
@@ -241,13 +243,21 @@ namespace EventX.Areas.Host.Controllers
             }
 
             var eventDetails = await _context.Event
-                .Include(e => e.Category)         // Lấy thông tin thể loại sự kiện
-                .Include(e => e.EventImages)      // Lấy danh sách hình ảnh sự kiện
-                .Include(e => e.Tickets)          // Lấy danh sách vé sự kiện
-                .Include(e => e.PaymentInfos)     // Lấy thông tin thanh toán
-                .Include(e => e.RedInvoices)      // Lấy thông tin hóa đơn đỏ
-                .Include(e => e.Locations)        // Lấy thông tin địa điểm
-                .FirstOrDefaultAsync(e => e.EventID == eventId);  // Tìm sự kiện theo eventId
+            .Include(e => e.Category)
+            .Include(e => e.EventImages)
+            .Include(e => e.Tickets)
+            .Include(e => e.PaymentInfos)
+            .Include(e => e.RedInvoices)
+            .Include(e => e.Locations)
+            .FirstOrDefaultAsync(e => e.EventID == eventId);
+
+            // Sau khi load xong thì lọc vé
+            if (eventDetails != null)
+            {
+                eventDetails.Tickets = eventDetails.Tickets
+                    .Where(t => t.TrangThai != TicketStatus.NgungBan)
+                    .ToList();
+            }
 
             if (eventDetails != null)
             {
@@ -265,9 +275,10 @@ namespace EventX.Areas.Host.Controllers
             {
                 eventItem.Status = EventStatus.Cancelled; // Thay đổi trạng thái sự kiện
                 _context.SaveChanges(); // Lưu thay đổi
-                return Json(new { success = true }); // Trả về kết quả thành công
+                TempData["success"] = "Hủy sự kiện thành công";
+                return Json(new { success = true }); 
             }
-            return Json(new { success = false }); // Trường hợp không tìm thấy sự kiện
+            return Json(new { success = false }); //
         }
 
 
@@ -392,46 +403,36 @@ namespace EventX.Areas.Host.Controllers
                     }
 
 
-                    foreach (var ticket in model.Tickets)
+                    if (tickets == null || !tickets.Any())
                     {
-                        var ticketTypeString = ticket.Type.ToString();
-
-                        // Kiểm tra xem vé đã có trong hệ thống chưa, nếu có thì cập nhật, nếu không thì tạo mới
-                        var existingTicket = eventEntity.Tickets.FirstOrDefault(t => t.TicketCode == ticket.TicketCode);
-
-                        if (existingTicket != null)
+                        var existingTickets = eventEntity.Tickets.Where(t => t.TrangThai != TicketStatus.NgungBan).ToList();
+                        _context.Tickets.RemoveRange(existingTickets); // Xóa hết vé cũ
+                    }
+                    else
+                    {
+                        // Nếu có vé mới, xử lý thêm hoặc cập nhật vé
+                        foreach (var ticket in tickets)
                         {
-                            // Cập nhật thông tin của vé nếu đã tồn tại
-                            existingTicket.Type = ticket.Type;
-                            existingTicket.Price = ticket.Price;
-                            existingTicket.Quantity = ticket.Quantity;
-                            existingTicket.TicketCode = ticket.TicketCode;
-                            existingTicket.EventID = eventEntity.EventID;
-                            existingTicket.Event = eventEntity;  // Cập nhật lại sự kiện nếu cần
-                        }
-                        else
-                        {
-                            // Nếu vé chưa tồn tại, tạo vé mới
-                            if (string.IsNullOrEmpty(ticket.TicketCode))
+                            var existingTicket = eventEntity.Tickets.FirstOrDefault(t => t.TicketCode == ticket.TicketCode);
+
+                            if (existingTicket != null)
                             {
-                                ticket.TicketCode = $"TICKET-{ticketTypeString}{Guid.NewGuid().ToString("N").Substring(0, 8)}";
+                                existingTicket.Type = ticket.Type;
+                                existingTicket.Price = ticket.Price;
+                                existingTicket.Quantity = ticket.Quantity;
+  
+                                existingTicket.Description = ticket.Description;
                             }
-                            ticket.Event = eventEntity; // Gán sự kiện cho vé
-                            ticket.EventID = eventEntity.EventID;
+                            else
+                            {
+                                // Nếu không có vé, thêm mới
 
-                            eventEntity.Tickets.Add(ticket);  // Thêm vé mới vào danh sách
+                                ticket.EventID = eventEntity.EventID;
+                                _context.Tickets.Add(ticket); // Thêm vé mới vào sự kiện
+                            }
                         }
                     }
 
-                    // Xóa vé nếu chúng không còn trong danh sách model.Tickets
-                    var ticketsToDelete = eventEntity.Tickets
-                        .Where(t => !model.Tickets.Any(m => m.TicketCode == t.TicketCode)) // tìm vé không có trong model
-                        .ToList();
-
-                    foreach (var ticket in ticketsToDelete)
-                    {
-                        eventEntity.Tickets.Remove(ticket); // Xóa vé khỏi danh sách
-                    }
 
 
                     await _context.SaveChangesAsync(); // Make sure to save the changes after adding/updating tickets
@@ -476,7 +477,7 @@ namespace EventX.Areas.Host.Controllers
 
                     // Lưu thay đổi vào cơ sở dữ liệu
                     await _context.SaveChangesAsync();
-
+                    TempData["success"] = "Cập nhật thành công sự kiện sẽ trở về trạng thái chờ duyệt";
                     return RedirectToAction("Index"); // Quay lại trang danh sách sự kiện
                 }
                 catch (Exception ex)

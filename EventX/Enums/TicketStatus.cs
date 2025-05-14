@@ -4,6 +4,7 @@
     {
         ConVe,      // Còn vé
         HetVe,      // Hết vé
-        HetHan      // Hết hạn
+        HetHan,      // Hết hạn
+        NgungBan
     }
 }

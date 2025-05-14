@@ -265,12 +265,6 @@ namespace EventX.Controllers
                                 _context.IssuedTickets.Add(issuedTicket);
                             }
 
-                            detail.Ticket.Sold += detail.Quantity;
-
-                            if (detail.Ticket.Sold >= detail.Ticket.Quantity)
-                            {
-                                detail.Ticket.TrangThai = TicketStatus.HetVe;
-                            }
                         }
 
                         await _context.SaveChangesAsync();

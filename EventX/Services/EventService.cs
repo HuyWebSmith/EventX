@@ -38,8 +38,20 @@ public class EventService
             eventItem.Status = EventStatus.Ongoing;
         }
 
+        // Cập nhật trạng thái "Scheduled" cho mọi sự kiện chưa có vé
+        var eventsWithNoTickets = _context.Event
+            .Where(e => !_context.Tickets.Any(t => t.EventID == e.EventID)
+                        && e.Status != EventStatus.Scheduled)
+            .ToList();
+
+        foreach (var eventItem in eventsWithNoTickets)
+        {
+            eventItem.Status = EventStatus.Scheduled;
+        }
+
+
         // Lưu lại các thay đổi vào cơ sở dữ liệu
-        if (completedEvents.Any() || ongoingEvents.Any())
+        if (completedEvents.Any() || ongoingEvents.Any() || eventsWithNoTickets.Any())
         {
             _context.SaveChanges();
         }

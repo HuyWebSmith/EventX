@@ -108,13 +108,22 @@
 
 
                     <div class="event-actions d-flex flex-row  gap-4 align-items-center justify-content-center  border-dark" style="background-color:#414652">
-                        <a href="@Url.Action("Index", "Order", new { eventId = 9 })">Xem đơn hàng</a>
+                        
                         <div>
-                            <a href="@Url.Action("Update", "Event", new { id = eventItem.EventID })" class="btn btn-sm border-0 btn-primary mb-2 mt-3" style="color: #FFFFFF; background-color:#414652;">
-                                <i class="fa-solid fa-pen d-block mb-2"></i>
-                                Chỉnh sửa
-                            </a>
+                            <a href="@Url.Action("Index", "Order", new { eventId = eventItem.EventID })" class="btn btn-sm border-0 btn-primary mb-2 mt-3" style="color: #FFFFFF; background-color:#414652;">
+                                <i class="fa-solid fa-clipboard-list d-block mb-2"></i>
+                                Đơn hàng
+                             </a>
                         </div>
+                        @if (eventItem.Status == EventStatus.Ongoing)
+                        {
+                            <div>
+                                <a href="@Url.Action("Update", "Event", new { id = eventItem.EventID })" class="btn btn-sm border-0 btn-primary mb-2 mt-3" style="color: #FFFFFF; background-color:#414652;">
+                                    <i class="fa-solid fa-pen d-block mb-2"></i>
+                                    Chỉnh sửa
+                                </a>
+                            </div>
+                        }
                         <div>
                             <a href="@Url.Action("Display", "Event", new { area = "Host", eventId = eventItem.EventID })" class="btn btn-sm border-0 btn-info text-white mb-2 mt-3" style="color: #FFFFFF; background-color:#414652;">
                                 <i class="fa-solid fa-info d-block mb-2"></i>
@@ -169,6 +178,7 @@
     <script>
                        $(document).ready(function () {
             var eventId; // Biến này lưu id sự kiện khi click nút hủy
+             var successMessage = '@TempData["success"]';
 
             // Khi bấm vào bất kỳ nút Hủy nào
             $('.btn-cancel').click(function () {
@@ -193,8 +203,6 @@
                             // Ẩn nút hủy sau khi đã hủy
                             const cancelButton = $(`.btn-cancel[data-event-id='${eventId}']`);
                             cancelButton.hide();
-
-                            alert('Đã hủy sự kiện thành công!');
                         } else {
                             alert('Có lỗi xảy ra khi hủy sự kiện!');
                         }

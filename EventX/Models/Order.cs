@@ -23,6 +23,7 @@ namespace EventX.Models
         public OrderStatus OrderStatus { get; set; } = OrderStatus.Pending;
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public bool IsEmailSent { get; set; } = false;
 
         // Quan hệ với IdentityUser
         [ForeignKey("UserID")]

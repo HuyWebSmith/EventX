@@ -57,13 +57,21 @@ namespace EventX.Areas.Admin.Controllers
             }
 
             var eventDetails = await _context.Event
-                .Include(e => e.Category)         // Lấy thông tin thể loại sự kiện
-                .Include(e => e.EventImages)      // Lấy danh sách hình ảnh sự kiện
-                .Include(e => e.Tickets)          // Lấy danh sách vé sự kiện
-                .Include(e => e.PaymentInfos)     // Lấy thông tin thanh toán
-                .Include(e => e.RedInvoices)      // Lấy thông tin hóa đơn đỏ
-                .Include(e => e.Locations)        // Lấy thông tin địa điểm
-                .FirstOrDefaultAsync(e => e.EventID == eventId);  // Tìm sự kiện theo eventId
+             .Include(e => e.Category)
+             .Include(e => e.EventImages)
+             .Include(e => e.Tickets)
+             .Include(e => e.PaymentInfos)
+             .Include(e => e.RedInvoices)
+             .Include(e => e.Locations)
+             .FirstOrDefaultAsync(e => e.EventID == eventId);
+
+            // Sau khi load xong thì lọc vé
+            if (eventDetails != null)
+            {
+                eventDetails.Tickets = eventDetails.Tickets
+                    .Where(t => t.TrangThai != TicketStatus.NgungBan)
+                    .ToList();
+            }
 
             if (eventDetails != null)
             {
