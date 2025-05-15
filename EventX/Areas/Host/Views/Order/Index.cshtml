@@ -6,27 +6,33 @@
     ViewData["Title"] = "Home Page";
     Layout = "~/Areas/Host/Views/Shared/_HostLayout.cshtml";
 }
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-H5Emcl9P8kZxOON2Zp2Y57v/1CR3+lqG+q5KZ62u0OvDQozlD4dQrmB3hRg4XkuS" crossorigin="anonymous">
 
 <div class="tabs">
-    <ul class="nav nav-tabs" id="orderTabs" role="tablist">
-        <li class="nav-item">
-            <a class="nav-link active" id="order-tab" data-bs-toggle="tab" href="#order" role="tab" aria-controls="order" aria-selected="true">Đơn hàng</a>
+    <ul class="nav nav-tabs d-flex" id="orderTabs" role="tablist" style="border-bottom: none;">
+        <li class="nav-item flex-fill text-center" role="presentation">
+            <a class="nav-link active" id="order-tab" data-bs-toggle="tab" href="#order" role="tab" aria-controls="order" aria-selected="true" style="border-radius: 0;">
+
+                Đơn hàng
+            </a>
         </li>
-        <li class="nav-item">
-            <a class="nav-link" id="ticket-tab" data-bs-toggle="tab" href="#ticket" role="tab" aria-controls="ticket" aria-selected="false">Vé</a>
+        <li class="nav-item flex-fill text-center" role="presentation">
+            <a class="nav-link" id="ticket-tab" data-bs-toggle="tab" href="#ticket" role="tab" aria-controls="ticket" aria-selected="false" style="border-radius: 0;">
+                Vé
+            </a>
+
         </li>
     </ul>
-    <div class="d-flex justify-content-between align-items-center">
-        <div class="d-flex justify-content-between align-items-center gap-2">
-            <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm..." style="height: 35px;">  <!-- Điều chỉnh chiều cao -->
-            <button id="searchButton" class="btn btn-outline-secondary" style="height: 35px;">Tìm </button>
+
+    <div class="d-flex justify-content-between align-items-center mt-3">
+        <div class="d-flex gap-2" style="flex-grow: 1; max-width: 400px;">
+            <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm mã đơn #" style="height: 35px;">
+            <button id="searchButton" class="btn btn-outline-secondary" style="height: 35px;">Tìm</button>
         </div>
 
-        <button id="sendConfirmationEmail" class="btn btn-primary mt-2">Gửi email xác nhận</button>
+        <button id="sendConfirmationEmail" class="btn btn-primary ms-3" style="height: 35px;">Gửi email xác nhận</button>
     </div>
 
-
-    <!-- Đảm bảo chỉ có các phần tử liên quan trong tab -->
     <div class="tab-content" id="orderTabsContent">
         <!-- Tab Đơn hàng -->
         <div class="tab-pane fade show active" id="order" role="tabpanel" aria-labelledby="order-tab">
@@ -43,14 +49,43 @@
     </div>
 </div>
 
+<style>
+    .nav-tabs .nav-link {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #495057;
+        padding: 10px 0;
+        transition: all 0.3s ease;
+    }
+
+        .nav-tabs .nav-link:hover {
+            background-color: #f8f9fa;
+            color: #0d6efd;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: #0d6efd;
+            background-color: transparent;
+            border-color: transparent transparent #0d6efd;
+        }
+
+    /* Đảm bảo nav-item flex-fill để mỗi tab chiếm 50% */
+    .nav-item.flex-fill {
+        flex: 1 1 50%;
+    }
+</style>
+
+
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.0/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 
 <script>
-       $(document).ready(function () {
+    var selectAllChecked = false;
+
+    $(document).ready(function () {
         // Hàm tải trang với Ajax
-        function loadPage(page, tabType) {
+        function loadPage(page, tabType, searchTerm = "") {
             var eventId = @Model.EventID;  // Sử dụng EventID từ CombinedViewModel
 
             $.ajax({
@@ -59,23 +94,23 @@
                 data: {
                     eventId: eventId,
                     page: page,
-                    type: tabType === 'order' ? 'orders' : 'tickets'  // 👈 THÊM DÒNG NÀY!
+                    type: tabType === 'order' ? 'orders' : 'tickets',
+                    searchTerm: searchTerm
                 },
 
                 success: function (data) {
                     if (tabType === 'order') {
                         $('#orderContent').html(data);  // Cập nhật phần đơn hàng
-                    }
-                    else if (tabType === 'ticket') {
+                    } else if (tabType === 'ticket') {
                         $('#ticketContent').html(data);  // Cập nhật phần vé
                     }
 
-                     if (selectAllChecked) {
-                        $('#selectAll').prop('checked', true); // Chọn tất cả
-                        $('.order-checkbox').prop('checked', true); // Chọn tất cả các checkbox
+                    if (selectAllChecked) {
+                        $('#selectAll').prop('checked', true);
+                        $('.order-checkbox').prop('checked', true);
                     } else {
-                        $('#selectAll').prop('checked', false); // Bỏ chọn Select All
-                        $('.order-checkbox').prop('checked', false); // Bỏ chọn các checkbox
+                        $('#selectAll').prop('checked', false);
+                        $('.order-checkbox').prop('checked', false);
                     }
                 },
                 error: function (xhr, status, error) {
@@ -83,64 +118,76 @@
                 }
             });
         }
-          // Sự kiện chọn/deselect tất cả checkbox
-        $('#selectAll').change(function () {
-            selectAllChecked = $(this).prop('checked'); // Lưu trạng thái Select All
-            $('.order-checkbox').prop('checked', selectAllChecked); // Chọn hoặc bỏ chọn tất cả checkbox
+
+        // Gán sự kiện click cho nút Tìm
+        $('#searchButton').click(function () {
+            var searchTerm = $('#searchInput').val();
+
+            // Tải lại cả 2 tab với từ khóa tìm kiếm
+            loadPage(1, 'order', searchTerm);
+            loadPage(1, 'ticket', searchTerm);
         });
 
-        // Sự kiện thay đổi trên checkbox đơn hàng
-        $('.order-checkbox').change(function () {
+        // Gán sự kiện chọn/deselect tất cả checkbox
+        $('#selectAll').change(function () {
+            selectAllChecked = $(this).prop('checked');
+            $('.order-checkbox').prop('checked', selectAllChecked);
+        });
+
+        // Sự kiện thay đổi checkbox đơn hàng
+        $(document).on('change', '.order-checkbox', function () {
             if ($('.order-checkbox:checked').length === $('.order-checkbox').length) {
-                $('#selectAll').prop('checked', true); // Nếu tất cả được chọn thì chọn Select All
+                $('#selectAll').prop('checked', true);
             } else {
-                $('#selectAll').prop('checked', false); // Nếu không thì bỏ chọn Select All
+                $('#selectAll').prop('checked', false);
             }
         });
-        // Sự kiện cho phân trang đơn hàng
+
+        // Sự kiện phân trang đơn hàng
         $(document).on('click', '#orderPagination .page-link', function () {
             var page = $(this).attr('data-page');
             if (page) {
-                loadPage(page, 'order');  // Gọi loadPage cho tab "order"
+                loadPage(page, 'order');
             }
         });
 
-        // Sự kiện cho phân trang vé
+        // Sự kiện phân trang vé
         $(document).on('click', '#ticketPagination .page-link', function () {
             var page = $(this).attr('data-page');
             if (page) {
-                loadPage(page, 'ticket');  // Gọi loadPage cho tab "ticket"
+                loadPage(page, 'ticket');
             }
         });
-    });
 
-               $('#sendConfirmationEmail').click(function () {
-        // Lấy danh sách OrderID đã chọn từ các checkbox trong OrderList
-        var selectedOrderIds = $('.order-checkbox:checked').map(function () {
-            return $(this).data('order-id'); // Lấy OrderID từ thuộc tính data-order-id
-        }).get();
+        // Gán sự kiện click cho nút gửi email xác nhận
+        $('#sendConfirmationEmail').click(function () {
+            var selectedOrderIds = $('.order-checkbox:checked').map(function () {
+                return $(this).data('order-id');
+            }).get();
 
-        // Kiểm tra nếu không có đơn hàng nào được chọn
-        if (selectedOrderIds.length === 0) {
-            alert("Vui lòng chọn ít nhất một đơn hàng.");
-            return;
-        }
-
-        // Gửi AJAX để gửi email
-        $.ajax({
-            url: '/Host/Order/SendConfirmationEmails', // URL đến action SendConfirmationEmails
-            method: 'POST',
-           data: JSON.stringify(selectedOrderIds), // Gửi danh sách OrderID
-            contentType: 'application/json',
-            success: function (res) {
-                location.reload();
-            },
-            error: function (err) {
-                alert("Có lỗi xảy ra khi gửi email!"); // Hiển thị thông báo lỗi nếu có sự cố
+            if (selectedOrderIds.length === 0) {
+                alert("Vui lòng chọn ít nhất một đơn hàng.");
+                return;
             }
+
+            $.ajax({
+                url: '/Host/Order/SendConfirmationEmails',
+                method: 'POST',
+                data: JSON.stringify(selectedOrderIds),
+                contentType: 'application/json',
+                success: function (res) {
+                    alert("Gửi email thành công!");
+                    location.reload();
+                },
+                error: function (err) {
+                    alert("Có lỗi xảy ra khi gửi email!");
+                }
+            });
         });
+            // Khởi tạo sự kiện chuyển tab Bootstrap 5
+    
+
     });
-
-
 
 </script>
+

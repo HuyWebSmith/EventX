@@ -162,6 +162,14 @@
                     text: message
                 });
             }
+                var errorMessage = @Html.Raw(JsonSerializer.Serialize(TempData["error"]));
+        if (errorMessage) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: errorMessage
+            });
+        }
         });
         </script>
 

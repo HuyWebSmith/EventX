@@ -16,5 +16,9 @@ namespace EventX.Models
         public int OrderDetailID { get; set; }
 
         public OrderDetail OrderDetail { get; set; } = null!;
+        // Thêm 2 trường sau để check-in
+        public bool IsCheckedIn { get; set; } = false;
+
+        public DateTime? CheckinTime { get; set; } = null;
     }
 }

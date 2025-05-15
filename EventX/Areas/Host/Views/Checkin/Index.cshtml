@@ -1,0 +1,139 @@
+﻿@using EventX.ViewModels
+@model CheckinViewModel
+@{
+    ViewData["Title"] = "Check-in";
+    Layout = "~/Areas/Host/Views/Shared/_HostLayout.cshtml";
+}
+<style>
+    /* Tổng thể vùng quét */
+    #reader {
+        background-color: #000; /* nền đen */
+        color: white; /* chữ trắng */
+    }
+
+        /* Dropdown chọn camera */
+        #reader select {
+            background-color: #222 !important;
+            color: white !important;
+            border: 1px solid #555 !important;
+        }
+
+        /* Nút Start Scanning */
+        #reader button {
+            background-color: #444 !important;
+            color: white !important;
+            border: 1px solid #888 !important;
+        }
+
+        /* Nút Scan an Image File */
+        #reader input[type="file"] {
+            background-color: #222 !important;
+            color: white !important;
+            border: 1px solid #555 !important;
+        }
+
+            /* Hover effect đẹp hơn */
+            #reader button:hover,
+            #reader select:hover,
+            #reader input[type="file"]:hover {
+                background-color: #666 !important;
+            }
+</style>
+
+<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; background-color: #000;">
+    <h2 style="margin-bottom: 20px; color: white;">🎫 Quét mã QR vé để Check-in</h2>
+    <input type="hidden" id="event-id" value="@Model.EventId" />
+
+    <div style="
+        position: relative;
+        width: 400px;
+        height: 400px;
+        background-color: rgba(0,0,0,0.8);
+        border-radius: 12px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    ">
+        <div id="reader" style="
+            width: 360px;
+            height: 360px;
+            background-color: black;
+            border-radius: 12px;
+            box-shadow: 0 0 20px #00ff00;
+        "></div>
+    </div>
+
+    <div id="result" style="margin-top: 20px; font-weight: bold; color: white;"></div>
+</div>
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- QR Scanner -->
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
+<script>
+    let isProcessing = false;
+
+    function onScanSuccess(decodedText, decodedResult) {
+        if (isProcessing) return;
+        isProcessing = true;
+        var eventId = document.getElementById('event-id').value;
+        // Gửi lên API
+        fetch('/Host/api/CheckinApi/Checkin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+
+            body: JSON.stringify({
+                TicketCode: decodedText,
+                EventId: parseInt(eventId)
+    })
+        })
+            .then(async response => {
+            if (!response.ok) {
+                // Lấy message lỗi dạng text
+                const errorMessage = await response.text();
+                throw new Error(errorMessage);
+            }
+            return response.json();
+        })
+        .then(data => {
+            Swal.fire({
+                icon: 'success',
+                title: '✅ Check-in thành công!',
+                html: `
+                    <b>Sự kiện:</b> ${data.eventName}<br>
+                    <b>Mã vé:</b> ${data.ticketCode}<br>
+                    <b>Thời gian check in:</b> ${new Date(data.checkinTime).toLocaleString()}
+                `,
+                confirmButtonText: 'OK'
+            });
+        })
+               .catch(error => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Check-in thất bại!',
+                text: error.message,  // Hiển thị chính xác message từ API
+                confirmButtonText: 'Thử lại'
+            });
+        })
+
+        .finally(() => {
+            setTimeout(() => {
+                isProcessing = false;
+            }, 1500); // Đợi 1.5s rồi cho phép quét lại
+        });
+    }
+
+    function onScanFailure(error) {
+        // Bỏ qua lỗi nhỏ
+    }
+
+    const html5QrcodeScanner = new Html5QrcodeScanner("reader", {
+        fps: 10,
+        qrbox: 250
+    });
+
+    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+</script>

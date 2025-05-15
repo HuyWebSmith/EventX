@@ -24,7 +24,7 @@ namespace EventX.Areas.Host.Controllers
             _context = context;
             _emailSender = emailSender;
         }
-        public IActionResult Index(int eventId, int page = 1, string type = "orders")
+        public IActionResult Index(int eventId, int page = 1, string type = "orders", string searchTerm = "")
         {
             int pageSize = 10;
 
@@ -41,6 +41,17 @@ namespace EventX.Areas.Host.Controllers
                 .Include(od => od.Ticket)  // Bao gồm thông tin Ticket
                 .Where(od => od.Ticket.EventID == eventId)  // Lọc theo EventID của Ticket
                 .OrderByDescending(od => od.TicketID);
+
+            if (!string.IsNullOrEmpty(searchTerm) && int.TryParse(searchTerm, out int orderId))
+            {
+                query = query
+                    .Where(o => o.OrderID == orderId)
+                    .OrderByDescending(o => o.OrderID); // cần gọi lại để giữ IOrderedQueryable
+
+                query1 = query1
+                    .Where(od => od.OrderID == orderId)
+                    .OrderByDescending(od => od.TicketID); // tương tự nếu cần
+            }
 
             // Tổng số đơn hàng và vé
             var totalOrders = query.Count();
@@ -188,9 +199,7 @@ namespace EventX.Areas.Host.Controllers
 
                 var order = orderDetails[0].Order;
 
-                // Nếu đã gửi mail rồi thì bỏ qua
-                if (order.IsEmailSent)
-                    continue;
+
 
                 foreach (var orderDetail in orderDetails)
                 {

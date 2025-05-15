@@ -9,6 +9,7 @@
             <th>Khách hàng</th>
             <th>Trạng thái</th>
             <th>Tổng tiền</th>
+            <th>Đã gửi email</th> 
         </tr>
     </thead>
     <tbody>
@@ -20,6 +21,16 @@
                 <td>@order.ApplicationUser.FullName</td>
                 <td>@order.OrderStatus.GetDisplayName()</td>
                 <td>@order.TotalAmount.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</td>
+                <td>
+                    @if (order.IsEmailSent)
+                    {
+                        <span style="color: green; font-weight: bold;">✓ Đã gửi</span>
+                    }
+                    else
+                    {
+                        <span style="color: red; font-weight: bold;">✗ Chưa gửi</span>
+                    }
+                </td>
             </tr>
         }
     </tbody>

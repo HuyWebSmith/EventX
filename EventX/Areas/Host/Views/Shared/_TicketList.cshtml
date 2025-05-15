@@ -45,6 +45,7 @@
 <table class="table">
     <thead>
         <tr>
+            <th>Mã đơn hàng</th>
             <th>Họ tên</th>
             <th>Email</th>
             <th>Số điện thoại</th>
@@ -60,6 +61,7 @@
             var totalAmount = orderDetail.Price * orderDetail.Quantity;  // Tính tổng tiền
 
             <tr>
+                <td>#@orderDetail.Order?.OrderID</td>  
                 <td>@orderDetail.Order?.FullName</td>  
                 <td>@orderDetail.Order?.Email</td>  
                 <td>@orderDetail.Order?.PhoneNumber</td>  
