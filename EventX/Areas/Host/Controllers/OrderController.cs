@@ -182,7 +182,6 @@ namespace EventX.Areas.Host.Controllers
             {
                 return BadRequest("Không có đơn hàng nào được chọn.");
             }
-
             foreach (var orderId in orderIds)
             {
                 // Lấy tất cả OrderDetails thuộc đơn này
@@ -199,7 +198,12 @@ namespace EventX.Areas.Host.Controllers
 
                 var order = orderDetails[0].Order;
 
-
+                if (order.OrderStatus != OrderStatus.Confirmed)
+                {
+                    TempData["error"] = "Đơn hàng chưa được xác nhận";
+                    continue;
+                }
+                    
 
                 foreach (var orderDetail in orderDetails)
                 {

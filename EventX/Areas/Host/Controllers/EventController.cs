@@ -420,7 +420,9 @@ namespace EventX.Areas.Host.Controllers
                                 existingTicket.Type = ticket.Type;
                                 existingTicket.Price = ticket.Price;
                                 existingTicket.Quantity = ticket.Quantity;
-  
+                                existingTicket.StartDate = ticket.StartDate;
+                                existingTicket.EndDate = ticket.EndDate;
+                                existingTicket.TrangThai = TicketStatus.ConVe;
                                 existingTicket.Description = ticket.Description;
                             }
                             else
