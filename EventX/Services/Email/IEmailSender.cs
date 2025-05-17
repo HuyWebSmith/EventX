@@ -14,7 +14,8 @@
          int quantity,
          decimal totalAmount,
          string eventLocation,
-         string ticketName);
+         string ticketName,
+         string organizerMessage);
         
     }
 }

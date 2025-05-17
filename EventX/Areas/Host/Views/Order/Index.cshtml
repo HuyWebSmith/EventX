@@ -166,7 +166,12 @@
             }).get();
 
             if (selectedOrderIds.length === 0) {
-                alert("Vui lòng chọn ít nhất một đơn hàng.");
+                Swal.fire({
+                icon: 'error',
+                title: 'Opps!',
+                text: "Vui lòng chọn ít nhất một đơn hàng.",  // Hiển thị chính xác message từ API
+                confirmButtonText: 'Thử lại'
+            });
                 return;
             }
 
@@ -176,7 +181,6 @@
                 data: JSON.stringify(selectedOrderIds),
                 contentType: 'application/json',
                 success: function (res) {
-                    alert("Gửi email thành công!");
                     location.reload();
                 },
                 error: function (err) {

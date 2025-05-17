@@ -9,6 +9,20 @@
     <!DOCTYPE html>
     <html>
     <head>
+        <style type="text/css">
+            .css_select_div {
+                text-align: center;
+            }
+
+            .css_select {
+                display: inline-table;
+                width: 25%;
+                padding: 5px;
+                margin: 5px 2%;
+                border: solid 1px #686868;
+                border-radius: 5px;
+            }
+        </style>
         <style>
         .nav-link {
              /* Ngừng sự kiện click */
@@ -298,19 +312,28 @@
                 <input type="text" class="form-control" name="Location.FullAddress" required />
             </div>
 
-            <div class="mb-3">
-                <label class="form-label"><span class="text-danger fw-bold">*</span>Phường / Xã</label>
-                <input type="text" class="form-control" name="Location.Ward" required />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label"><span class="text-danger fw-bold">*</span>Quận / Huyện</label>
-                <input type="text" class="form-control" name="Location.District" required />
-            </div>
-
-            <div class="mb-3">
+            <div class="mb-3 d-flex flex-column">
                 <label class="form-label"><span class="text-danger fw-bold">*</span>Thành phố</label>
-                <input type="text" class="form-control" name="Location.City" required />
+                <select id="tinh" class="css_select">
+                    <option value="0">Tỉnh Thành</option>
+                </select>
+                <input type="hidden" name="Location.City" id="City" />
+            </div>
+
+            <div class="mb-3 d-flex flex-column">
+                <label class="form-label"><span class="text-danger fw-bold">*</span>Quận / Huyện</label>
+                <select id="quan" class="css_select">
+                    <option value="0">Quận Huyện</option>
+                </select>
+                <input type="hidden" name="Location.District" id="District" />
+            </div>
+
+            <div class="mb-3 d-flex flex-column">
+                <label class="form-label"><span class="text-danger fw-bold">*</span>Phường / Xã</label>
+                <select id="phuong" class="css_select">
+                    <option value="0">Phường Xã</option>
+                </select>
+                <input type="hidden" name="Location.Ward" id="Ward" />
             </div>
 
 
@@ -670,6 +693,66 @@
         startInput.addEventListener("change", validateTimes);
         endInput.addEventListener("change", validateTimes);
     });
+
+            $(document).ready(function () {
+        // Load Tỉnh
+        $.getJSON('https://esgoo.net/api-tinhthanh/1/0.htm', function (data) {
+            if (data.error === 0) {
+                $.each(data.data, function (_, val) {
+                    $("#tinh").append(`<option value="${val.id}">${val.full_name}</option>`);
+                });
+            }
+        });
+
+        // Khi chọn Tỉnh → load Quận
+        $("#tinh").change(function () {
+            const idTinh = $(this).val();
+            const tenTinh = $("#tinh option:selected").text();
+            $("#City").val(tenTinh);
+
+            $("#quan").html('<option value="0">Quận Huyện</option>');
+            $("#phuong").html('<option value="0">Phường Xã</option>');
+            $("#District").val('');
+            $("#Ward").val('');
+
+            if (idTinh !== "0") {
+                $.getJSON(`https://esgoo.net/api-tinhthanh/2/${idTinh}.htm`, function (data) {
+                    if (data.error === 0) {
+                        $.each(data.data, function (_, val) {
+                            $("#quan").append(`<option value="${val.id}">${val.full_name}</option>`);
+                        });
+                    }
+                });
+            }
+        });
+
+        // Khi chọn Quận → load Phường
+        $("#quan").change(function () {
+            const idQuan = $(this).val();
+            const tenQuan = $("#quan option:selected").text();
+            $("#District").val(tenQuan);
+
+            $("#phuong").html('<option value="0">Phường Xã</option>');
+            $("#Ward").val('');
+
+            if (idQuan !== "0") {
+                $.getJSON(`https://esgoo.net/api-tinhthanh/3/${idQuan}.htm`, function (data) {
+                    if (data.error === 0) {
+                        $.each(data.data, function (_, val) {
+                            $("#phuong").append(`<option value="${val.id}">${val.full_name}</option>`);
+                        });
+                    }
+                });
+            }
+        });
+
+        // Khi chọn Phường
+        $("#phuong").change(function () {
+            const tenPhuong = $("#phuong option:selected").text();
+            $("#Ward").val(tenPhuong);
+        });
+    });
+
 </script>
 
 

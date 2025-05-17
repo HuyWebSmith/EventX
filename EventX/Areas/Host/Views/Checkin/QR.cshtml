@@ -1,0 +1,153 @@
+﻿@model EventX.ViewModels.CheckinViewModel
+@{
+    ViewData["Title"] = "Check-in vé";
+    Layout = "~/Areas/Host/Views/Shared/_HostLayout.cshtml";
+}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
+
+<style>
+    #modal-overlay {
+        z-index: 999; /* Giảm xuống thấp hơn alert */
+    }
+
+    #modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.6);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 999; /* Đừng để > 10000 */
+    }
+
+    #ticket-info {
+        background: #fff;
+        color: #000;
+        padding: 24px 32px;
+        border-radius: 12px;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        font-family: 'Segoe UI', sans-serif;
+        font-size: 16px;
+    }
+
+</style>
+
+<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; background-color: #000;">
+    <h2 style="color: white;">🎫 Quét mã QR vé để Check-in</h2>
+    <input type="hidden" id="event-id" value="@Model.EventId" />
+
+    <div id="reader" style="width: 360px; height: 360px; background-color: black; border-radius: 12px; box-shadow: 0 0 20px #00ff00;"></div>
+    <div id="modal-overlay">
+        <div id="ticket-info">
+            <h3 style="margin-bottom: 16px; text-align: center; color: #333;">🎟️ Thông tin vé</h3>
+            <div style="margin-bottom: 10px;"><b>Sự kiện:</b> <span id="info-eventName"></span></div>
+            <div style="margin-bottom: 10px;"><b>Mã vé:</b> <span id="info-ticketCode"></span></div>
+            <div style="margin-bottom: 10px;"><b>Trạng thái check-in:</b> <span id="info-isCheckedIn"></span></div>
+            <div style="margin-bottom: 10px;"><b>Thời gian check-in:</b> <span id="info-checkinTime"></span></div>
+            <div style="margin-bottom: 20px;"><b>Trạng thái sự kiện:</b> <span id="info-eventStatus"></span></div>
+
+            <div style="display: flex; justify-content: space-between;">
+                <button id="btn-checkin"
+                        style="flex: 1; margin-right: 8px; padding: 10px; background-color: #28a745; border: none; color: white; border-radius: 6px; font-weight: bold; cursor: pointer;">
+                    ✅ Check-in vé
+                </button>
+                <button onclick="closeModal()"
+                        style="flex: 1; padding: 10px; background-color: #6c757d; border: none; color: white; border-radius: 6px; font-weight: bold; cursor: pointer;">
+                    ✖ Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    let isProcessing = false;
+    let lastTicketCode = null;
+
+    async function fetchTicketInfo(ticketCode, eventId) {
+        const url = `/Host/api/CheckinApi/GetTicketInfo?ticketCode=${encodeURIComponent(ticketCode)}&eventId=${eventId}`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(await response.text());
+        return await response.json();
+    }
+
+    async function doCheckin(ticketCode, eventId) {
+        const response = await fetch('/Host/api/CheckinApi/Checkin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ TicketCode: ticketCode, EventId: eventId })
+        });
+        if (!response.ok) throw new Error(await response.text());
+        return await response.json();
+    }
+
+    function closeModal() {
+        document.getElementById('modal-overlay').style.display = 'none';
+    }
+
+    async function onScanSuccess(decodedText) {
+        if (isProcessing) return;
+        isProcessing = true;
+        const eventId = parseInt(document.getElementById('event-id').value);
+
+        try {
+            const ticketInfo = await fetchTicketInfo(decodedText, eventId);
+
+            document.getElementById('modal-overlay').style.display = 'flex';
+            document.getElementById('info-eventName').textContent = ticketInfo.eventName;
+            document.getElementById('info-ticketCode').textContent = ticketInfo.ticketCode;
+            document.getElementById('info-isCheckedIn').textContent = ticketInfo.isCheckedIn ? 'Đã check-in' : 'Chưa check-in';
+            document.getElementById('info-checkinTime').textContent = ticketInfo.checkinTime ? new Date(ticketInfo.checkinTime).toLocaleString() : '-';
+            document.getElementById('info-eventStatus').textContent = ticketInfo.eventStatus;
+
+            lastTicketCode = decodedText;
+        } catch (error) {
+            Swal.fire('Lỗi', error.message || 'Không lấy được thông tin vé', 'error');
+            document.getElementById('modal-overlay').style.display = 'none';
+            lastTicketCode = null;
+        } finally {
+            setTimeout(() => { isProcessing = false; }, 1500);
+        }
+    }
+
+    document.getElementById('btn-checkin').addEventListener('click', async () => {
+        if (!lastTicketCode) {
+            Swal.fire('Thông báo', 'Vui lòng quét vé trước khi check-in', 'warning');
+            return;
+        }
+        const eventId = parseInt(document.getElementById('event-id').value);
+        try {
+            const result = await doCheckin(lastTicketCode, eventId);
+            Swal.fire({
+                icon: 'success',
+                title: '✅ Check-in thành công!',
+                html: `<b>Sự kiện:</b> ${result.eventName}<br><b>Mã vé:</b> ${result.ticketCode}<br><b>Thời gian check-in:</b> ${new Date(result.checkinTime).toLocaleString()}`,
+                confirmButtonText: 'OK'
+            });
+
+            document.getElementById('info-isCheckedIn').textContent = 'Đã check-in';
+            document.getElementById('info-checkinTime').textContent = new Date(result.checkinTime).toLocaleString();
+            lastTicketCode = null;
+            closeModal();
+        } catch (error) {
+            Swal.fire('Check-in thất bại!', error.message || 'Lỗi không xác định', 'error');
+        }
+    });
+
+    function onScanFailure(error) {
+        // Log nếu cần
+    }
+
+    const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+</script>

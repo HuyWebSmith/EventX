@@ -32,7 +32,8 @@ namespace EventX.Services.Email
      int quantity,
      decimal totalAmount,
      string eventLocation,
-     string ticketName)
+     string ticketName,
+     string organizerMessage)
         {
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress(_emailSettings.FromName, _emailSettings.FromEmail));
@@ -148,6 +149,10 @@ namespace EventX.Services.Email
 
         <div style='text-align: center;'>
             <a href='https://localhost:7236/Home/Display?eventId={eventId}' class='button'>Xem chi tiết sự kiện</a>
+        </div>
+        <h3>📣 Tin nhắn từ ban tổ chức</h3>
+        <div style='background-color: #f8f9fa; border-left: 4px solid #007bff; padding: 15px; margin: 20px 0;'>
+            {organizerMessage}
         </div>
 
         <div class='footer'>

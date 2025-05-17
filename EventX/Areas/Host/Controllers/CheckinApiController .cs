@@ -16,6 +16,32 @@ namespace EventX.Areas.Host.Controllers
             _context = context;
         }
 
+        [HttpGet("GetTicketInfo")]
+        public async Task<IActionResult> GetTicketInfo(string ticketCode, int eventId)
+        {
+            if (string.IsNullOrEmpty(ticketCode))
+                return BadRequest("Ticket code is required");
+
+            var ticket = await _context.IssuedTickets
+                .Include(it => it.OrderDetail)
+                    .ThenInclude(od => od.Ticket)
+                        .ThenInclude(t => t.Event)
+                .FirstOrDefaultAsync(it => it.TicketCode == ticketCode && it.OrderDetail.Ticket.EventID == eventId);
+
+            if (ticket == null)
+                return NotFound("Không tìm thấy vé này");
+
+            var eventEntity = ticket.OrderDetail.Ticket.Event;
+
+            return Ok(new
+            {
+                ticketCode = ticket.TicketCode,
+                eventName = eventEntity.Title,
+                isCheckedIn = ticket.IsCheckedIn,
+                checkinTime = ticket.CheckinTime,
+                eventStatus = eventEntity.Status.ToString()
+            });
+        }
 
         [HttpPost("Checkin")]
         public async Task<IActionResult> Checkin([FromBody] CheckinRequest request)
@@ -60,6 +86,7 @@ namespace EventX.Areas.Host.Controllers
             });
         }
     }
+
 
     public class CheckinRequest
     {

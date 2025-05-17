@@ -213,8 +213,12 @@ namespace EventX.Areas.Host.Controllers
                         if (ev == null || orderDetail.Ticket == null)
                             continue;
 
-                        // Cập nhật số lượng vé đã bán
-                        
+                        if (ev.Status == EventStatus.Completed)
+                        {
+                            TempData["error"] = "Sự kiện đã kết thúc, không thể gửi email xác nhận.";
+                            return Json(new { success = false, message = "Sự kiện đã kết thúc, không thể gửi email xác nhận." });
+                        }
+
 
                         // Tạo mã QR cho vé
                         var qrService = new QrCodeService();
@@ -233,7 +237,8 @@ namespace EventX.Areas.Host.Controllers
                             quantity: orderDetail.Quantity,
                             totalAmount: order.TotalAmount,
                             eventLocation: $"{ev.Locations.First().Name}, {ev.Locations.First().FullAddress}, {ev.Locations.First().Ward}, {ev.Locations.First().District}, {ev.Locations.First().City}",
-                            ticketName: orderDetail.Ticket.Description
+                            ticketName: orderDetail.Ticket.Description,
+                            organizerMessage: ev.BuyerMessage
                         );
                     }
                     orderDetail.Ticket.Sold += orderDetail.Quantity;
