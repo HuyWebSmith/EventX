@@ -1,0 +1,337 @@
+﻿@{
+    ViewData["Title"] = "Sự kiện của tôi";
+    Layout = "~/Areas/Host/Views/Shared/_HostLayout.cshtml";
+}
+@using EventX.ViewModels
+@model TongQuanSuKienViewModel
+
+<div class="container mt-5">
+    <div class="mb-4 text-center">
+        <h2 class="fw-bold">@Model.events?.Title</h2>
+        <hr class="w-25 mx-auto" />
+    </div>
+
+    <div class="row gx-5">
+        <!-- Cột trái: Doanh thu -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h4 class="card-title mb-3">Doanh thu</h4>
+                    <h1 class="display-4 fw-bold text-success">@Model.DoanhThu.ToString("N0") đ</h1>
+
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Doanh thu trước khuyến mãi</span>
+                            <span>@Model.DoanhThuTruocKhuyenMai.ToString("N0") đ</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Khuyến mãi</span>
+                            <span class="text-danger">-@Model.TienKhuyenMai.ToString("N0") đ</span>
+                        </div>
+                        <hr />
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Tổng phí</span>
+                            <span>@Model.TongPhi.ToString("N0") đ</span>
+                        </div>
+                        <div class="d-flex justify-content-between ms-3 mb-1 text-muted small">
+                            <span>Phí dịch vụ</span>
+                            <span>@Model.PhiDichVu.ToString("N0") đ</span>
+                        </div>
+                        <div class="d-flex justify-content-between ms-3 mb-3 text-muted small">
+                            <span>Phí khác</span>
+                            <span>@Model.PhiKhac.ToString("N0") đ</span>
+                        </div>
+                        <hr />
+                        <div class="d-flex justify-content-between fw-bold fs-5">
+                            <span>Thực nhận</span>
+                            <span>@Model.ThucNhan.ToString("N0") đ</span>
+                        </div>
+
+                        <div class="mt-4 fst-italic text-secondary small">
+                            <div>Doanh thu từ voucher</div>
+                            <div>0 đ</div>
+                        </div>
+
+                        <hr />
+                        <div class="d-flex justify-content-between fw-bold fs-5">
+                            <span>Tổng cộng</span>
+                            <span>@Model.DoanhThu.ToString("N0") đ</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cột phải: Chi tiết bán vé -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h4 class="card-title mb-3">Chi tiết bán vé</h4>
+
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Tổng số vé</span>
+                            <span>@(Model.TongSoVe > 0 ? Model.TongSoVe.ToString() : "N/A")</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Đã bán</span>
+                            <span>@(Model.SoVeDaBan > 0 ? Model.SoVeDaBan.ToString() : "N/A")</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Bị khoá</span>
+                            <span>N/A</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Còn lại</span>
+                            <span>@(Model.TongSoVe - Model.SoVeDaBan > 0 ? (Model.TongSoVe - Model.SoVeDaBan).ToString() : "N/A")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
+<div class="container mt-4">
+
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="today-tab" data-bs-toggle="tab" data-bs-target="#today" type="button" role="tab" aria-controls="today" aria-selected="true">Hôm nay</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab" aria-controls="all" aria-selected="false">Cả sự kiện</button>
+        </li>
+    </ul>
+
+    <div class="tab-content mt-3" id="myTabContent">
+        <div class="tab-pane fade show active" id="today" role="tabpanel" aria-labelledby="today-tab">
+            <canvas id="chartToday" height="200"></canvas>
+        </div>
+
+        <div class="tab-pane fade" id="all" role="tabpanel" aria-labelledby="all-tab">
+            <canvas id="chartAll" height="200"></canvas>
+        </div>
+    </div>
+
+</div>
+
+<div class="card shadow-sm mt-4">
+    <div class="card-body">
+        <h4 class="card-title mb-3">Chi tiết từng loại vé</h4>
+
+        @if (Model.ChiTietVeTheoLoai != null && Model.ChiTietVeTheoLoai.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Tên vé</th>
+                            <th>Giá vé</th>
+                            <th>Số lượng</th>
+                            <th>Đã bán</th>
+                            <th>Còn lại</th>
+                            <th>Doanh thu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var ve in Model.ChiTietVeTheoLoai)
+                        {
+                            <tr>
+                                <td>@ve.TenVe</td>
+                                <td>@ve.GiaVe.ToString("N0") đ</td>
+                                <td>@ve.TongSoLuong</td>
+                                <td>@ve.SoLuongDaBan</td>
+                                <td>@(ve.TongSoLuong - ve.SoLuongDaBan)</td>
+                                <td>@ve.DoanhThu.ToString("N0") đ</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <p class="text-muted fst-italic">Không có dữ liệu vé.</p>
+        }
+    </div>
+</div>
+
+@{
+    var dataTodayFiltered = Model.DoanhThuTheoGio
+        .Where(d => d.Gio.Date == DateTime.Now.Date)
+        .ToList();
+}
+@section Scripts {
+    <script>
+        const dataTodayRaw = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(dataTodayFiltered));
+        const dataAllRaw = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.DoanhThuTheoNgay));
+
+        const dataToday = dataTodayRaw.length > 0 ? dataTodayRaw : [{ Gio: "@DateTime.Now.ToString("yyyy-MM-ddTHH:00:00")", DoanhThu: 0, VeDaBan: 0 }];
+        const labelsToday = dataToday.map(d => {
+            const date = new Date(d.Gio);
+            return date.getHours().toString().padStart(2, '0') + ":00";
+        });
+        const doanhThuToday = dataToday.map(d => d.DoanhThu);
+        const veDaBanToday = dataToday.map(d => d.VeDaBan);
+
+        const labelsAll = dataAllRaw.map(d => new Date(d.Ngay).toLocaleDateString());
+        const doanhThuAll = dataAllRaw.map(d => d.DoanhThu);
+        const veDaBanAll = dataAllRaw.map(d => d.VeDaBan);
+
+        function createLineChart(ctx, labels, doanhThuData, veDaBanData) {
+            return new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Doanh thu (đ)',
+                            data: doanhThuData,
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            fill: false,
+                            tension: 0.3,
+                            yAxisID: 'y',
+                        },
+                        {
+                            label: 'Vé đã bán',
+                            data: veDaBanData,
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            fill: false,
+                            tension: 0.3,
+                            yAxisID: 'y1',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString() + ' đ';
+                                }
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            beginAtZero: true,
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createBarChart(ctx, labels, doanhThuData, veDaBanData) {
+            return new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Doanh thu (đ)',
+                            data: doanhThuData,
+                            backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                            yAxisID: 'y',
+                        },
+                        {
+                            label: 'Vé đã bán',
+                            data: veDaBanData,
+                            backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                            yAxisID: 'y1',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString() + ' đ';
+                                }
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            position: 'right',
+                            beginAtZero: true,
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        let chartTodayInstance = null;
+        let chartAllInstance = null;
+
+        function initCharts() {
+            // Tạo biểu đồ cho tab đang active lúc đầu
+            const todayTab = document.getElementById('today-tab');
+            if (todayTab.classList.contains('active')) {
+                const ctxToday = document.getElementById('chartToday').getContext('2d');
+                chartTodayInstance = createBarChart(ctxToday, labelsToday, doanhThuToday, veDaBanToday);
+            }
+        }
+
+        // Khởi tạo chart khi trang load
+        window.addEventListener('load', () => {
+            initCharts();
+        });
+
+        // Lắng nghe sự kiện chuyển tab để tạo chart phù hợp khi cần
+        const tabToday = document.getElementById('today-tab');
+        const tabAll = document.getElementById('all-tab');
+
+        tabToday.addEventListener('shown.bs.tab', function (event) {
+            if (!chartTodayInstance) {
+                const ctxToday = document.getElementById('chartToday').getContext('2d');
+                chartTodayInstance = createBarChart(ctxToday, labelsToday, doanhThuToday, veDaBanToday);
+            }
+        });
+
+        tabAll.addEventListener('shown.bs.tab', function (event) {
+            if (!chartAllInstance) {
+                const ctxAll = document.getElementById('chartAll').getContext('2d');
+                chartAllInstance = createLineChart(ctxAll, labelsAll, doanhThuAll, veDaBanAll);
+            }
+        });
+
+    </script>
+}

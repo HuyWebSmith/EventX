@@ -110,6 +110,12 @@
                     <div class="event-actions d-flex flex-row  gap-4 align-items-center justify-content-center  border-dark" style="background-color:#414652">
                         
                         <div>
+                            <a href="/Host/Event/Overview/@eventItem.EventID" class="btn btn-sm border-0 btn-primary mb-2 mt-3" style="color: #FFFFFF; background-color:#414652;">
+                                <i class="fa-solid fa-chart-simple d-block mb-2"></i>
+                                Tổng quan
+                             </a>
+                        </div>
+                        <div>
                             <a href="@Url.Action("Index", "Checkin", new { eventId = eventItem.EventID })" class="btn btn-sm border-0 btn-primary mb-2 mt-3" style="color: #FFFFFF; background-color:#414652;">
                                 <i class="fa-solid fa-check-to-slot d-block mb-2"></i>
                                 Check In
@@ -121,15 +127,14 @@
                                 Đơn hàng
                              </a>
                         </div>
-                        @if (eventItem.Status != EventStatus.Ongoing)
-                        {
-                            <div>
-                                <a href="@Url.Action("Update", "Event", new { id = eventItem.EventID })" class="btn btn-sm border-0 btn-primary mb-2 mt-3" style="color: #FFFFFF; background-color:#414652;">
-                                    <i class="fa-solid fa-pen d-block mb-2"></i>
-                                    Chỉnh sửa
-                                </a>
-                            </div>
-                        }
+                       
+                        <div>
+                            <a href="@Url.Action("Update", "Event", new { id = eventItem.EventID })" class="btn btn-sm border-0 btn-primary mb-2 mt-3" style="color: #FFFFFF; background-color:#414652;">
+                                <i class="fa-solid fa-pen d-block mb-2"></i>
+                                Chỉnh sửa
+                            </a>
+                        </div>
+
                         <div>
                             <a href="@Url.Action("Display", "Event", new { area = "Host", eventId = eventItem.EventID })" class="btn btn-sm border-0 btn-info text-white mb-2 mt-3" style="color: #FFFFFF; background-color:#414652;">
                                 <i class="fa-solid fa-info d-block mb-2"></i>

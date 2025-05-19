@@ -16,9 +16,13 @@ namespace EventX.Models
         public int OrderDetailID { get; set; }
 
         public OrderDetail OrderDetail { get; set; } = null!;
+        [ForeignKey("User")]
+        public string? UserId { get; set; }
+        public ApplicationUser? User { get; set; }
         // Thêm 2 trường sau để check-in
         public bool IsCheckedIn { get; set; } = false;
 
         public DateTime? CheckinTime { get; set; } = null;
+        public DateTime? SoldDate { get; set; } = DateTime.Now;
     }
 }

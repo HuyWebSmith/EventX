@@ -233,7 +233,7 @@ namespace EventX.Controllers
         public async Task<IActionResult> PaymentCallbackVnpay()
         {
             var response = _vnPayService.PaymentExecute(Request.Query);
-
+            var currentUser = await _userManager.GetUserAsync(User);
             if (response.VnPayResponseCode == "00")
             {
                 var match = Regex.Match(response.OrderDescription, @"#(\d+)");
@@ -259,7 +259,8 @@ namespace EventX.Controllers
                                 var issuedTicket = new IssuedTicket
                                 {
                                     TicketCode = code,
-                                    OrderDetailID = detail.OrderDetailID
+                                    OrderDetailID = detail.OrderDetailID,
+                                    UserId = currentUser.Id,
                                 };
 
                                 _context.IssuedTickets.Add(issuedTicket);

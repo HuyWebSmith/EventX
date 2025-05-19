@@ -15,11 +15,12 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
+using static EventX.ViewModels.TongQuanSuKienViewModel;
 
 namespace EventX.Areas.Host.Controllers
 {
     [Area("Host")]
-    [Authorize(Roles = ",Host")]
+    [Authorize(Roles = "Host")]
     public class EventController : Controller
     {
         private readonly IEventRepository _eventRepository;
@@ -519,6 +520,83 @@ namespace EventX.Areas.Host.Controllers
         {
             _eventService.UpdateEventStatus();
             return RedirectToAction("Index");
+        }
+
+        public async Task<IActionResult> Overview(int id)
+        {
+            var eventEntity = await _context.Event
+                .Include(e => e.Tickets)
+                .FirstOrDefaultAsync(e => e.EventID == id);
+
+            if (eventEntity == null) return NotFound();
+
+            var tickets = eventEntity.Tickets ?? new List<Ticket>();
+
+            int tongSoVe = tickets.Sum(t => t.Quantity);
+            int soVeDaBan = tickets.Sum(t => t.Sold);
+
+            decimal doanhThuTruocKhuyenMai = tickets.Sum(t => t.Price * t.Sold);
+            decimal tienKhuyenMai = tickets.Sum(t => (t.Discount ?? 0) * t.Sold);
+            decimal doanhThu = doanhThuTruocKhuyenMai - tienKhuyenMai;
+            decimal phiDichVu = doanhThu * 0.1m;
+            decimal phiKhac = 0m;
+            decimal tongPhi = phiDichVu + phiKhac;
+            decimal thucNhan = doanhThu - tongPhi;
+            var doanhThuTheoNgay = await _context.IssuedTickets
+                .Where(it => it.OrderDetail.Ticket.EventID == id && it.SoldDate.HasValue)
+                .GroupBy(it => it.SoldDate.Value.Date)
+                .Select(g => new TongQuanSuKienViewModel.DoanhThuNgay
+                {
+                    Ngay = g.Key,
+                    DoanhThu = g.Sum(it => it.OrderDetail.Price - (it.OrderDetail.Ticket.Discount ?? 0)),
+                    VeDaBan = g.Count()
+                })
+                .OrderBy(g => g.Ngay)
+                .ToListAsync();
+            var issuedTickets = _context.IssuedTickets
+            .Join(_context.OrderDetail, i => i.OrderDetailID, od => od.OrderDetailID, (i, od) => new { i, od })
+            .Join(_context.Tickets, io => io.od.TicketID, t => t.TicketID, (io, t) => new { io.i, io.od, t })
+            .Where(x => x.t.EventID == id && x.i.SoldDate.HasValue)
+            .ToList();
+            var doanhThuTheoGio = issuedTickets
+            .GroupBy(x => new DateTime(x.i.SoldDate.Value.Year, x.i.SoldDate.Value.Month, x.i.SoldDate.Value.Day, x.i.SoldDate.Value.Hour, 0, 0))
+            .Select(g => new DoanhThuTheoGioViewModel
+            {
+                Gio = g.Key,
+                DoanhThu = g.Sum(x => x.i.OrderDetail.Price - (x.i.OrderDetail.Ticket.Discount ?? 0)),
+                VeDaBan = g.Count()
+            })
+            .OrderBy(x => x.Gio)
+            .ToList();
+
+            var chiTietVeTheoLoai = tickets.Select(t => new TongQuanSuKienViewModel.ChiTietVeViewModel
+            {
+                TenVe = t.Description,
+                GiaVe = t.Price,
+                TongSoLuong = t.Quantity,
+                SoLuongDaBan = t.Sold,
+                DoanhThu = (t.Price - (t.Discount ?? 0)) * t.Sold
+            }).ToList();
+
+            var vm = new TongQuanSuKienViewModel
+            {
+                events = eventEntity,
+                DoanhThu = doanhThu,
+                DoanhThuTruocKhuyenMai = doanhThuTruocKhuyenMai,
+                TienKhuyenMai = tienKhuyenMai,
+                PhiDichVu = phiDichVu,
+                PhiKhac = phiKhac,
+                TongPhi = tongPhi,
+                ThucNhan = thucNhan,
+                TongSoVe = tongSoVe,
+                SoVeDaBan = soVeDaBan,
+                DoanhThuTheoNgay = doanhThuTheoNgay,
+                DoanhThuTheoGio = doanhThuTheoGio,
+                ChiTietVeTheoLoai = chiTietVeTheoLoai,
+
+            };
+
+            return View(vm);
         }
 
     }
