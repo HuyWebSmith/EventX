@@ -88,5 +88,22 @@ namespace EventX.Controllers
             // Trả về View với model chứa thông tin sự kiện
             return View(eventDetails);
         }
+
+        [HttpGet]
+        public IActionResult Search(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                return View(new List<Event>()); // Hoặc View("Search", new List<Event>())
+            }
+
+            var results = _context.Event
+                .Include(e => e.EventImages)
+                .Where(e => e.Title.Contains(query) && (e.Status == EventStatus.Approved || e.Status == EventStatus.Ongoing))
+                .ToList();
+
+            return View(results); // truyền danh sách kết quả xuống view
+        }
+
     }
 }

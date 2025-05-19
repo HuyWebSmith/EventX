@@ -1,0 +1,54 @@
+﻿@model List<EventX.Models.Event>
+@{
+    ViewData["Title"] = "Kết quả tìm kiếm";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h3 class="mb-4">Kết quả tìm kiếm:</h3>
+
+@if (!Model.Any())
+{
+    <p>Không tìm thấy sự kiện nào phù hợp với từ khóa.</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class=" h-100">
+                    <a href="@Url.Action("Display", "Home", new { eventId = item.EventID })"
+                       class="text-decoration-none text-dark">
+                        <div class="card h-100" style=" cursor: pointer;">
+                            @if (item.EventImages != null && item.EventImages.Any())
+                            {
+                                <img src="@item.EventImages.First().ImageURL" class="card-img-top" alt="Event Image" style="object-fit: contain; height: 180px;">
+                            }
+                            else
+                            {
+                                <img src="~/images/no-image.png" class="card-img-top" alt="No Image" style="object-fit: contain; height: 180px;" />
+                            }
+
+
+                            <div class="card-body">
+                                <h5 class="card-title" style="font-size: 16px; font-weight: bold;">@item.Title</h5>
+
+                                @if (item.Tickets != null && item.Tickets.Any())
+                                {
+                                    <p class="card-text" style="font-size: 14px;">
+                                        Giá vé từ:
+                                        <strong>@item.Tickets.Min(t => t.Price).ToString("N0")₫</strong>
+                                    </p>
+                                }
+
+                                <p class="card-text" style="font-size: 13px; color: gray;">
+                                    Bắt đầu: @item.EventStartTime.ToString("dd/MM/yyyy HH:mm")
+                                </p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+}

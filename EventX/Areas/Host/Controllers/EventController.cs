@@ -536,7 +536,10 @@ namespace EventX.Areas.Host.Controllers
             int soVeDaBan = tickets.Sum(t => t.Sold);
 
             decimal doanhThuTruocKhuyenMai = tickets.Sum(t => t.Price * t.Sold);
-            decimal tienKhuyenMai = tickets.Sum(t => (t.Discount ?? 0) * t.Sold);
+            decimal tienKhuyenMai = tickets.Sum(t =>
+                (t.Price * (t.Discount ?? 0) / 100) * t.Sold
+            );
+
             decimal doanhThu = doanhThuTruocKhuyenMai - tienKhuyenMai;
             decimal phiDichVu = doanhThu * 0.1m;
             decimal phiKhac = 0m;

@@ -1,6 +1,7 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
 }
 
 @using EventX.Models
@@ -21,7 +22,7 @@
         flex-direction: column;
         height: 100%; 
         overflow: hidden;
-        border: none;
+        border: none !important;
     }
 
     /* Xử lý hình ảnh card-img-top */
@@ -64,9 +65,15 @@
     .swiper-button-next, .swiper-button-prev {
         font-size: 20px; 
         z-index: 10;
-        
+        color: gray;
         padding: 10px; /* Tạo khoảng cách giữa biểu tượng và viền */
         transition: background-color 0.3s ease, transform 0.3s ease; /* Thêm hiệu ứng khi hover */
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        cursor: pointer;
+        outline: none;
     }
 
 
@@ -90,16 +97,18 @@
 
     .swiper-button-next {
         right: 20px;
+        color: gray !important;
     }
 
     .swiper-button-prev {
         left: 20px;
+        color: gray !important;
     }
 
     .btn-detail {
         position: absolute;
-        bottom: 20px; /* Đặt nút ở phía dưới của ảnh */
-        left: 25%;
+        bottom:80px; /* Đặt nút ở phía dưới của ảnh */
+        left: 15%;
         transform: translateX(-50%); /* Canh giữa */
         background-color: rgba(0, 0, 0, 0.5); /* Màu nền bán trong suốt */
         color: white;
@@ -115,16 +124,28 @@
 
         .btn-detail:hover {
             background-color: rgba(0, 0, 0, 0.7); /* Thay đổi màu nền khi hover */
+            color: white;
         }
+
+    .card-title {
+        display: -webkit-box;
+        -webkit-line-clamp: 2; /* Giới hạn 2 dòng */
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 </style>
+
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+<link rel="stylesheet" href="~/css/styles.css" />
+
 <div class="swiper-container banner-swiper-container mb-5">
     <div class="swiper-wrapper">
         @foreach (var slider in Model.Sliders)
         {
             <div class="swiper-slide banner-swiper-slide">
                     <img src="@Url.Content(slider.ImageUrl)" alt="@slider.Title" />
-                    <a href="@slider.Link" target="_blank" class="btn-detail">Xem chi tiết</a>
+                <a href="Home/Display?eventId=@slider.Link" target="_blank" class="btn-detail">Xem chi tiết</a>
             </div>
         }
     </div>
@@ -141,7 +162,7 @@
         var events = Model.Events.Where(e => e.Category.CategoryId == 12).ToList();
     }
 
-    <!-- PHẦN WORKSHOP -->
+ 
 @if (events.Any())
     {
         <h4 class="mt-4">Sự kiện</h4>
@@ -198,6 +219,8 @@
             </div>
         </div>
     }
+
+<!-- PHẦN WORKSHOP -->
     @if (workshops.Any())
     {
         <h4 class="mt-4">Workshop</h4>
@@ -318,68 +341,60 @@
 <!-- Khởi tạo sau khi đã load JS -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Initialize swiper for workshops section
-        const swiper1 = new Swiper('.mySwiper', {
-            slidesPerView: 4,
-            spaceBetween: 20,
-            navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev',
-            },
-            loop: false,
-        });
-
-        // Initialize swiper for seminars section
-        const swiper2 = new Swiper('.mySwiper2', {
-            slidesPerView: 4,
-            spaceBetween: 20,
-            navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev',
-            },
-            loop: false,
-        });
-    });
-
-          document.addEventListener('DOMContentLoaded', function () {
-        // Initialize swiper for banner section
+        // Banner swiper
         var swiperBanner = new Swiper('.banner-swiper-container', {
-            loop: true, // Quay lại đầu khi đến cuối
-            autoplay: {
-                delay: 5000, // Thời gian chuyển banner (5s)
-                disableOnInteraction: false, // Đảm bảo autoplay không bị dừng khi người dùng tương tác
-            },
+            loop: true,
+            slidesPerView: 2,
+            slidesPerGroup: 1,
+            spaceBetween: 20,
             navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev',
+                nextEl: '.banner-swiper-button-next',
+                prevEl: '.banner-swiper-button-prev',
             },
             pagination: {
-                el: '.swiper-pagination',
-                clickable: true, // Cho phép người dùng nhấn vào các chấm pagination
+                el: '.banner-swiper-pagination',
+                clickable: true,
             },
+            autoplay: {
+                delay: 4000, 
+                disableOnInteraction: false, 
+            },
+
         });
 
-        // Initialize swiper for workshops section
-        const swiper1 = new Swiper('.mySwiper', {
+        // Workshops swiper
+        var swiperWorkshops = new Swiper('.mySwiper', {
             slidesPerView: 4,
             spaceBetween: 20,
             navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev',
+                nextEl: '.workshops-button-next',
+                prevEl: '.workshops-button-prev',
             },
             loop: false,
         });
 
-        // Initialize swiper for seminars section
-        const swiper2 = new Swiper('.mySwiper2', {
+        // Seminars swiper
+        var swiperSeminars = new Swiper('.mySwiper2', {
             slidesPerView: 4,
             spaceBetween: 20,
             navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev',
+                nextEl: '.seminars-button-next',
+                prevEl: '.seminars-button-prev',
             },
             loop: false,
         });
+
+            var swiperEvents = new Swiper('.mySwiper', {
+        slidesPerView: 4,
+        spaceBetween: 20,
+        navigation: {
+            nextEl: '.events-button-next',
+            prevEl: '.events-button-prev',
+        },
+        loop: false,
     });
 
+    });
 </script>
+
+

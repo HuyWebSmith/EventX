@@ -17,50 +17,54 @@
             <div class="card shadow-sm h-100">
                 <div class="card-body">
                     <h4 class="card-title mb-3">Doanh thu</h4>
-                    <h1 class="display-4 fw-bold text-success">@Model.DoanhThu.ToString("N0") đ</h1>
 
-                    <div class="mt-4">
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Doanh thu trước khuyến mãi</span>
-                            <span>@Model.DoanhThuTruocKhuyenMai.ToString("N0") đ</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Khuyến mãi</span>
-                            <span class="text-danger">-@Model.TienKhuyenMai.ToString("N0") đ</span>
-                        </div>
-                        <hr />
-                        <div class="d-flex justify-content-between mb-1">
-                            <span>Tổng phí</span>
-                            <span>@Model.TongPhi.ToString("N0") đ</span>
-                        </div>
-                        <div class="d-flex justify-content-between ms-3 mb-1 text-muted small">
-                            <span>Phí dịch vụ</span>
-                            <span>@Model.PhiDichVu.ToString("N0") đ</span>
-                        </div>
-                        <div class="d-flex justify-content-between ms-3 mb-3 text-muted small">
-                            <span>Phí khác</span>
-                            <span>@Model.PhiKhac.ToString("N0") đ</span>
-                        </div>
-                        <hr />
-                        <div class="d-flex justify-content-between fw-bold fs-5">
-                            <span>Thực nhận</span>
-                            <span>@Model.ThucNhan.ToString("N0") đ</span>
-                        </div>
-
-                        <div class="mt-4 fst-italic text-secondary small">
-                            <div>Doanh thu từ voucher</div>
-                            <div>0 đ</div>
-                        </div>
-
-                        <hr />
-                        <div class="d-flex justify-content-between fw-bold fs-5">
-                            <span>Tổng cộng</span>
-                            <span>@Model.DoanhThu.ToString("N0") đ</span>
-                        </div>
+                    <!-- Doanh thu trước khuyến mãi -->
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Doanh thu trước khuyến mãi</span>
+                        <span class="fw-bold text-success">@Model.DoanhThuTruocKhuyenMai.ToString("N0") đ</span>
                     </div>
+
+                    <!-- Khuyến mãi -->
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Khuyến mãi</span>
+                        <span class="text-danger">-@Model.TienKhuyenMai.ToString("N0") đ</span>
+                    </div>
+
+                    <hr />
+
+                    <!-- Doanh thu sau khuyến mãi -->
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="fw-bold">Doanh thu sau khuyến mãi</span>
+                        <span class="fw-bold text-success">@Model.DoanhThu.ToString("N0") đ</span>
+                    </div>
+
+                    <!-- Tổng phí -->
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Tổng phí</span>
+                        <span>@Model.TongPhi.ToString("N0") đ</span>
+                    </div>
+                    <div class="d-flex justify-content-between ms-3 mb-1 text-muted small">
+                        <span>Phí dịch vụ</span>
+                        <span>@Model.PhiDichVu.ToString("N0") đ</span>
+                    </div>
+                    <div class="d-flex justify-content-between ms-3 mb-3 text-muted small">
+                        <span>Phí khác</span>
+                        <span>@Model.PhiKhac.ToString("N0") đ</span>
+                    </div>
+
+                    <hr />
+
+                    <!-- Thực nhận -->
+                    <div class="d-flex justify-content-between fw-bold fs-5">
+                        <span>Thực nhận</span>
+                        <span>@Model.ThucNhan.ToString("N0") đ</span>
+                    </div>
+
+                   
                 </div>
             </div>
         </div>
+
 
         <!-- Cột phải: Chi tiết bán vé -->
         <div class="col-md-6 mb-4">

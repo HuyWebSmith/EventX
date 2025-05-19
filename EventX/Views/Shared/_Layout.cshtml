@@ -13,28 +13,37 @@
     <link rel="stylesheet" href="~/EventX.styles.css" asp-append-version="true" />
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
 
+    <style>
+
+    </style>
 
 </head>
 <body class="d-flex flex-column min-vh-100 x">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3" >
+            <div class="container-fluid" >
                 <a asp-area="" asp-controller="Home" asp-action="Index">
                     <img src="~/images/ChatGPT Image Apr 17, 2025, 01_12_24 PM.png" class="navbar-brand object-fit-cover" alt="EventX Logo" style="width:95px; height:60px;" />
                 </a>
+
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
                         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
+                <form class="d-flex me-3" method="get" asp-controller="Home" asp-action="Search">
+                    <div class="input-group">
+                        <span class="input-group-text" id="search-icon">
+                            <i class="fa fa-search"></i>
+                        </span>
+                        <input type="search" name="query" class="form-control" placeholder="Bạn muốn làm gì?..." aria-label="Search" aria-describedby="search-icon" required>
+                        <button class="btn btn-outline-warning text-black" type="submit" style="border-left: 1px solid #ced4da;">Tìm kiếm</button>
+                    </div>
+                </form>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+                        
                     </ul>
+                    
 
                     @if (User.IsInRole("Host"))
                     {
@@ -55,9 +64,96 @@
         </div>
     </main>
 
-        <div class="container border-top text-muted mt-auto">
-            &copy; 2025 - EventX - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <div class=" border-top text-muted mt-5 pt-4 pb-4 " style="background-color: #393F4E;">
+        <div class="row mx-5 mt-5">
+
+            <!-- Liên hệ -->
+            <div class="col-md-4 mb-4 text-white">
+                <h5 class="mb-3 fw-semibold">Hotline</h5>
+                <p class="mb-1"><i class="bi bi-telephone-fill me-2"></i>1900.6408</p>
+                <p class="mb-3">Thứ 2 - Chủ Nhật (8:30 - 23:00)</p>
+
+                <h5 class="mb-3 fw-semibold">Email</h5>
+                <p class="mb-3"><i class="bi bi-envelope-fill me-2"></i>support@EventX.vn</p>
+
+                <h5 class="mb-3 fw-semibold">Văn phòng</h5>
+                <p><i class="bi bi-geo-alt-fill me-2"></i>Lầu 12, 17 Bà Huyện Thanh Quan, Phường 6, Quận 3, TP. Hồ Chí Minh</p>
+            </div>
+
+            <!-- Điều khoản -->
+            <div class="col-md-3 mb-4 text-white">
+                <h5 class="mb-3 fw-semibold">Dành cho Khách hàng</h5>
+                <p><a href="#" class="text-decoration-none text-muted">Điều khoản sử dụng cho khách hàng</a></p>
+
+                <h5 class="mt-4 mb-3 fw-semibold">Dành cho Ban Tổ chức</h5>
+                <p><a href="#" class="text-decoration-none text-muted">Điều khoản sử dụng cho ban tổ chức</a></p>
+
+                <h5 class="mt-4 mb-3 fw-semibold">Đăng ký nhận email</h5>
+                <form class="d-flex" onsubmit="event.preventDefault(); alert('Cảm ơn bạn đã đăng ký!');">
+                    <input type="email" class="form-control me-2" placeholder="Your Email" required>
+                    <button type="submit" class="btn btn-primary">Đăng ký</button>
+                </form>
+            </div>
+
+            <!-- Về công ty & Ứng dụng -->
+            <div class="col-md-3 mb-4 text-white ">
+                <h5 class="mb-3 fw-semibold">Về công ty chúng tôi</h5>
+                <ul class="list-unstyled small d-flex flex-column gap-2 text-white">
+                    <li><a href="#" class="text-decoration-none text-muted">Quy chế hoạt động</a></li>
+                    <li><a href="#" class="text-decoration-none text-muted">Chính sách bảo mật thông tin</a></li>
+                    <li><a href="#" class="text-decoration-none text-muted">Cơ chế giải quyết tranh chấp/khiếu nại</a></li>
+                    <li><a href="#" class="text-decoration-none text-muted">Chính sách bảo mật thanh toán</a></li>
+                    <li><a href="#" class="text-decoration-none text-muted">Chính sách đổi trả và kiểm hàng</a></li>
+                    <li><a href="#" class="text-decoration-none text-muted">Điều kiện vận chuyển và giao nhận</a></li>
+                    <li><a href="#" class="text-decoration-none text-muted">Phương thức thanh toán</a></li>
+                </ul>
+
+                <h5 class="mt-4 mb-3 fw-semibold">Ứng dụng EventX</h5>
+                <p>
+                    <a href="#" class="me-2"><img src="chplay.png" alt="chPlay" style="height: 35px;"></a>
+                    <a href="#"><img src="appstore.png" alt="appStore" style="height: 35px;"></a>
+                </p>
+                <p class="small text-muted">Ứng dụng check-in cho Ban tổ chức</p>
+                <p>
+                    <a href="#" class="me-2"><img src="chplay.png" alt="chPlay" style="height: 35px;"></a>
+                    <a href="#"><img src="appstore.png" alt="appStore" style="height: 35px;"></a>
+                </p>
+            </div>
+
+            <!-- Mạng xã hội & Ngôn ngữ -->
+            <div class="col-md-2 mb-4 text-white">
+                <h5 class="mb-3 fw-semibold">Follow us</h5>
+                <p>
+                    <a href="#" class="text-muted me-3 fs-4"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="text-muted me-3 fs-4"><i class="bi bi-instagram"></i></a>
+                    <a href="#" class="text-muted me-3 fs-4"><i class="bi bi-tiktok"></i></a>
+                    <a href="#" class="text-muted me-3 fs-4"><i class="bi bi-twitter"></i></a>
+                    <a href="#" class="text-muted me-3 fs-4"><i class="bi bi-linkedin"></i></a>
+                </p>
+
+                <h5 class="mt-4 mb-3 fw-semibold">Ngôn ngữ</h5>
+                <select class="form-select form-select-sm w-auto">
+                    <option selected>Tiếng Việt</option>
+                    <option>English</option>
+                </select>
+            </div>
+
         </div>
+
+        <hr class="my-4">
+
+        <div class=" small  text-white d-flex ms-5">
+            <div class="me-5">
+                Hệ thống quản lý và phân phối vé sự kiện hàng đầu Việt Nam EventX Co. Ltd. © 2025<br>
+            </div>
+
+            Công ty TNHH EventX<br>
+            Đại diện theo pháp luật: XXXXXXXXX<br>
+            Địa chỉ:TP. Hồ Chí Minh<br>
+            Hotline: XXXX.XXXX - Email: support@EventX.vn
+        </div>
+    </div>
+
 
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

@@ -229,6 +229,23 @@
         color: white;
         font-size: 0.7em;
     }
+    .title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Giới hạn 2 dòng */
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+ .location {
+     display: -webkit-box;
+  -webkit-line-clamp: 2; /* Giới hạn 2 dòng */
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+ }
 
 </style>
 
@@ -237,21 +254,34 @@
     <div class="ticket-left">
         <div class="half-circle-top"></div>
         <div class="half-circle-bottom"></div>
-        <h2>[@Model.Locations.First().City] @Model.Title</h2>
+        <h2 class="title" title="[@Model.Locations.First().City] @Model.Title">
+          [@Model.Locations.First().City] @Model.Title
+        </h2>
+
         <p><i class="fa fa-calendar me-2"></i><span class="text-success fw-bold">@Model.EventStartTime.ToString("HH:mm") - @Model.EventEndTime.ToString("HH:mm"), @Model.EventStartTime.ToString($"dd.MM.yyyy")</span></p>
-        <p><strong></strong><p><i class="fa-solid fa-location-dot me-2"></i><span class="text-success fw-bold">@Model.Locations.First().Name</span></p>@Model.Locations.First().FullAddress,@Model.Locations.First().Ward,@Model.Locations.First().District,@Model.Locations.First().City</p>
+       <div class="location">
+          <i class="fa-solid fa-location-dot me-2"></i>
+          <span class="text-success fw-bold">@Model.Locations.First().Name</span><br />
+          <a href="https://www.google.com/maps/search/?api=1&query=@(Uri.EscapeDataString(@Model.Locations.First().Name + ", " +Model.Locations.First().FullAddress + ", " + Model.Locations.First().Ward + ", " + Model.Locations.First().District + ", " + Model.Locations.First().City))"
+             target="_blank"
+             title="@Model.Locations.First().FullAddress, @Model.Locations.First().Ward, @Model.Locations.First().District, @Model.Locations.First().City"
+             class="address text-decoration-none text-white ">
+            @Model.Locations.First().FullAddress, @Model.Locations.First().Ward, @Model.Locations.First().District, @Model.Locations.First().City
+          </a>
+        </div>
+
+
         <hr style="border-color: #444;">
 
-        <hr class="" style="border: none; height: 2px; background-color: white; margin-top:120px;" />
+        <hr style="border: none; height: 2px; background-color: white; margin-top: 100px; margin-bottom:20px;" />
 
-        <p class="price">
+         <p class="price">
             Giá từ @Model.Tickets.First().Price.ToString("C", new System.Globalization.CultureInfo("vi-VN"))
         </p>
         
-        <a href="@Url.Action("Select", "Ticket", new { eventID = Model.EventID })" class="btn custom-btn w-100 mt-1">
+       <a href="@Url.Action("Select", "Ticket", new { eventID = Model.EventID })" class="btn custom-btn w-100 py-2 mt-3">
             Mua Vé Ngay
         </a>
-
     </div>
 
     @foreach (var image in Model.EventImages)
