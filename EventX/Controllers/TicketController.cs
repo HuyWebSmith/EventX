@@ -282,7 +282,50 @@ namespace EventX.Controllers
             return View("PaymentFail", new { Message = "Thanh toán thất bại" });
         }
 
-      
+        public async Task<IActionResult> MyTickets()
+        {
+            var userId = _userManager.GetUserId(User);
+            var now = DateTime.Now;
+
+            var tickets = await _context.IssuedTickets
+                .Include(t => t.OrderDetail)
+                    .ThenInclude(od => od.Ticket)
+                        .ThenInclude(ti => ti.Event)
+                .Where(t => t.UserId == userId)
+                .OrderByDescending(t => t.SoldDate)
+                .ToListAsync();
+            foreach (var ticket in tickets)
+            {
+                var ticketEntity = ticket.OrderDetail.Ticket;
+                var eventEntity = ticketEntity.Event;
+
+                var ticketStart = ticketEntity.StartDate; // ngày bắt đầu riêng của vé
+
+                if (ticketStart > now && ticketStart <= now.AddDays(1)) // vé sắp diễn ra
+                {
+                    bool alreadyNotified = _context.Notifications.Any(n =>
+                        n.UserId == userId &&
+                        n.Message.Contains(ticketEntity.Description) && // hoặc tên sự kiện
+                        n.CreatedAt.Date == now.Date);
+
+                    if (!alreadyNotified)
+                    {
+                        var notification = new Notification
+                        {
+                            UserId = userId,
+                            Message = $"⏰ Vé \"{ticketEntity.Description}\" của sự kiện \"{eventEntity.Title}\" sẽ diễn ra lúc {ticketStart:HH:mm dd/MM/yyyy}.",
+                            Type = NotificationType.ThongBao,
+                            CreatedAt = now,
+                            IsRead = false
+                        };
+                        _context.Notifications.Add(notification);
+                    }
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return View(tickets);
+        }
 
     }
 }

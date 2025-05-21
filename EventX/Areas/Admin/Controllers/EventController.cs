@@ -99,7 +99,6 @@ namespace EventX.Areas.Admin.Controllers
                     return Json(new { success = false, message = "Sự kiện chưa được duyệt, không thể chuyển sang Đang diễn ra." });
                 }
 
-                // Kiểm tra thời gian nếu cần thiết (đang diễn ra hay không)
                 if (DateTime.Now < eventEntity.EventStartTime || DateTime.Now > eventEntity.EventEndTime)
                 {
                     return Json(new { success = false, message = "Sự kiện chưa bắt đầu hoặc đã kết thúc." });
@@ -110,8 +109,97 @@ namespace EventX.Areas.Admin.Controllers
             eventEntity.Status = status;
             await _context.SaveChangesAsync();
 
+            Notification notification = null;
+
+            switch (status)
+            {
+                case EventStatus.Pending:
+                    notification = new Notification
+                    {
+                        UserId = eventEntity.OrganizerId,
+                        Message = $"⌛ Sự kiện \"{eventEntity.Title}\" đang chờ duyệt.",
+                        Type = NotificationType.ThongBao, // hoặc tùy chỉnh loại NotificationType
+                        CreatedAt = DateTime.Now,
+                        IsRead = false
+                    };
+                    break;
+
+                case EventStatus.Approved:
+                    notification = new Notification
+                    {
+                        UserId = eventEntity.OrganizerId,
+                        Message = $"🎉 Sự kiện \"{eventEntity.Title}\" đã được phê duyệt!",
+                        Type = NotificationType.Duyet,
+                        CreatedAt = DateTime.Now,
+                        IsRead = false
+                    };
+                    break;
+
+                case EventStatus.Rejected:
+                    notification = new Notification
+                    {
+                        UserId = eventEntity.OrganizerId,
+                        Message = $"❌ Sự kiện \"{eventEntity.Title}\" đã bị từ chối.",
+                        Type = NotificationType.ThongBao,
+                        CreatedAt = DateTime.Now,
+                        IsRead = false
+                    };
+                    break;
+
+                case EventStatus.Scheduled:
+                    notification = new Notification
+                    {
+                        UserId = eventEntity.OrganizerId,
+                        Message = $"📅 Sự kiện \"{eventEntity.Title}\" đã được lên lịch.",
+                        Type = NotificationType.ThongBao,
+                        CreatedAt = DateTime.Now,
+                        IsRead = false
+                    };
+                    break;
+
+                case EventStatus.Ongoing:
+                    notification = new Notification
+                    {
+                        UserId = eventEntity.OrganizerId,
+                        Message = $"🔔 Sự kiện \"{eventEntity.Title}\" đang diễn ra.",
+                        Type = NotificationType.ThongBao,
+                        CreatedAt = DateTime.Now,
+                        IsRead = false
+                    };
+                    break;
+
+                case EventStatus.Completed:
+                    notification = new Notification
+                    {
+                        UserId = eventEntity.OrganizerId,
+                        Message = $"✅ Sự kiện \"{eventEntity.Title}\" đã kết thúc.",
+                        Type = NotificationType.ThongBao,
+                        CreatedAt = DateTime.Now,
+                        IsRead = false
+                    };
+                    break;
+
+                case EventStatus.Cancelled:
+                    notification = new Notification
+                    {
+                        UserId = eventEntity.OrganizerId,
+                        Message = $"🚫 Sự kiện \"{eventEntity.Title}\" đã bị hủy.",
+                        Type = NotificationType.ThongBao,
+                        CreatedAt = DateTime.Now,
+                        IsRead = false
+                    };
+                    break;
+            }
+
+            if (notification != null)
+            {
+                _context.Notifications.Add(notification);
+                await _context.SaveChangesAsync();
+            }
+
             return Json(new { success = true });
         }
+
 
         [HttpGet]
         public async Task<IActionResult> SearchAndFilter(string keyword, string status, int? categoryId)

@@ -256,6 +256,16 @@ namespace EventX.Areas.Host.Controllers
 
                 // Sau khi gửi xong hết mail cho đơn hàng này => đánh dấu đã gửi
                 order.IsEmailSent = true;
+                var notification = new Notification
+                {
+                    UserId = order.UserID,
+                    Message = "Tổ chức đã gửi mail chứa QR code cho bạn.",
+                    Type = NotificationType.ThongBao,
+                    CreatedAt = DateTime.Now,
+                    IsRead = false
+                };
+                _context.Notifications.Add(notification);
+                _context.SaveChanges();
             }
 
             // Lưu lại thay đổi trong cơ sở dữ liệu

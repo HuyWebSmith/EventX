@@ -384,15 +384,26 @@
             loop: false,
         });
 
-            var swiperEvents = new Swiper('.mySwiper', {
-        slidesPerView: 4,
-        spaceBetween: 20,
-        navigation: {
-            nextEl: '.events-button-next',
-            prevEl: '.events-button-prev',
+               const swiperEvents = new Swiper('.mySwiper', {
+      slidesPerView: 1,     // mặc định 1 slide trên màn nhỏ
+      spaceBetween: 20,
+      navigation: {
+        nextEl: '.mySwiper .swiper-button-next',
+        prevEl: '.mySwiper .swiper-button-prev',
+      },
+      breakpoints: {
+        576: {
+          slidesPerView: 2,
         },
-        loop: false,
+        768: {
+          slidesPerView: 3,
+        },
+        992: {
+          slidesPerView: 4,
+        }
+      }
     });
+
 
     });
 </script>

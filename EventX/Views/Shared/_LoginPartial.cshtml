@@ -23,6 +23,7 @@
                 }
                 <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index"><i class="fa-regular fa-circle-user me-2"></i>Tài khoản của tôi</a></li>
                 <li><a class="dropdown-item" href="/Host/Event/Index"><i class="fa-regular fa-calendar-days me-2"></i>Sự kiện của tôi</a></li>
+                <li><a class="dropdown-item" href="/Ticket/MyTickets"><i class="fa-solid fa-ticket"></i>Vé của của tôi</a></li>
                 <li><hr class="dropdown-divider" /></li>
                 <li>
                     <form method="post" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home")">

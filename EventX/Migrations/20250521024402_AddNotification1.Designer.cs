@@ -4,6 +4,7 @@ using EventX.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EventX.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250521024402_AddNotification1")]
+    partial class AddNotification1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -507,39 +510,6 @@ namespace EventX.Migrations
                     b.ToTable("RedInvoices");
                 });
 
-            modelBuilder.Entity("EventX.Models.Review", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Comment")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("EventId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Rating")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Reviews");
-                });
-
             modelBuilder.Entity("EventX.Models.Slider", b =>
                 {
                     b.Property<int>("Id")
@@ -864,23 +834,6 @@ namespace EventX.Migrations
                     b.Navigation("Event");
                 });
 
-            modelBuilder.Entity("EventX.Models.Review", b =>
-                {
-                    b.HasOne("EventX.Models.Event", "Event")
-                        .WithMany("Reviews")
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("EventX.Models.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("Event");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("EventX.Models.Ticket", b =>
                 {
                     b.HasOne("EventX.Models.Event", "Event")
@@ -957,8 +910,6 @@ namespace EventX.Migrations
                     b.Navigation("PaymentInfos");
 
                     b.Navigation("RedInvoices");
-
-                    b.Navigation("Reviews");
 
                     b.Navigation("Tickets");
                 });

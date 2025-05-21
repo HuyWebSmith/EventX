@@ -2,6 +2,7 @@
 using EventX.Models;
 using EventX.Repositories;
 using EventX.ViewModels;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
@@ -15,15 +16,18 @@ namespace EventX.Controllers
         private readonly IEventRepository _eventRepository;
         private readonly ICategoryRepository _categoryRepository;
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
         public HomeController(ILogger<HomeController> logger, 
             ApplicationDbContext context, 
             IEventRepository eventRepository, 
-            ICategoryRepository categoryRepository)
+            ICategoryRepository categoryRepository,
+            UserManager<ApplicationUser> userManager)
         {
             _logger = logger;
             _context = context;
             _eventRepository = eventRepository;
             _categoryRepository = categoryRepository;
+            _userManager = userManager;
         }
 
         public async Task<IActionResult> Index()
@@ -63,15 +67,23 @@ namespace EventX.Controllers
             {
                 return NotFound();  // Nếu không tìm thấy eventId, trả về NotFound
             }
+          
 
             var eventDetails = await _context.Event
             .Include(e => e.Category)
+            .Include(e => e.Reviews)
+             .ThenInclude(r => r.User)
             .Include(e => e.EventImages)
             .Include(e => e.Tickets)
             .Include(e => e.PaymentInfos)
             .Include(e => e.RedInvoices)
             .Include(e => e.Locations)
             .FirstOrDefaultAsync(e => e.EventID == eventId);
+
+            if (eventDetails == null)
+            {
+                return NotFound("Không tìm thấy sự kiện.");
+            }
 
             // Sau khi load xong thì lọc vé
             if (eventDetails != null)
@@ -99,11 +111,111 @@ namespace EventX.Controllers
 
             var results = _context.Event
                 .Include(e => e.EventImages)
-                .Where(e => e.Title.Contains(query) && (e.Status == EventStatus.Approved || e.Status == EventStatus.Ongoing))
+                .Where(e => e.Title.Contains(query) && (e.Status == EventStatus.Approved || e.Status == EventStatus.Ongoing || e.Status == EventStatus.Completed))
                 .ToList();
 
             return View(results); // truyền danh sách kết quả xuống view
         }
+        [HttpGet]
+        public async Task<IActionResult> GetNotifications()
+        {
+            var userId = _userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
 
+            var notifications = await _context.Notifications
+                .Where(n => n.UserId == userId)
+                .OrderByDescending(n => n.CreatedAt)
+                .Take(20) // lấy 20 thông báo gần đây nhất, tuỳ chỉnh
+                .ToListAsync();
+
+            return Json(notifications);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetUnreadNotifications()
+        {
+            var userId = _userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var notifications = await _context.Notifications
+                .Where(n => n.UserId == userId && !n.IsRead)
+                .OrderByDescending(n => n.CreatedAt)
+                .Take(5)  // lấy 5 thông báo mới nhất
+                .ToListAsync();
+
+            return Json(notifications);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetUnreadCount()
+        {
+            var userId = _userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var count = await _context.Notifications
+                .Where(n => n.UserId == userId && !n.IsRead)
+                .CountAsync();
+
+            return Json(new { count });
+        }
+
+        [HttpPost]
+        public IActionResult MarkNotificationRead(int id)
+        {
+            var notification = _context.Notifications.Find(id);
+            if (notification == null)
+                return NotFound();
+
+            notification.IsRead = true;
+            _context.SaveChanges();
+
+            return Ok();
+        }
+
+
+        public class MarkReadRequest
+        {
+            public int Id { get; set; }
+        }
+
+        // GET: Giao diện đánh giá
+        public async Task<IActionResult> Create(int eventId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            bool hasTicket = _context.OrderDetail
+                .Any(od => od.Ticket.EventID == eventId &&
+                           od.IssuedTickets.Any(it => it.UserId == user.Id));
+
+            if (!hasTicket)
+                return Forbid();
+
+            ViewBag.EventId = eventId;
+            return View();
+
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> Create(Review review)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null)
+            {
+                review.UserId = user.Id;
+            }
+            else
+            {
+                review.UserId = null;
+            }
+            review.CreatedAt = DateTime.Now;
+
+            _context.Reviews.Add(review);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Display", "Home", new { eventId = review.EventId });
+        }
     }
 }

@@ -1,0 +1,69 @@
+﻿@model List<EventX.Models.IssuedTicket>
+
+@{
+    ViewData["Title"] = "Vé của tôi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2 class="mb-4 text-primary fw-bold">🎫 Vé của tôi</h2>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info text-center fw-semibold">
+        Bạn chưa có vé nào.
+    </div>
+}
+else
+{
+    <div class="table-responsive shadow-sm rounded">
+        <table class="table table-bordered table-striped align-middle mb-0">
+            <thead class="table-dark text-center">
+                <tr>
+                    <th>Mã vé</th>
+                    <th>Sự kiện</th>
+                    <th>Loại vé</th>
+                    <th>Giá</th>
+                    <th>Ngày mua</th>
+                    <th>Check-in</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ticket in Model)
+                {
+                    <tr>
+                        <td class="text-center text-break fw-semibold">@ticket.TicketCode</td>
+                        <td class="text-break">@ticket.OrderDetail.Ticket.Event.Title</td>
+                        <td>@ticket.OrderDetail.Ticket.Description</td>
+                        <td class="text-end text-success fw-bold">@ticket.OrderDetail.Ticket.Price.ToString("N0") VND</td>
+                        <td class="text-center text-muted" style="white-space: nowrap;">
+                            @ticket.SoldDate?.ToString("dd/MM/yyyy HH:mm")
+                        </td>
+                        <td class="text-center">
+                            @if (ticket.IsCheckedIn)
+                            {
+                                <span class="badge bg-success" data-bs-toggle="tooltip" title="Đã check-in lúc @ticket.CheckinTime?.ToString("dd/MM/yyyy HH:mm")">
+                                    <i class="bi bi-check-circle"></i> Đã check-in
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger" data-bs-toggle="tooltip" title="Chưa check-in">
+                                    <i class="bi bi-x-circle"></i> Chưa check-in
+                                </span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+}

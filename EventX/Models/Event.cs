@@ -58,6 +58,8 @@ namespace EventX.Models
         public ICollection<RedInvoice> RedInvoices { get; set; } = new List<RedInvoice>();
         public ICollection<Location> Locations { get; set; } = new List<Location>();
 
+        public ICollection<Review> Reviews { get; set; } = new List<Review>();
+
         //public Dictionary<TicketType, decimal> TicketPrices { get; set; } = new Dictionary<TicketType, decimal>();
 
     }

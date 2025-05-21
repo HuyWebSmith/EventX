@@ -62,21 +62,34 @@ namespace EventX.Areas.Admin.Controllers
         }
 
         // Duyệt đơn hàng (Thay đổi trạng thái)
-        public IActionResult Approve(int orderId)
-        {
-            var order = _context.Order.FirstOrDefault(o => o.OrderID == orderId);
-            if (order != null)
+            public IActionResult Approve(int orderId)
             {
-                // Thay đổi trạng thái đơn hàng thành Confirmed
-                order.OrderStatus = OrderStatus.Confirmed;
+                var order = _context.Order.FirstOrDefault(o => o.OrderID == orderId);
+                if (order != null)
+                {
+                    // Thay đổi trạng thái đơn hàng thành Confirmed
+                    order.OrderStatus = OrderStatus.Confirmed;
 
-                // Cập nhật vào cơ sở dữ liệu
-                _context.SaveChanges();
+                    // Cập nhật vào cơ sở dữ liệu
+                    _context.SaveChanges();
+                    Notification notification = null;
+                    notification = new Notification
+                    {
+                        UserId = order.UserID,
+                        Message = $"Đơn hàng #{order.OrderID} của bạn đã được duyệt thành công!",
+                        Type = NotificationType.ThongBao, // hoặc tùy chỉnh loại NotificationType
+                        CreatedAt = DateTime.Now,
+                        IsRead = false
+                    };
+                    _context.Notifications.Add(notification);
+
+                    // Lưu thay đổi vào database
+                    _context.SaveChanges();
             }
 
-            // Quay lại danh sách đơn hàng
-            return RedirectToAction("Index");
-        }
+                // Quay lại danh sách đơn hàng
+                return RedirectToAction("Index");
+            }
 
         // Hủy đơn hàng (Thay đổi trạng thái thành Cancelled)
         public IActionResult Cancel(int orderId)
@@ -86,6 +99,20 @@ namespace EventX.Areas.Admin.Controllers
             {
                 // Thay đổi trạng thái đơn hàng thành Cancelled
                 order.OrderStatus = OrderStatus.Cancelled;
+
+                // Tạo thông báo cho người mua
+                var notification = new Notification
+                {
+                    UserId = order.UserID,
+                    Message = $"Đơn hàng #{order.OrderID} của bạn đã bị hủy.",
+                    Type = NotificationType.ThongBao,
+                    CreatedAt = DateTime.Now,
+                    IsRead = false
+                };
+
+                _context.Notifications.Add(notification);
+
+                // Lưu thay đổi vào database
                 _context.SaveChanges();
             }
 
@@ -93,21 +120,32 @@ namespace EventX.Areas.Admin.Controllers
             return RedirectToAction("Index");
         }
 
+
         // Gửi email khi duyệt đơn hàng
         public IActionResult SendEmail(int orderId)
         {
             var order = _context.Order.FirstOrDefault(o => o.OrderID == orderId);
             if (order != null)
             {
-                // Tạo nội dung email
                 var emailContent = GenerateEmailContent(order);
-                // Gửi email cho khách hàng
                 //_emailService.SendEmail(order.ApplicationUser.Email, "Xác nhận thanh toán", emailContent);
+                Console.WriteLine("UserId: " + order.UserID);
+
+                var notification = new Notification
+                {
+                    UserId = order.UserID,
+                    Message = "Tổ chức đã gửi mail chứa qr code cho bạn.",
+                    Type = NotificationType.ThongBao,
+                    CreatedAt = DateTime.Now,
+                    IsRead = false
+                };
+                _context.Notifications.Add(notification);
+                _context.SaveChanges();
             }
 
-            // Sau khi gửi email, quay lại danh sách đơn hàng
             return RedirectToAction("Index");
         }
+
 
         // Tạo nội dung email cho việc xác nhận thanh toán
         private string GenerateEmailContent(Order order)

@@ -23,6 +23,9 @@ namespace EventX.Models
         public DbSet<RedInvoice> RedInvoices { get; set; }
         public DbSet<Slider> Sliders { get; set; }
         public DbSet<IssuedTicket> IssuedTickets { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
+        public DbSet<Review> Reviews { get; set; }
+
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

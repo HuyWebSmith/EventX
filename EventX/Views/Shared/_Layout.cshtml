@@ -9,19 +9,38 @@
     <title>@ViewData["Title"] - EventX</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/EventX.styles.css" asp-append-version="true" />
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
-
     <style>
+        #notificationList {
+            max-height: 300px; /* chiều cao tối đa */
+            overflow-y: auto; /* bật cuộn dọc */
+        }
+
+        .notification-item:hover {
+            background-color: #f8f9fa;
+            cursor: pointer;
+        }
+
+        .notification-item.read {
+            opacity: 0.9; /* mờ hơn */
+            background-color: #f8f9fa; /* nền nhạt hơn */
+            cursor: default;
+        }
+
+    
+        .btnShake {
+            animation: shake 0.5s ease-in-out ;
+        }
 
     </style>
 
 </head>
 <body class="d-flex flex-column min-vh-100 x">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3" >
-            <div class="container-fluid" >
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
                 <a asp-area="" asp-controller="Home" asp-action="Index">
                     <img src="~/images/ChatGPT Image Apr 17, 2025, 01_12_24 PM.png" class="navbar-brand object-fit-cover" alt="EventX Logo" style="width:95px; height:60px;" />
                 </a>
@@ -39,11 +58,10 @@
                         <button class="btn btn-outline-warning text-black" type="submit" style="border-left: 1px solid #ced4da;">Tìm kiếm</button>
                     </div>
                 </form>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        
-                    </ul>
-                    
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between align-items-center">
+                    <ul class="navbar-nav flex-grow-1"></ul>
+
+                   
 
                     @if (User.IsInRole("Host"))
                     {
@@ -51,9 +69,30 @@
                             <i class="fa-regular fa-calendar-plus me-1"></i> Tạo sự kiện
                         </a>
                     }
+
+                    <a href="/Ticket/MyTickets" class="btn btn-warning me-2" style="color:black;">
+                        <i class="fa-solid fa-ticket"></i> Vé của tôi
+                    </a>
+
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <li class="nav-item dropdown me-3 ms-3 list-unstyled">
+                            <a class="nav-link position-relative" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fa-solid fa-bell fa-lg btnShake"></i>
+                                <span id="notificationCount" class="badge bg-danger rounded-pill position-absolute top-0 start-100 translate-middle" style="display:none;">0</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end mt-3 me-2" aria-labelledby="notificationDropdown" style="width: 300px;" id="notificationList">
+                                <li class="dropdown-header d-flex justify-content-between align-items-center px-3">
+                                    <span class="fw-bold">Thông báo</span>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+
+                            </ul>
+                        </li>
+                    }
+                    
                     <partial name="_LoginPartial" />
                 </div>
-
             </div>
         </nav>
     </header>
@@ -64,9 +103,8 @@
         </div>
     </main>
 
-    <div class=" border-top text-muted mt-5 pt-4 pb-4 " style="background-color: #393F4E;">
+    <footer class="border-top text-muted mt-5 pt-4 pb-4" style="background-color: #393F4E;">
         <div class="row mx-5 mt-5">
-
             <!-- Liên hệ -->
             <div class="col-md-4 mb-4 text-white">
                 <h5 class="mb-3 fw-semibold">Hotline</h5>
@@ -137,29 +175,152 @@
                     <option>English</option>
                 </select>
             </div>
-
         </div>
 
         <hr class="my-4">
 
-        <div class=" small  text-white d-flex ms-5">
+        <div class="small text-white d-flex ms-5">
             <div class="me-5">
-                Hệ thống quản lý và phân phối vé sự kiện hàng đầu Việt Nam EventX Co. Ltd. © 2025<br>
+                Hệ thống quản lý và phân phối vé sự kiện hàng đầu Việt Nam EventX Co. Ltd. © 2025<br />
             </div>
 
-            Công ty TNHH EventX<br>
-            Đại diện theo pháp luật: XXXXXXXXX<br>
-            Địa chỉ:TP. Hồ Chí Minh<br>
+            Công ty TNHH EventX<br />
+            Đại diện theo pháp luật: XXXXXXXXX<br />
+            Địa chỉ:TP. Hồ Chí Minh<br />
             Hotline: XXXX.XXXX - Email: support@EventX.vn
         </div>
-    </div>
-
-
+    </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
-</body>
 
+    <script>
+        async function loadNotifications() {
+            try {
+                const res = await fetch('/Home/GetNotifications');
+                if (!res.ok) throw new Error('Failed to load notifications');
+                const notifications = await res.json();
+                const unreadCount = notifications.filter(n => !n.isRead).length;
+
+                const badge = document.getElementById('notificationCount');
+                const noNotifEl = document.getElementById('noNotification');
+                const listEl = document.getElementById('notificationList');
+                const bellIcon = document.querySelector('#notificationDropdown i.fa-bell');
+
+                // Xóa các thông báo cũ (trừ header, divider, noNotification)
+                [...listEl.querySelectorAll('li')].forEach(li => {
+                    if (
+                        !li.classList.contains('dropdown-header') &&
+                        !li.querySelector('hr') &&
+                        li.id !== 'noNotification'
+                    ) {
+                        li.remove();
+                    }
+                });
+
+                if (notifications.length === 0) {
+                    noNotifEl.style.display = 'block';
+                    badge.style.display = 'none';
+                    if (bellIcon) bellIcon.classList.remove('btnShake');
+                    return;
+                }
+
+
+                        // Cập nhật badge và hiệu ứng rung
+            if (unreadCount > 0) {
+                badge.style.display = 'inline-block';
+                badge.textContent = unreadCount;
+
+                if (bellIcon && !bellIcon.classList.contains('btnShake')) {
+                    bellIcon.classList.add('btnShake');
+
+                    // Remove class sau khi animation kết thúc
+                    bellIcon.addEventListener('animationend', () => {
+                        bellIcon.classList.remove('btnShake');
+                    }, { once: true });
+                }
+            } else {
+                badge.style.display = 'none';
+                if (bellIcon) bellIcon.classList.remove('btnShake');
+            }
+
+
+                // Tạo các item thông báo
+                notifications.forEach(notif => {
+                    const li = document.createElement('li');
+                    li.classList.add('px-3', 'py-2', 'border-bottom', 'notification-item');
+                    li.style.cursor = 'pointer';
+
+                    if (notif.isRead) {
+                        li.classList.add('text-muted', 'read');
+                        li.style.fontWeight = 'normal';
+                    } else {
+                        li.style.fontWeight = 'bold';
+                    }
+
+                    li.title = notif.message;
+
+                    const createdAt = new Date(notif.createdAt);
+                    const dateStr = isNaN(createdAt) ? '' : createdAt.toLocaleString();
+
+                    li.innerHTML = `
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>${notif.message}</div>
+                            <small class="text-muted ms-2">${dateStr}</small>
+                        </div>
+                    `;
+
+                    // Khi click vào thông báo
+                            li.addEventListener('click', async () => {
+            if (!notif.isRead) {
+                try {
+                    const resMarkRead = await fetch(`/Home/MarkNotificationRead/${notif.id}`, { method: 'POST' });
+                    if (resMarkRead.ok) {
+                        notif.isRead = true;
+                        li.classList.remove('fw-bold');
+                        li.classList.add('text-muted', 'read');
+                        li.style.fontWeight = 'normal';
+                        // Cập nhật badge số lượng
+                        unreadCount--;
+                        if (unreadCount > 0) {
+                            badge.textContent = unreadCount;
+                        } else {
+                            badge.style.display = 'none';
+                                    if (bellIcon) bellIcon.classList.remove('btnShake');
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Error marking notification read:', error);
+                        }
+                    }
+                });
+
+
+                    listEl.appendChild(li);
+                });
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const bellIcon = document.querySelector('#notificationDropdown i.fa-bell');
+            const dropdown = document.getElementById('notificationDropdown');
+
+            if (dropdown && bellIcon) {
+                dropdown.addEventListener('show.bs.dropdown', () => {
+                    bellIcon.classList.remove('btnShake');
+                });
+            }
+
+            loadNotifications();
+            setInterval(loadNotifications, 60000);
+        });
+    </script>
+
+
+
+    @RenderSection("Scripts", required: false)
+</body>
 </html>

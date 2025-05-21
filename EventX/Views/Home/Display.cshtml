@@ -247,6 +247,26 @@
 
  }
 
+ .star-rating {
+        direction: rtl;
+        font-size: 2rem;
+        unicode-bidi: bidi-override;
+        display: inline-flex;
+        gap: 0.25rem;
+        cursor: pointer;
+    }
+    .star-rating input {
+        display: none;
+    }
+    .star-rating label {
+        color: #ccc;
+        transition: color 0.2s;
+    }
+    .star-rating input:checked ~ label,
+    .star-rating label:hover,
+    .star-rating label:hover ~ label {
+        color: #ffc107; /* Màu vàng */
+    }
 </style>
 
 <div class="ticket-wrapper shadow-lg mt-5">
@@ -279,9 +299,19 @@
             Giá từ @Model.Tickets.First().Price.ToString("C", new System.Globalization.CultureInfo("vi-VN"))
         </p>
         
-       <a href="@Url.Action("Select", "Ticket", new { eventID = Model.EventID })" class="btn custom-btn w-100 py-2 mt-3">
-            Mua Vé Ngay
-        </a>
+       @if (Model.Status == EventStatus.Completed)
+        {
+            <a href="#" class="btn btn-secondary w-100 py-2 mt-3 disabled" tabindex="-1" aria-disabled="true">
+                Sự kiện đã kết thúc
+            </a>
+        }
+        else
+        {
+            <a href="@Url.Action("Select", "Ticket", new { eventID = Model.EventID })" class="btn custom-btn w-100 py-2 mt-3">
+                Mua Vé Ngay
+            </a>
+        }
+
     </div>
 
     @foreach (var image in Model.EventImages)
@@ -313,9 +343,19 @@
 <div class="ticket-box mt-5">
     <h3 class="h5 d-flex justify-content-between">
         Thông tin vé
+        @if (Model.Status == EventStatus.Completed)
+    {
+        <a href="#" class="btn btn-secondary w-25 h-25 mt-1 disabled" tabindex="-1" aria-disabled="true">
+            Đã kết thúc
+        </a>
+    }
+    else
+    {
         <a href="@Url.Action("Select", "Ticket", new { eventID = Model.EventID })" class="btn custom-btn w-25 h-25 mt-1">
             Mua Vé Ngay
         </a>
+    }
+
     </h3>
 
     <hr />
@@ -382,6 +422,82 @@
         <p><strong>Email:</strong> @Model.OrganizerEmail</p>
         <p> @Model.OrganizerInfo</p>
     </div>
+</div>
+@if (Model.Reviews != null && Model.Reviews.Any())
+{
+    <div class="mt-5">
+        <h4 class="mb-4 fw-bold" style="font-size: 1.5rem;">
+            Đánh giá
+        </h4>
+
+        <div class="list-group shadow-sm rounded" style="max-height: 350px; overflow-y: auto; scrollbar-width: thin;">
+            @foreach (var review in Model.Reviews.OrderByDescending(r => r.CreatedAt).Take(5))
+            {
+                <div class="list-group-item bg-white mb-3 border rounded p-3" style="box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <strong class="text-secondary" style="font-weight: 600; font-size: 1rem;">
+                            @(review.User?.FullName ?? "Người dùng ẩn danh")
+                        </strong>
+
+                        <small class="text-muted" style="font-size: 0.85rem;">@review.CreatedAt.ToString("dd/MM/yyyy")</small>
+                    </div>
+                    <div class="mb-3" style="font-size: 1.1rem; line-height: 1;">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            if (i <= review.Rating)
+                            {
+                                <span class="text-warning" style="cursor: default;">&#9733;</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted" style="cursor: default;">&#9734;</span>
+                            }
+                        }
+                    </div>
+
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <p class="text-muted mt-4 fst-italic">Chưa có đánh giá nào cho sự kiện này.</p>
+}
+
+<hr class="my-5" />
+
+<!-- Form thêm đánh giá mới -->
+<div class="mt-4">
+    <h5>⭐ Gửi đánh giá của bạn</h5>
+
+    <form method="post" asp-controller="Home" asp-action="Create" asp-route-eventId="@Model.EventID">
+    <div class="mb-3">
+        <div class="star-rating" role="radiogroup" aria-labelledby="rating-label">
+            <input type="radio" id="star5" name="Rating" value="5" />
+            <label for="star5" title="5 sao">&#9733;</label>
+
+            <input type="radio" id="star4" name="Rating" value="4" />
+            <label for="star4" title="4 sao">&#9733;</label>
+
+            <input type="radio" id="star3" name="Rating" value="3" />
+            <label for="star3" title="3 sao">&#9733;</label>
+
+            <input type="radio" id="star2" name="Rating" value="2" />
+            <label for="star2" title="2 sao">&#9733;</label>
+
+            <input type="radio" id="star1" name="Rating" value="1" />
+            <label for="star1" title="1 sao">&#9733;</label>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="comment" class="form-label">Nội dung đánh giá</label>
+        <textarea class="form-control" id="comment" name="Comment" rows="3" placeholder="Viết nhận xét của bạn..." required></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Gửi đánh giá</button>
+</form>
 </div>
 
 
