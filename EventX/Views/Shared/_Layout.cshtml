@@ -34,6 +34,11 @@
             animation: shake 0.5s ease-in-out ;
         }
 
+        footer .text-muted {
+            color: white !important;
+        }
+
+
     </style>
 
 </head>
@@ -70,12 +75,13 @@
                         </a>
                     }
 
-                    <a href="/Ticket/MyTickets" class="btn btn-warning me-2" style="color:black;">
-                        <i class="fa-solid fa-ticket"></i> Vé của tôi
-                    </a>
+                    
 
                     @if (User.Identity.IsAuthenticated)
                     {
+                        <a href="/Ticket/MyTickets" class="btn  me-2" style="color:black;">
+                            <i class="fa-solid fa-ticket me-1"></i> Vé của tôi
+                        </a>
                         <li class="nav-item dropdown me-3 ms-3 list-unstyled">
                             <a class="nav-link position-relative" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fa-solid fa-bell fa-lg btnShake"></i>
@@ -108,15 +114,16 @@
             <!-- Liên hệ -->
             <div class="col-md-4 mb-4 text-white">
                 <h5 class="mb-3 fw-semibold">Hotline</h5>
-                <p class="mb-1"><i class="bi bi-telephone-fill me-2"></i>1900.6408</p>
+                <p class="mb-1"><i class="fas fa-phone-alt me-2"></i>1900.6408</p>
                 <p class="mb-3">Thứ 2 - Chủ Nhật (8:30 - 23:00)</p>
 
                 <h5 class="mb-3 fw-semibold">Email</h5>
-                <p class="mb-3"><i class="bi bi-envelope-fill me-2"></i>support@EventX.vn</p>
+                <p class="mb-3"><i class="fas fa-envelope me-2"></i>support@EventX.vn</p>
 
                 <h5 class="mb-3 fw-semibold">Văn phòng</h5>
-                <p><i class="bi bi-geo-alt-fill me-2"></i>Lầu 12, 17 Bà Huyện Thanh Quan, Phường 6, Quận 3, TP. Hồ Chí Minh</p>
+                <p><i class="fas fa-map-marker-alt me-2"></i>Lầu XX, XX XXXXXXXXXXXXXX, Phường X, Quận X, TP. Hồ Chí Minh</p>
             </div>
+
 
             <!-- Điều khoản -->
             <div class="col-md-3 mb-4 text-white">
@@ -147,26 +154,23 @@
                 </ul>
 
                 <h5 class="mt-4 mb-3 fw-semibold">Ứng dụng EventX</h5>
-                <p>
-                    <a href="#" class="me-2"><img src="chplay.png" alt="chPlay" style="height: 35px;"></a>
-                    <a href="#"><img src="appstore.png" alt="appStore" style="height: 35px;"></a>
+                <p class="d-flex flex-column gap-3">
+                    <a href="#" class="me-2"><img src="/images/playstore.webp" alt="chPlay" style="height: 35px;"></a>
+                    <a href="#"><img src="/images/appstore.png" alt="appStore" style="height: 35px;"></a>
                 </p>
-                <p class="small text-muted">Ứng dụng check-in cho Ban tổ chức</p>
-                <p>
-                    <a href="#" class="me-2"><img src="chplay.png" alt="chPlay" style="height: 35px;"></a>
-                    <a href="#"><img src="appstore.png" alt="appStore" style="height: 35px;"></a>
-                </p>
+                
             </div>
 
             <!-- Mạng xã hội & Ngôn ngữ -->
             <div class="col-md-2 mb-4 text-white">
                 <h5 class="mb-3 fw-semibold">Follow us</h5>
-                <p>
-                    <a href="#" class="text-muted me-3 fs-4"><i class="bi bi-facebook"></i></a>
-                    <a href="#" class="text-muted me-3 fs-4"><i class="bi bi-instagram"></i></a>
-                    <a href="#" class="text-muted me-3 fs-4"><i class="bi bi-tiktok"></i></a>
-                    <a href="#" class="text-muted me-3 fs-4"><i class="bi bi-twitter"></i></a>
-                    <a href="#" class="text-muted me-3 fs-4"><i class="bi bi-linkedin"></i></a>
+                <p class="">
+                    <a href="#" class="text-muted me-3 fs-4 "><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="text-muted me-3 fs-4"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-muted me-3 fs-4"><i class="fab fa-tiktok"></i></a>
+                    <a href="#" class="text-muted me-3 fs-4"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-muted me-3 fs-4"><i class="fab fa-linkedin-in"></i></a>
+
                 </p>
 
                 <h5 class="mt-4 mb-3 fw-semibold">Ngôn ngữ</h5>
@@ -179,8 +183,10 @@
 
         <hr class="my-4">
 
-        <div class="small text-white d-flex ms-5">
+        <div class="small text-white d-flex ms-5 ">
+
             <div class="me-5">
+
                 Hệ thống quản lý và phân phối vé sự kiện hàng đầu Việt Nam EventX Co. Ltd. © 2025<br />
             </div>
 
