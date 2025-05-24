@@ -6,60 +6,73 @@
     Layout = "~/Areas/Host/Views/Shared/_HostLayout.cshtml";
 }
 
-<!-- Thêm Bootstrap 5 CSS nếu chưa có trong layout -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 
-<div class="container my-4">
-    <h2 class="mb-4 text-primary fw-bold">Check-in vé thủ công - Sự kiện #@eventId</h2>
+<div class="container my-5">
+    <div class="card shadow-lg rounded-4 border-0">
+        <div class="card-body p-4">
+            <h2 class="text-primary text-center mb-4">
+                <i class="fa-solid fa-user-check"></i> Check-in vé thủ công - Sự kiện #@eventId
+            </h2>
 
-    <div class="input-group mb-4" style="max-width: 600px;">
-        <input type="text" id="manual-ticket-code" class="form-control rounded-start" placeholder="Nhập mã vé cần check-in" />
-        <button id="btn-manual-checkin" class="btn btn-primary">Check-in</button>
-        <a href="@Url.Action("QR", "Checkin", new { eventId = eventId })" class="btn btn-secondary rounded-end ms-2">
-            QR CHECK IN
-        </a>
-    </div>
+            <div class="d-flex flex-wrap justify-content-center align-items-center gap-2 mb-4">
+                <div class="input-group" style="max-width: 500px;">
+                    <input type="text" id="manual-ticket-code" class="form-control form-control-lg rounded-start"
+                           placeholder="Nhập mã vé..." />
+                    <button id="btn-manual-checkin" class="btn btn-success btn-lg rounded-end">
+                        <i class="fa-solid fa-square-check me-2"></i>Check-in
+                    </button>
+                </div>
+                <a href="@Url.Action("QR", "Checkin", new { eventId = eventId })"
+                   class="btn btn-outline-primary btn-lg ms-2 rounded-pill">
+                    <i class="fa-solid fa-qrcode"></i> QR CHECK-IN
+                </a>
+            </div>
 
-
-    <div class="table-responsive">
-        <table class="table table-striped table-bordered align-middle">
-            <thead class="table-dark text-center">
-                <tr>
-                    <th>Mã vé</th>
-                    <th>Tên khách hàng</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Trạng thái</th>
-                    <th>Thời gian check-in</th>
-                    <th>check-in</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var ticket in Model)
-                {
-                    <tr>
-                        <td class="text-center fw-semibold">@ticket.TicketCode</td>
-                        <td>@ticket.OrderDetail?.Order.FullName</td>
-                        <td>@ticket.OrderDetail?.Order.Email </td>
-                        <td>@ticket.OrderDetail?.Order.PhoneNumber </td>
-                        <td class="text-center fs-5">@ticket.OrderDetail?.Order.OrderStatus</td>
-                        <td class="text-center">@ticket.CheckinTime?.ToString("dd/MM/yyyy HH:mm:ss")</td>
-                        <td class="text-center">
-                            @if (!ticket.IsCheckedIn)
-                            {
-                                <button class="btn btn-success btn-sm btn-checkin" data-ticket-code="@ticket.TicketCode" title="Check-in vé này">
-                                    Check-in
-                                </button>
-                            }
-                            else
-                            {
-                                <span class="text-muted fst-italic">Đã check-in</span>
-                            }
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered align-middle">
+                    <thead class="table-primary text-center">
+                        <tr>
+                            <th>Mã vé</th>
+                            <th>Tên khách</th>
+                            <th>Email</th>
+                            <th>Điện thoại</th>
+                            <th>Trạng thái</th>
+                            <th>Check-in lúc</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var ticket in Model)
+                        {
+                            <tr>
+                                <td class="text-center fw-bold">@ticket.TicketCode</td>
+                                <td>@ticket.OrderDetail?.Order.FullName</td>
+                                <td>@ticket.OrderDetail?.Order.Email</td>
+                                <td>@ticket.OrderDetail?.Order.PhoneNumber</td>
+                                <td class="text-center text-info">@ticket.OrderDetail?.Order.OrderStatus</td>
+                                <td class="text-center text-secondary">
+                                    @ticket.CheckinTime?.ToString("dd/MM/yyyy HH:mm:ss")
+                                </td>
+                                <td class="text-center">
+                                    @if (!ticket.IsCheckedIn)
+                                    {
+                                        <button class="btn btn-sm btn-outline-success btn-checkin rounded-pill"
+                                                data-ticket-code="@ticket.TicketCode" title="Check-in vé">
+                                            <i class="fa-regular fa-circle-check me-2"></i>Check in
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Đã check-in</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -68,17 +81,17 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
-        // Check-in theo mã vé nhập tay
+        // Check-in từ ô nhập mã
         $('#btn-manual-checkin').click(function () {
             var ticketCode = $('#manual-ticket-code').val().trim();
             if (!ticketCode) {
-                Swal.fire('Lỗi', 'Vui lòng nhập mã vé', 'warning');
+                Swal.fire('⚠️ Lỗi', 'Vui lòng nhập mã vé!', 'warning');
                 return;
             }
             manualCheckin(ticketCode);
         });
 
-        // Check-in theo nút bên từng vé
+        // Check-in từ từng vé
         $('.btn-checkin').click(function () {
             var ticketCode = $(this).data('ticket-code');
             manualCheckin(ticketCode);
@@ -91,14 +104,14 @@
                 data: { ticketCode: ticketCode },
                 success: function (res) {
                     if (res.success) {
-                        Swal.fire('Thành công', res.message + '\nThời gian: ' + res.checkInTime, 'success')
+                        Swal.fire('🎉 Thành công', res.message + '\n⏱️ ' + res.checkInTime, 'success')
                             .then(() => location.reload());
                     } else {
-                        Swal.fire('Thất bại', res.message, 'error');
+                        Swal.fire('❌ Thất bại', res.message, 'error');
                     }
                 },
                 error: function () {
-                    Swal.fire('Lỗi', 'Có lỗi xảy ra khi check-in', 'error');
+                    Swal.fire('🚫 Lỗi', 'Không thể check-in. Vui lòng thử lại!', 'error');
                 }
             });
         }

@@ -3,7 +3,6 @@
 @model List<EventX.Models.Event>
 @{
     ViewData["Title"] = "Sự kiện của tôi";
-
 }
 
 <!DOCTYPE html>
@@ -15,42 +14,65 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .event-card {
-            display: flex;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            padding: 4px;
-            border-radius: 8px;
-            border: 2px solid;
+            border-radius: 1rem;
+            background-size: cover;
+            background-position: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease-in-out;
         }
 
-            .event-card img {
-                margin-right: 15px;
-                border-radius: 5px;
+            .event-card:hover {
+                transform: scale(1.01);
             }
 
-        .event-info {
-            flex-grow: 1;
+
+        .event-content h5,
+        .event-content p,
+        .event-content span {
+            text-shadow: 0 0 6px rgba(0, 0, 0, 0.8);
         }
 
-        .event-actions {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+
+        .event-actions a,
+        .event-actions button {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.2s ease-in-out;
+        }
+
+            .event-actions a:hover,
+            .event-actions button:hover {
+                background-color: rgba(255, 255, 255, 0.25);
+                color: #fff;
+                border-color: #fff;
+            }
+
+        .event-content h5 {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
         }
 
         .status-badge {
-            margin-bottom: 5px;
+            font-size: 0.9rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 1rem;
+            font-weight: 500;
         }
+
     </style>
 </head>
 <body>
-    <div class="container mt-4"> 
-
+    <div class="container mt-4">
         @if (Model != null && Model.Any())
         {
-
             @foreach (var eventItem in Model)
             {
+                var backgroundImageUrl = eventItem.EventImages?.FirstOrDefault()?.ImageURL ?? Url.Content("~/images/default-event.jpg");
 
                 string badgeColor = eventItem.Status switch
                 {
@@ -64,96 +86,58 @@
                     _ => "secondary"
                 };
 
+                <div class="event-card position-relative text-white mb-4 rounded shadow" style="background-image: url('@backgroundImageUrl'); background-size: cover; background-position: center; overflow: hidden;">
+                    <div class="overlay position-absolute w-100 h-100" style="background-color: rgba(0,0,0,0.5); top: 0; left: 0;"></div>
 
+                 
 
-                string borderColor = badgeColor;
+                    <div class="event-content position-relative p-3">
 
-                <div class="event-card d-block">
+                        <h5>@eventItem.Title</h5>
+                        <p>
+                            <i class="fa-solid fa-calendar me-2"></i>
+                            @eventItem.EventStartTime.ToString("dd/MM/yyyy HH:mm") - @eventItem.EventEndTime.ToString("dd/MM/yyyy HH:mm")
+                        </p>
+                        
 
-                    <div class="d-flex" style="background-color:#31353E; color:white;">
-                        @if (eventItem.EventImages != null && eventItem.EventImages.Any())
+                        @if (eventItem.Locations != null && eventItem.Locations.Any())
                         {
-                            @foreach (var image in eventItem.EventImages)
-                            {
-                                <img src="@image.ImageURL" alt="Hình ảnh sự kiện" class="img-fluid mb-3 object-fit-fill mt-2 ms-2" style="width:252px; height:154px;" />
-                            }
+                            var location = eventItem.Locations.First();
+                            <p><i class="fa-solid fa-location-dot me-2"></i>@location.Name, @location.FullAddress, @location.Ward, @location.District, @location.City</p>
                         }
                         else
                         {
-                            <img src="~/images/default-event.jpg" alt="Ảnh mặc định" class="img-fluid mb-3 object-fit-fill mt-2 ms-2" style="width:252px; height:154px;" />
+                            <p>Không có địa điểm.</p>
                         }
-
-
-
-                        <div class="event-info position-relative">
-                            <h5 class="mt-4 mb-3">@eventItem.Title</h5>
-                            <p><strong><i class="fa-solid fa-calendar me-2"></i></strong> @eventItem.EventStartTime.ToString("dd/MM/yyyy HH:mm") - @eventItem.EventEndTime.ToString("dd/MM/yyyy HH:mm")</p>
-                            <span class="badge bg-@badgeColor position-absolute top-0 start-100 translate-middle badge rounded-pill" data-event-id="@eventItem.EventID">
-                                @eventItem.Status.ToVietnamese()
-                            </span>
-                            @if (eventItem.Locations != null && eventItem.Locations.Any())
-                            {
-                                var location = eventItem.Locations.First();
-                                <span><i class="fa-solid fa-location-dot me-2"></i>@location.Name, @location.FullAddress, @location.Ward, @location.District, @location.City</span>
-                            }
-                            else
-                            {
-                                <span>Không có địa điểm.</span>
-                            }
-
-
-
-                        </div>
+                        <span class="badge bg-@badgeColor status-badge" data-event-id="@eventItem.EventID">@eventItem.Status.ToVietnamese()</span>
                     </div>
 
-
-                    <div class="event-actions d-flex flex-row  gap-4 align-items-center justify-content-center  border-dark" style="background-color:#414652">
-                        
-                        <div>
-                            <a href="/Host/Event/Overview/@eventItem.EventID" class="btn btn-sm border-0 btn-primary mb-2 mt-3" style="color: #FFFFFF; background-color:#414652;">
-                                <i class="fa-solid fa-chart-simple d-block mb-2"></i>
-                                Tổng quan
-                             </a>
-                        </div>
-                        <div>
-                            <a href="@Url.Action("Index", "Checkin", new { eventId = eventItem.EventID })" class="btn btn-sm border-0 btn-primary mb-2 mt-3" style="color: #FFFFFF; background-color:#414652;">
-                                <i class="fa-solid fa-check-to-slot d-block mb-2"></i>
-                                Check In
-                             </a>
-                        </div>
-                        <div>
-                            <a href="@Url.Action("Index", "Order", new { eventId = eventItem.EventID })" class="btn btn-sm border-0 btn-primary mb-2 mt-3" style="color: #FFFFFF; background-color:#414652;">
-                                <i class="fa-solid fa-clipboard-list d-block mb-2"></i>
-                                Đơn hàng
-                             </a>
-                        </div>
-                       
-                        <div>
-                            <a href="@Url.Action("Update", "Event", new { id = eventItem.EventID })" class="btn btn-sm border-0 btn-primary mb-2 mt-3" style="color: #FFFFFF; background-color:#414652;">
-                                <i class="fa-solid fa-pen d-block mb-2"></i>
-                                Chỉnh sửa
-                            </a>
-                        </div>
-
-                        <div>
-                            <a href="@Url.Action("Display", "Event", new { area = "Host", eventId = eventItem.EventID })" class="btn btn-sm border-0 btn-info text-white mb-2 mt-3" style="color: #FFFFFF; background-color:#414652;">
-                                <i class="fa-solid fa-info d-block mb-2"></i>
-                                Chi tiết
-                            </a>
-                        </div>
-                        <div>
-                            @if (eventItem.Status != EventStatus.Cancelled)
-                            {
-                                <button class="btn btn-danger btn-sm btn-cancel border-0 text-white mb-2 mt-3" style="color: #FFFFFF; background-color:#414652;" data-event-id="@eventItem.EventID">
-                                    <i class="fa-regular fa-calendar-xmark d-block mb-2" style="color: white;"></i>
-                                    Hủy
-                                </button>
-                            }
-                        </div>
+                    <div class="event-actions position-relative d-flex flex-wrap gap-3 justify-content-center p-3 pb-4">
+                        <a href="/Host/Event/Overview/@eventItem.EventID" class="btn btn-sm text-white">
+                            <i class="fa-solid fa-chart-simple d-block mb-1"></i>Tổng quan
+                        </a>
+                        <a href="@Url.Action("Index", "Checkin", new { eventId = eventItem.EventID })" class="btn btn-sm text-white">
+                            <i class="fa-solid fa-check-to-slot d-block mb-1"></i>Check In
+                        </a>
+                        <a href="@Url.Action("Index", "Order", new { eventId = eventItem.EventID })" class="btn btn-sm text-white">
+                            <i class="fa-solid fa-clipboard-list d-block mb-1"></i>Đơn hàng
+                        </a>
+                        <a href="@Url.Action("Update", "Event", new { id = eventItem.EventID })" class="btn btn-sm text-white">
+                            <i class="fa-solid fa-pen d-block mb-1"></i>Chỉnh sửa
+                        </a>
+                        <a href="@Url.Action("Display", "Event", new { area = "Host", eventId = eventItem.EventID })" class="btn btn-sm text-white">
+                            <i class="fa-solid fa-info d-block mb-1"></i>Chi tiết
+                        </a>
+                        @if (eventItem.Status != EventStatus.Cancelled)
+                        {
+                            <button class="btn btn-danger btn-sm btn-cancel text-white" data-event-id="@eventItem.EventID">
+                                <i class="fa-regular fa-calendar-xmark d-block mb-1"></i>Hủy
+                            </button>
+                        }
                     </div>
                 </div>
-
             }
+
         }
         else
         {
@@ -182,72 +166,38 @@
         </div>
     </div>
 
-    <!-- Bootstrap JS and dependencies -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
     <script>
-                       $(document).ready(function () {
-            var eventId; // Biến này lưu id sự kiện khi click nút hủy
-             var successMessage = '@TempData["success"]';
+        $(document).ready(function () {
+            var eventId;
 
-            // Khi bấm vào bất kỳ nút Hủy nào
             $('.btn-cancel').click(function () {
-                eventId = $(this).data('event-id'); // Lấy id từ nút đó
+                eventId = $(this).data('event-id');
                 $('#cancelModal').modal('show');
             });
 
-            // Khi xác nhận hủy
             $('#confirm-cancel').click(function () {
                 $.ajax({
                     url: '/Host/Event/Cancel',
                     type: 'POST',
                     data: { id: eventId },
                     success: function (response) {
-                        if(response.success) {
+                        if (response.success) {
                             $('#cancelModal').modal('hide');
-
-                           const badge = $(`.badge[data-event-id='${eventId}']`);
-                            badge.text('Đã hủy'); // Thay đổi văn bản của badge
-                            badge.removeClass().addClass('badge bg-dark position-absolute top-0 start-100 translate-middle badge rounded-pill'); // Thay đổi màu sắc
-
-                            // Ẩn nút hủy sau khi đã hủy
-                            const cancelButton = $(`.btn-cancel[data-event-id='${eventId}']`);
-                            cancelButton.hide();
+                            const badge = $(`.badge[data-event-id='${eventId}']`);
+                            badge.text('Đã hủy').removeClass().addClass('badge bg-dark status-badge');
+                            $(`.btn-cancel[data-event-id='${eventId}']`).hide();
                         } else {
                             alert('Có lỗi xảy ra khi hủy sự kiện!');
                         }
                     },
                     error: function (xhr, status, error) {
-                        alert('Có lỗi xảy ra! Mã lỗi: ' + xhr.status + '\nThông báo lỗi: ' + error);
-                        console.error('Lỗi trong AJAX:', xhr, status, error); // Hiển thị thêm chi tiết trong Console
+                        alert('Lỗi: ' + xhr.status + ' - ' + error);
                     }
                 });
             });
         });
-
-
-        // Helper function to get status badge color
-           function GetStatusBadgeColor(status) {
-            switch(status) {
-                case '@EventStatus.Pending.ToString()':
-                    return 'warning';
-                case '@EventStatus.Approved.ToString()':
-                    return 'success';
-                case '@EventStatus.Rejected.ToString()':
-                    return 'danger';
-                case '@EventStatus.Scheduled.ToString()':
-                    return 'info';
-                case '@EventStatus.Ongoing.ToString()':
-                    return 'primary';
-                case '@EventStatus.Completed.ToString()':
-                    return 'secondary';
-                case '@EventStatus.Cancelled.ToString()':
-                    return 'dark';
-                default:
-                    return 'secondary';
-            }
-        }
     </script>
 </body>
 </html>

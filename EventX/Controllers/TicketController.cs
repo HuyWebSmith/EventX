@@ -142,7 +142,7 @@ namespace EventX.Controllers
                         Console.WriteLine($"Lỗi ở trường '{key}': {error.ErrorMessage}");
                     }
                 }
-
+                TempData["error"] = "Vui lòng cung cấp đầy đủ thông tin";
                 return View(model);
             }
 
@@ -199,6 +199,7 @@ namespace EventX.Controllers
             _context.Order.Add(order);
            
             _context.OrderDetail.AddRange(orderDetails);
+
             _context.SaveChanges();
 
             // Xoá giỏ hàng trong session

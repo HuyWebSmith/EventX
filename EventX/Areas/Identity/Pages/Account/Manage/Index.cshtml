@@ -5,62 +5,75 @@
     ViewData["ActivePage"] = ManageNavPages.Index;
 }
 
-<h3>@ViewData["Title"]</h3>
+<h3 class="mb-4 text-primary">@ViewData["Title"]</h3>
 <partial name="_StatusMessage" for="StatusMessage" />
-<div class="row">
-    <div class="col-md-6">
-        @if (Model.AvatarUrlPath != null)
-        {
-            <div class="mb-3">
-                <label class="mb-2">Ảnh đại diện hiện tại:</label><br />
-                <img src="@Model.AvatarUrlPath" alt="Avatar" width="300" style="border-radius: 8px;" />
-            </div>
-        }
 
-        <form id="profile-form" method="post" enctype="multipart/form-data">
-            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.FullName" class="form-control" placeholder="Enter your full name" />
-                <label asp-for="Input.FullName" class="form-label"></label>
-                <span asp-validation-for="Input.FullName" class="text-danger"></span>
-            </div>
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-lg border-0">
+            <div class="card-body p-4">
+                <h4 class="card-title text-center mb-4 text-success">Chỉnh sửa hồ sơ cá nhân</h4>
 
-            <div class="form-floating mb-3">
-                <input asp-for="Input.PhoneNumber" class="form-control" placeholder="Enter your phone number" />
-                <label asp-for="Input.PhoneNumber" class="form-label"></label>
-                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
-            </div>
+                @if (Model.AvatarUrlPath != null)
+                {
+                    <div class="text-center mb-4">
+                        <label class="fw-semibold mb-2">Ảnh đại diện hiện tại:</label><br />
+                        <img src="@Model.AvatarUrlPath" alt="Avatar" width="160" height="160"
+                             class="rounded-circle shadow-sm border border-2 border-primary" />
+                    </div>
+                }
 
-            <div class="form-floating mb-3">
-                <select asp-for="Input.Gender" class="form-control">
-                    <option value="">-- Chọn giới tính --</option>
-                    <option value="Male">Nam</option>
-                    <option value="Female">Nữ</option>
-                    <option value="Other">Khác</option>
-                </select>
-                <label asp-for="Input.Gender">Giới tính</label>
-                <span asp-validation-for="Input.Gender" class="text-danger"></span>
-            </div>
+                <form id="profile-form" method="post" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
 
-            <div class="form-floating mb-3">
-                <input asp-for="Input.DateOfBirth" type="date" class="form-control" />
-                <label asp-for="Input.DateOfBirth" class="form-label"></label>
-                <span asp-validation-for="Input.DateOfBirth" class="text-danger"></span>
-            </div>
-            <div class="form-floating mb-3">
-                <input type="file" asp-for="Input.AvatarUrl" class="form-control" />
-                <label asp-for="Input.AvatarUrl" class="form-label">Upload Avatar</label>
-                <span asp-validation-for="Input.AvatarUrl" class="text-danger"></span>
-            </div>
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.FullName" class="form-control rounded-3 shadow-sm" placeholder="Họ tên" />
+                        <label asp-for="Input.FullName">Họ và tên</label>
+                        <span asp-validation-for="Input.FullName" class="text-danger"></span>
+                    </div>
 
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Email" class="form-control" placeholder="Enter your email" />
-                <label asp-for="Input.Email" class="form-label"></label>
-                <span asp-validation-for="Input.Email" class="text-danger"></span>
-            </div>
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.PhoneNumber" class="form-control rounded-3 shadow-sm" placeholder="Số điện thoại" />
+                        <label asp-for="Input.PhoneNumber">Số điện thoại</label>
+                        <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+                    </div>
 
-            <button  type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
-        </form>
+                    <div class="form-floating mb-3">
+                        <select asp-for="Input.Gender" class="form-select rounded-3 shadow-sm">
+                            <option value="">-- Chọn giới tính --</option>
+                            <option value="Male">Nam</option>
+                            <option value="Female">Nữ</option>
+                            <option value="Other">Khác</option>
+                        </select>
+                        <label asp-for="Input.Gender">Giới tính</label>
+                        <span asp-validation-for="Input.Gender" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.DateOfBirth" type="date" class="form-control rounded-3 shadow-sm" />
+                        <label asp-for="Input.DateOfBirth">Ngày sinh</label>
+                        <span asp-validation-for="Input.DateOfBirth" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="file" asp-for="Input.AvatarUrl" class="form-control rounded-3 shadow-sm" />
+                        <label asp-for="Input.AvatarUrl">Tải ảnh đại diện</label>
+                        <span asp-validation-for="Input.AvatarUrl" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-floating mb-4">
+                        <input asp-for="Input.Email" class="form-control rounded-3 shadow-sm" placeholder="Email" />
+                        <label asp-for="Input.Email">Email</label>
+                        <span asp-validation-for="Input.Email" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="w-100 btn btn-lg btn-success rounded-pill shadow-sm">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        Lưu thay đổi
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 

@@ -8,6 +8,17 @@
 @model EventX.ViewModels.HomeViewModel
 
 <style>
+    .card {
+        transition: transform 0.3s ease; 
+        cursor: pointer;
+        margin-left:20px;
+    }
+
+        .card:hover {
+            transform: scale(1.05); 
+            z-index: 10;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2); 
+        }
 
     .swiper-slide {
         display: flex;
