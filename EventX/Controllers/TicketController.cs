@@ -253,6 +253,7 @@ namespace EventX.Controllers
 
                         foreach (var detail in order.OrderDetails)
                         {
+                            detail.Ticket.Sold += detail.Quantity;
                             for (int i = 0; i < detail.Quantity; i++)
                             {
                                 var code = $"TICKET-{detail.Ticket.Type}-{order.OrderID}-{i + 1}-{Guid.NewGuid().ToString("N")[..6]}";

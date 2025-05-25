@@ -42,7 +42,6 @@ namespace EventX.Models
         [Required]
         public DateTime EventEndTime { get; set; }  // Thời gian kết thúc
 
-        [MaxLength(1000)]
         public string? BuyerMessage { get; set; }  // Lời nhắn từ nhà tổ chức đến người mua vé
         //Ngay hien tai
         public DateTime CreatedAt { get; set; } = DateTime.Now;
