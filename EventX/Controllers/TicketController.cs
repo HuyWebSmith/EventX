@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -256,7 +257,29 @@ namespace EventX.Controllers
                             detail.Ticket.Sold += detail.Quantity;
                             for (int i = 0; i < detail.Quantity; i++)
                             {
-                                var code = $"TICKET-{detail.Ticket.Type}-{order.OrderID}-{i + 1}-{Guid.NewGuid().ToString("N")[..6]}";
+                                string ticketTypeName = detail.Ticket.Type.ToString(); // default là tên enum
+
+                                if (detail.Ticket.Type == TicketType.Custom)
+                                {
+                                    var fieldInfo = detail.Ticket.Type.GetType().GetField(detail.Ticket.Type.ToString());
+                                    if (fieldInfo != null)
+                                    {
+                                        var display = (DisplayAttribute?)fieldInfo.GetCustomAttributes(typeof(DisplayAttribute), false).FirstOrDefault();
+                                        if (display != null && !string.IsNullOrEmpty(display.Name))
+                                        {
+                                            ticketTypeName = display.Name;
+                                        }
+                                    }
+                                }
+
+                                if (!string.IsNullOrEmpty(detail.Ticket.CustomType))
+                                {
+                                    ticketTypeName = detail.Ticket.CustomType;
+                                }
+
+                                var code = $"TICKET-{ticketTypeName}-{order.OrderID}-{i + 1}-{Guid.NewGuid().ToString("N").Substring(0, 6)}";
+
+
 
                                 var issuedTicket = new IssuedTicket
                                 {

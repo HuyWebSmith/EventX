@@ -127,19 +127,24 @@ namespace EventX.Areas.Host.Controllers
                         await _context.SaveChangesAsync();
                     }
 
-
                     foreach (var ticket in model.Tickets)
                     {
-                        var ticketTypeString = ticket.Type.ToString();
+                        // Nếu là vé tùy chỉnh và có tên do user nhập thì dùng tên đó làm ticketTypeString
+                        var ticketTypeString = ticket.Type == TicketType.Custom && !string.IsNullOrEmpty(ticket.CustomType)
+                            ? ticket.CustomType
+                            : ticket.Type.ToString();
+
                         if (string.IsNullOrEmpty(ticket.TicketCode))
                         {
-                            ticket.TicketCode = $"TICKET-{ticketTypeString}{Guid.NewGuid().ToString("N").Substring(0, 8)}";
+                            ticket.TicketCode = $"TICKET-{ticketTypeString}-{Guid.NewGuid().ToString("N").Substring(0, 8)}";
                         }
-                        ticket.Event = eventEntity; // Gán sự kiện cho vé
+
+                        ticket.Event = eventEntity;
                         ticket.EventID = eventEntity.EventID;
 
                         eventEntity.Tickets.Add(ticket);
                     }
+
                     await _context.SaveChangesAsync();
                     // Lấy ID người tạo từ Identity
                     var creatorId = User.FindFirst(ClaimTypes.NameIdentifier).Value; // hoặc User.FindFirst(ClaimTypes.NameIdentifier)?.Value nếu dùng Claims
@@ -431,9 +436,12 @@ namespace EventX.Areas.Host.Controllers
                                 existingTicket.Quantity = ticket.Quantity;
                                 existingTicket.StartDate = ticket.StartDate;
                                 existingTicket.EndDate = ticket.EndDate;
+                                existingTicket.TicketSaleStart = ticket.TicketSaleStart;
+                                existingTicket.TicketSaleEnd = ticket.TicketSaleEnd;
                                 existingTicket.TrangThai = TicketStatus.ConVe;
                                 existingTicket.Description = ticket.Description;
                                 existingTicket.Currency = ticket.Currency;
+                                existingTicket.Discount = ticket.Discount;
                             }
                             else
                             {
@@ -446,9 +454,12 @@ namespace EventX.Areas.Host.Controllers
                                     Quantity = ticket.Quantity,
                                     StartDate = ticket.StartDate,
                                     EndDate = ticket.EndDate,
+                                    TicketSaleStart = ticket.TicketSaleStart,
+                                    TicketSaleEnd = ticket.TicketSaleEnd,
                                     TrangThai = TicketStatus.ConVe,
                                     Description = ticket.Description,
-                                    Currency = ticket.Currency
+                                    Currency = ticket.Currency,
+                                    Discount = ticket.Discount,
                                 };
                                 _context.Tickets.Add(newTicket);
                                 existingTicketCodes.Add(newTicket.TicketCode); // tránh xóa nhầm

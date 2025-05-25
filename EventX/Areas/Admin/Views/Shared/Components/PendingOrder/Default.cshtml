@@ -1,0 +1,10 @@
+﻿@model int
+
+<a class="nav-link" href="/Admin/Order/Index">
+    <div class="sb-nav-link-icon"><i class="fa-solid fa-people-roof me-1"></i></div>
+    Manage Order
+    @if (Model > 0)
+    {
+        <span class="badge bg-danger ms-2">@Model</span>
+    }
+</a>

@@ -428,14 +428,40 @@
                                     <label>Số lượng</label>
                                     <input type="number" name="Tickets[@index].Quantity" class="form-control" value="@ticket.Quantity" required />
                                 </div>
-                                <div class="form-group">
+                                 <div class="form-group">
                                     <label>Ngày bắt đầu bán vé</label>
-                                    <input type="datetime-local" name="Tickets[@index].StartDate" class="form-control" value="@ticket.StartDate.ToString("yyyy-MM-ddTHH:mm")" required />
+                                    <input type="datetime-local" 
+                                   name="Tickets[@index].TicketSaleStart" 
+                                   class="form-control" 
+                                   value="@(ticket.TicketSaleStart.HasValue ? ticket.TicketSaleStart.Value.ToString("yyyy-MM-ddTHH:mm") : "")" 
+                                   required />
+
                                 </div>
                                 <div class="form-group">
                                     <label>Ngày kết thúc bán vé</label>
-                                    <input type="datetime-local" name="Tickets[@index].EndDate" class="form-control" value="@ticket.EndDate.ToString("yyyy-MM-ddTHH:mm")" required />
+                                    <input type="datetime-local" 
+                                   name="Tickets[@index].TicketSaleEnd" 
+                                   class="form-control" 
+                                   value="@(ticket.TicketSaleEnd.HasValue ? ticket.TicketSaleEnd.Value.ToString("yyyy-MM-ddTHH:mm") : "")" 
+                                   required />
+
                                 </div>
+                                 <div class="form-group">
+                    <label>Thời gian vé có hiệu lực (bắt đầu sử dụng)</label>
+                    <input type="datetime-local" 
+                           name="Tickets[@index].StartDate"  
+                           value="@(ticket.StartDate.ToString("yyyy-MM-ddTHH:mm"))" 
+                           class="form-control" required />
+                </div>
+                <div class="form-group">
+                    <label>Thời gian vé hết hiệu lực (kết thúc sử dụng)</label>
+                    <input type="datetime-local" 
+                           name="Tickets[@index].EndDate"  
+                           value="@(ticket.EndDate.ToString("yyyy-MM-ddTHH:mm"))" 
+                           class="form-control" required />
+                </div>
+
+                               
                                 <div class="form-group">
                                     <label>Mô tả vé</label>
                                     <input type="text" name="Tickets[@index].Description" class="form-control" value="@ticket.Description" />
@@ -719,11 +745,19 @@
                     <input type="number" name="Tickets[${ticketIndex}].Quantity" class="form-control" required />
                 </div>
                 <div class="form-group">
-                    <label>Ngày bắt đầu bán vé</label>
+                    <label>Thời gian mở bán vé</label>
+                    <input type="datetime-local" name="Tickets[${ticketIndex}].TicketSaleStart" class="form-control" required />
+                </div>
+                <div class="form-group">
+                    <label>Thời gian kết thúc bán vé</label>
+                    <input type="datetime-local" name="Tickets[${ticketIndex}].TicketSaleEnd" class="form-control" required />
+                </div>
+                <div class="form-group">
+                    <label>	Thời gian vé có hiệu lực (bắt đầu sử dụng)</label>
                     <input type="datetime-local" name="Tickets[${ticketIndex}].StartDate" class="form-control" required />
                 </div>
                 <div class="form-group">
-                    <label>Ngày kết thúc bán vé</label>
+                    <label>Thời gian vé hết hiệu lực (kết thúc sử dụng)</label>
                     <input type="datetime-local" name="Tickets[${ticketIndex}].EndDate" class="form-control" required />
                 </div>
                 <div class="form-group">

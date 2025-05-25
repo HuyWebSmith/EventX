@@ -627,13 +627,23 @@
                 var ticketForm = `
                     <div class="ticket-item border rounded p-3 mb-3">
                         <h5>Ticket ${ticketIndex + 1}</h5>
-                        <div class="form-group">
+                                <div class="form-group">
                             <label>Loại vé</label>
-                            <select class="form-control" name="Tickets[${ticketIndex}].Type" required>
+                            <select class="form-control" name="Tickets[${ticketIndex}].Type" onchange="handleTypeChange(this, ${ticketIndex})" required>
                                 <option value="">-- Chọn loại vé --</option>
-                                ${ticketOptions}
+                                <option value="GeneralAdmission">Thường</option>
+                                <option value="VIP">VIP</option>
+                                <option value="Student">Sinh viên</option>
+                                <option value="Custom">Khác...</option> <!-- ✅ -->
                             </select>
                         </div>
+
+                        <!-- Trường nhập tên loại vé mới -->
+                        <div class="form-group d-none" id="customType-${ticketIndex}">
+                            <label>Nhập tên loại vé mới</label>
+                            <input type="text" class="form-control" name="Tickets[${ticketIndex}].CustomType" placeholder="Ví dụ: Early Bird" />
+                        </div>
+
                         <div class="form-group">
                             <label>Giá vé</label>
                             <input type="number" name="Tickets[${ticketIndex}].Price" class="form-control" step="0.01" required />
@@ -643,11 +653,19 @@
                             <input type="number" name="Tickets[${ticketIndex}].Quantity" class="form-control" required />
                         </div>
                         <div class="form-group">
-                            <label>Thời gian bắt đầu</label>
+                            <label>Thời gian mở bán vé</label>
+                            <input type="datetime-local" name="Tickets[${ticketIndex}].TicketSaleStart" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Thời gian kết thúc bán vé</label>
+                            <input type="datetime-local" name="Tickets[${ticketIndex}].TicketSaleEnd" class="form-control" required />
+                        </div>
+                       <div class="form-group">
+                            <label>	Thời gian vé có hiệu lực (bắt đầu sử dụng)</label>
                             <input type="datetime-local" name="Tickets[${ticketIndex}].StartDate" class="form-control" required />
                         </div>
                         <div class="form-group">
-                            <label>Thời gian kết thúc </label>
+                            <label>Thời gian vé hết hiệu lực (kết thúc sử dụng)</label>
                             <input type="datetime-local" name="Tickets[${ticketIndex}].EndDate" class="form-control" required />
                         </div>
                         <div class="form-group">
@@ -662,6 +680,8 @@
                             <label>Tiền tệ</label>
                             <input type="text" name="Tickets[${ticketIndex}].Currency" class="form-control" value="VND" required />
                         </div>
+                        
+
                         <button type="button" class="btn btn-danger btn-sm mt-2" onclick="removeTicket(this)">Xóa vé này</button>
                     </div>
                 `;
@@ -752,6 +772,17 @@
             $("#Ward").val(tenPhuong);
         });
     });
+
+        function handleTypeChange(select, index) {
+        const customInput = document.getElementById(`customType-${index}`);
+        if (select.value === "Custom") {
+            customInput.classList.remove("d-none");
+            customInput.required = true;
+        } else {
+            customInput.classList.add("d-none");
+            customInput.required = false;
+        }
+    }
 
 </script>
 

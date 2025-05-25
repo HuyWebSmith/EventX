@@ -62,47 +62,50 @@
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        // AJAX cập nhật trạng thái event
-        $(document).on('change', '.status-dropdown', function () {
-            var eventId = $(this).data('event-id');
-            var selectedStatus = $(this).val();
+        $(document).ready(function () {
+            // Bind event change cho dropdown trong #eventList
+            $('#eventList').on('change', '.status-dropdown', function () {
+                var eventId = $(this).data('event-id');
+                var selectedStatus = $(this).val();
 
-            $.ajax({
-                url: '/Admin/Event/UpdateStatus',
-                type: 'POST',
-                data: { eventId: eventId, status: selectedStatus },
-                success: function (response) {
-                    if (response.success) {
-                        alert('Cập nhật trạng thái thành công');
-                    } else {
-                        alert('Có lỗi xảy ra khi cập nhật trạng thái');
+                $.ajax({
+                    url: '/Admin/Event/UpdateStatus',
+                    type: 'POST',
+                    data: { eventId: eventId, status: selectedStatus },
+                    success: function (response) {
+                        if (response.success) {
+                            alert('Cập nhật trạng thái thành công');
+                        } else {
+                            alert('Có lỗi xảy ra khi cập nhật trạng thái: ' + response.message);
+                        }
+                    },
+                    error: function () {
+                        alert('Lỗi kết nối đến server');
                     }
-                },
-                error: function () {
-                    alert('Lỗi kết nối đến server');
-                }
+                });
             });
-        });
 
-        // AJAX phân trang khi click số trang
-        $(document).on('click', '.page-number', function (e) {
-            e.preventDefault();
-            var page = $(this).data('page');
-            var keyword = $('#searchBox').val();
-            var status = $('#statusFilter').val();
-            var categoryId = $('#categoryFilter').val();
+            // Phân trang AJAX
+            $(document).on('click', '.page-number', function (e) {
+                e.preventDefault();
+                var page = $(this).data('page');
+                var keyword = $('#searchBox').val();
+                var status = $('#statusFilter').val();
+                var categoryId = $('#categoryFilter').val();
 
-            $.ajax({
-                url: '/Admin/Event/SearchAndFilter',
-                type: 'GET',
-                data: { keyword: keyword, status: status, categoryId: categoryId, page: page },
-                success: function (html) {
-                    $('#eventList').html(html);
-                },
-                error: function () {
-                    alert('Lỗi khi tải dữ liệu!');
-                }
+                $.ajax({
+                    url: '/Admin/Event/SearchAndFilter',
+                    type: 'GET',
+                    data: { keyword: keyword, status: status, categoryId: categoryId, page: page },
+                    success: function (html) {
+                        $('#eventList').html(html);
+                    },
+                    error: function () {
+                        alert('Lỗi khi tải dữ liệu!');
+                    }
+                });
             });
         });
     </script>
+
 }

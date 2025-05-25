@@ -27,7 +27,7 @@ public class TicketService
 
         // Tìm các vé đã hết hạn
         var expiredTickets = _context.Tickets
-                                     .Where(t => t.EndDate < currentDate && t.TrangThai != TicketStatus.HetHan)
+                                     .Where(t => t.TicketSaleEnd < currentDate && t.TrangThai != TicketStatus.HetHan)
                                      .ToList();
 
         foreach (var ticket in expiredTickets)

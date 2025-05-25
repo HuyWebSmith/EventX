@@ -48,9 +48,17 @@ namespace EventX.Models
 
         public string Currency { get; set; }  // Tiền tệ của giá vé (ví dụ: "VND", "USD")
 
-        //public bool IsHeld { get; set; } = false;  // Đang giữ vé
-        //public DateTime? HoldUntil { get; set; }  // Thời gian hết giữ
-        public TicketStatus TrangThai { get; set; } = TicketStatus.ConVe;
 
+        public TicketStatus TrangThai { get; set; } = TicketStatus.ConVe;
+        // Thời gian bán vé
+        public DateTime? TicketSaleStart { get; set; }
+
+        public DateTime? TicketSaleEnd { get; set; }
+        public string? CustomType { get; set; } // Nếu chọn "Khác", sẽ lưu ở đây
+
+        [NotMapped]
+        public string DisplayType => Type == TicketType.Custom && !string.IsNullOrEmpty(CustomType)
+        ? CustomType
+        : Type.ToString();
     }
 }

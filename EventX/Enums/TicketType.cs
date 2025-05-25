@@ -7,6 +7,7 @@
         Student,          // Vé học sinh/sinh viên
         EarlyBird,        // Vé mua sớm
         Group,            // Vé nhóm
-        Free              // Vé miễn phí
+        Free,              // Vé miễn phí
+        Custom
     }
 }

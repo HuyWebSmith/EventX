@@ -53,39 +53,13 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 @section Scripts {
     <script>
-        $('.status-dropdown').change(function () {
-            var eventId = $(this).data('event-id');
-            var selectedStatus = $(this).val();
-            console.log("Event ID: " + eventId); // Kiểm tra có in ra không
-            console.log("Selected Status: " + selectedStatus); // Kiểm tra có in ra không
-
-            $.ajax({
-                url: '/Admin/Event/UpdateStatus',
-                type: 'POST',
-                data: {
-                    eventId: eventId,
-                    status: selectedStatus
-                },
-                success: function (response) {
-                    console.log(response); // Kiểm tra kết quả trả về
-                    if (response.success) {
-                        alert('Cập nhật trạng thái thành công');
-                    } else {
-                        alert('Có lỗi xảy ra khi cập nhật trạng thái');
-                    }
-                },
-                error: function () {
-                    alert('Lỗi kết nối đến server');
-                }
-            });
-        });
-
-         $(document).ready(function () {
+        $(document).ready(function () {
+            // Hàm load danh sách sự kiện với filter hiện tại
             function loadEvents() {
                 const keyword = $('#searchBox').val();
                 const status = $('#statusFilter').val();
                 const categoryId = $('#categoryFilter').val();
-                    $.ajax({
+                $.ajax({
                     url: '/Admin/Event/SearchAndFilter',
                     type: 'GET',
                     data: { keyword: keyword, status: status, categoryId: categoryId },
@@ -94,23 +68,45 @@
                     },
                     error: function () {
                         alert('Lỗi khi tải dữ liệu!');
-                     }
-                 });
+                    }
+                });
             }
 
-            $('#searchBox').on('input', function () {
-                loadEvents();
+            // Khi thay đổi trạng thái trong dropdown cập nhật trạng thái event
+            $(document).on('change', '.status-dropdown', function () {
+                var eventId = $(this).data('event-id');
+                var selectedStatus = $(this).val();
+
+                $.ajax({
+                    url: '/Admin/Event/UpdateStatus',
+                    type: 'POST',
+                    data: {
+                        eventId: eventId,
+                        status: selectedStatus
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            alert('Cập nhật trạng thái thành công');
+                            loadEvents();  // Tải lại danh sách sau khi cập nhật trạng thái
+                        } else {
+                            alert('Có lỗi xảy ra khi cập nhật trạng thái');
+                        }
+                    },
+                    error: function () {
+                        alert('Lỗi kết nối đến server');
+                    }
+                });
             });
 
-            $('#statusFilter').change(function () {
-                loadEvents();
-            });
+            // Gắn sự kiện cho các filter
+            $('#searchBox').on('input', loadEvents);
+            $('#statusFilter').change(loadEvents);
+            $('#categoryFilter').change(loadEvents);
 
-                    $('#categoryFilter').change(function () {
+            // Load lần đầu danh sách
             loadEvents();
         });
-
-        });
     </script>
+
 }
 

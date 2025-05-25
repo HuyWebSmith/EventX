@@ -65,18 +65,13 @@
                         <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
 
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link" href="/Admin/Event/Index">
-                                    <div class="sb-nav-link-icon"><i class="fa-solid fa-people-roof me-1"></i></div>
-                                    Manage Event
-                                </a>
+                                @await Component.InvokeAsync("PendingEvent")
                                 <a class="nav-link" href="/Admin/Sliders/Index">
                                     <div class="sb-nav-link-icon"><i class="fa-solid fa-people-roof me-1"></i></div>
                                     Manage Slider
                                 </a>
-                                <a class="nav-link" href="/Admin/Order/Index">
-                                    <div class="sb-nav-link-icon"><i class="fa-solid fa-people-roof me-1"></i></div>
-                                    Manage Order
-                                </a>
+                                @await Component.InvokeAsync("PendingOrder")
+
                                 <a class="nav-link" href=""></a>
                                 <a class="nav-link" href="layout-sidenav-light.html">Light Sidenav</a>
                             </nav>

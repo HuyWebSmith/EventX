@@ -53,6 +53,8 @@ namespace EventX.Models
         // Liên kết với Payment
         public ICollection<PaymentInfo> PaymentInfos { get; set; } = new List<PaymentInfo>();
 
+       
+
         // Liên kết với RedInvoice
         public ICollection<RedInvoice> RedInvoices { get; set; } = new List<RedInvoice>();
         public ICollection<Location> Locations { get; set; } = new List<Location>();
