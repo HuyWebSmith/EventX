@@ -72,7 +72,8 @@
                 <!-- Sidebar dạng offcanvas -->
                 <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="sidebarOffcanvas">
                     <div class="offcanvas-header">
-                        <h5 class="offcanvas-title">EventX Organizer</h5>
+                    <a href="/Host/Home/Index" class="offcanvas-title text-decoration-none text-dark fw-bold"><h5 class="mb-5">EventX Organizer</h5></a>
+
                         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
                     </div>
                     <div class="offcanvas-body">
@@ -84,8 +85,8 @@
                             </li>
 
                             <li class="nav-item">
-                                <a class="nav-link" href="/Admin/Categories/Index">
-                                    <i class="fa-solid fa-layer-group me-2"></i> Quản lý báo cáo
+                                <a class="nav-link" href="/Ticket/MyTickets">
+                                    <i class="fa-solid fa-layer-group me-2"></i> Vé của tôi
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -95,30 +96,44 @@
                             </li>
                         </ul>
                     </div>
+
                 </div>
 
-                <!-- Sidebar dạng cố định khi desktop -->
-                <div class="col-md-3 d-none d-md-block" id="sidebar">
+            <div class="col-md-3 d-none d-md-block d-flex flex-column" id="sidebar"
+                 style="position: sticky; top: 0; height: 100vh;">
+
+                <a href="/Host/Home/Index" class="offcanvas-title text-decoration-none text-dark fw-bold">
                     <h5 class="mb-5">EventX Organizer</h5>
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link" href="/Host/Event/Index">
-                                <i class="fa-solid fa-house-user me-2"></i> Sự kiện của tôi
-                            </a>
-                        </li>
+                </a>
 
-                        <li class="nav-item">
-                            <a class="nav-link" href="/Admin/Categories/Index">
-                                <i class="fa-solid fa-layer-group me-2"></i> Quản lý báo cáo
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/Admin/MenuItem/Index">
-                                <i class="fa-solid fa-utensils me-2"></i> Điều khoản ban tổ chức
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+                <ul class="nav flex-column flex-grow-1">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Host/Event/Index">
+                            <i class="fa-solid fa-house-user me-2"></i> Sự kiện của tôi
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Ticket/MyTickets">
+                            <i class="fa-solid fa-layer-group me-2"></i> Vé của tôi
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Host/Home/Privacy">
+                            <i class="fa-solid fa-utensils me-2"></i> Điều khoản ban tổ chức
+                        </a>
+                    </li>
+                </ul>
+
+                <a href="/Home/Index"
+                   class="btn btn-primary rounded-pill shadow px-4 py-2 d-flex align-items-center gap-2 position-absolute bottom-0 start-0 m-3 w-90">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    <span>Quay về trang chính</span>
+                </a>
+            </div>
+
+
 
                 <div class="col-md-9">
                     <!-- Main Content -->

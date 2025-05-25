@@ -13,28 +13,28 @@
             <form id="checkoutForm" asp-action="Checkout" method="post">
                 <div class="mb-3">
                     <label>Họ tên:</label>
-                    <input asp-for="FullName" class="form-control" required />
+                    <input asp-for="FullName" type="text" class="form-control" required />
                 </div>
                 <div class="mb-3">
                     <label>Email:</label>
-                    <input asp-for="Email" class="form-control" required />
+                    <input asp-for="Email" type="email" class="form-control" required />
                 </div>
                 <div class="mb-3">
                     <label>Số điện thoại:</label>
-                    <input asp-for="PhoneNumber" class="form-control" required />
+                    <input asp-for="PhoneNumber" type="tel" class="form-control" required />
                 </div>
                 <div class="mb-3">
                     <label>Phương thức thanh toán:</label>
-                    <div class="row d-flex flex-column">
+                    <div class="row d-flex ">
                         
 
-                        <div class="col-6 col-md-4 mb-3 mt-2">
+                        <div class="col-6 col-md-4 mb-3 mt-2 ">
                             <div class="card h-100 border-primary payment-method-option" style="cursor: pointer;">
                                 <div class="card-body d-flex align-items-center">
                                     <input class="form-check-input me-2" type="radio" asp-for="PaymentMethod" value="VNPAY" hidden />
                                     <img src="~/images/vnpay-logo-vinadesign-25-12-57-55.jpg" alt="VNPay" width="40" class="me-2" />
                                     <div>
-                                        <h6 class="mb-0">Thanh toán bằng VNPay</h6>
+                                        <h6 class="mb-0">Thanh toán qua VNPay</h6>
                                     </div>
                                 </div>
                             </div>
@@ -64,8 +64,8 @@
                         <div class="col-6 col-md-4 mb-3">
                             <div class="card h-100 border-primary payment-method-option" style="cursor: pointer;">
                                 <div class="card-body d-flex align-items-center">
-                                    <input class="form-check-input me-2" type="radio" asp-for="PaymentMethod" value="VIETQR" hidden />
-                                    <img src="~/images/payments/vietqr.png" alt="VietQR" width="40" class="me-2" />
+                                    <input class="form-check-input me-2" type="radio" asp-for="PaymentMethod" value="VIETQR" hidden required />
+                                    <img src="~/images/download (1).png" alt="VietQR" width="40" class="me-2" />
                                     <h6 class="mb-0">Thanh toán qua VietQR</h6>
                                 </div>
                             </div>
@@ -117,7 +117,7 @@
                     </div>
                 </div>
                 <div class="card-footer text-end">
-                    <button class="btn btn-success" onclick="document.getElementById('checkoutForm').submit();">Xác nhận & Thanh toán</button>
+                    <button class="btn btn-success" onclick="document.getElementById('checkoutForm').submit();" type="submit">Xác nhận & Thanh toán</button>
 
                 </div>
             </div>
@@ -130,32 +130,71 @@
         <h5>Thời gian giữ vé còn lại:</h5>
         <p id="countdown" style="font-size: 1.5em; font-weight: bold;"></p> <!-- Đồng hồ đếm ngược -->
     </div>
+    <!-- Modal thông báo -->
+    <div class="modal fade" id="timeoutModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="timeoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="timeoutModalLabel">Thông báo</h5>
+                    <!-- Bỏ nút đóng để không thể tắt modal -->
+                    <!-- <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> -->
+                </div>
+                <div class="modal-body">
+                    Thời gian giữ vé đã hết. Vui lòng chọn lại vé.
+                </div>
+                <div class="modal-footer">
+                    <a href="/Ticket/Select/@Model.Tickets.FirstOrDefault()?.EventId" class="btn btn-primary">Chọn lại vé</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
 </div>
 
 <script>
     // Set thời gian đếm ngược (15 phút)
-    var countdownTime = 15 * 60; // 15 phút, tính bằng giây
+    var countdownTime = 15 * 60; // 15 phút,
     var countdownElement = document.getElementById("countdown");
 
-    function updateCountdown() {
+        function updateCountdown() {
+            if (countdownTime <= 0) {
+        clearInterval(countdownInterval);
+        var timeoutModal = new bootstrap.Modal(document.getElementById('timeoutModal'));
+        timeoutModal.show();
+
+        // Disable nút thanh toán hoặc các hành động khác nếu có
+        document.getElementById("btnPayment").disabled = true;
+
+        // Xử lý nút chọn lại vé
+        document.getElementById("btnChooseAgain").onclick = function () {
+            timeoutModal.hide();
+            // Reset lại vé (clear dữ liệu vé đã chọn)
+            resetSelectedTickets();
+
+            // Kích hoạt lại nút thanh toán, reset thời gian nếu cần
+            document.getElementById("btnPayment").disabled = false;
+
+            // Nếu bạn muốn reset đồng hồ đếm ngược:
+            resetCountdown();
+        };
+
+        return;
+    }
+
+
         var minutes = Math.floor(countdownTime / 60);
         var seconds = countdownTime % 60;
 
-        // Đảm bảo rằng các số có 2 chữ số
         minutes = minutes < 10 ? '0' + minutes : minutes;
         seconds = seconds < 10 ? '0' + seconds : seconds;
 
         countdownElement.textContent = minutes + ":" + seconds;
 
-        if (countdownTime <= 0) {
-            clearInterval(countdownInterval); // Dừng đồng hồ khi hết thời gian
-            // Hiển thị thông báo khi hết thời gian giữ vé
-            alert("Thời gian giữ vé đã hết. Vui lòng tạo lại đơn hàng.");
-            // Thực hiện thêm hành động nếu cần, ví dụ: tự động chuyển hướng hoặc hủy đơn
-        }
-
         countdownTime--;
     }
+
 
     // Cập nhật đồng hồ mỗi giây
     var countdownInterval = setInterval(updateCountdown, 1000);

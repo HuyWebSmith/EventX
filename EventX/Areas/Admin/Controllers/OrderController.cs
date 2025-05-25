@@ -32,12 +32,12 @@ namespace EventX.Areas.Admin.Controllers
 
             // Lấy dữ liệu cho trang hiện tại
             var orders = _context.Order
-                                .Include(o => o.ApplicationUser)
+                     .Include(o => o.ApplicationUser)
+                     .OrderByDescending(o => o.OrderID)  // Đổi thành OrderByDescending để mới nhất lên đầu
+                     .Skip((page - 1) * PageSize)
+                     .Take(PageSize)
+                     .ToList();
 
-                                 .OrderBy(o => o.OrderID) // Sắp xếp theo OrderID (hoặc trường khác)
-                                 .Skip((page - 1) * PageSize)
-                                 .Take(PageSize)
-                                 .ToList();
 
             // Tạo đối tượng ViewModel để truyền cho view
             var viewModel = new OrderListViewModel
