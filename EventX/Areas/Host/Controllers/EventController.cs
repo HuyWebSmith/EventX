@@ -403,19 +403,27 @@ namespace EventX.Areas.Host.Controllers
                         }
                     }
 
-
                     if (tickets == null || !tickets.Any())
                     {
                         var existingTickets = eventEntity.Tickets.Where(t => t.TrangThai != TicketStatus.NgungBan).ToList();
-                        _context.Tickets.RemoveRange(existingTickets); // Xóa hết vé cũ
+                        _context.Tickets.RemoveRange(existingTickets);
                     }
                     else
                     {
-                        // Nếu có vé mới, xử lý thêm hoặc cập nhật vé
+                        var existingTicketCodes = tickets
+                            .Where(t => !string.IsNullOrEmpty(t.TicketCode))
+                            .Select(t => t.TicketCode)
+                            .ToHashSet();
+
                         foreach (var ticket in tickets)
                         {
-                            var existingTicket = eventEntity.Tickets.FirstOrDefault(t => t.TicketCode == ticket.TicketCode);
+                            if (string.IsNullOrEmpty(ticket.TicketCode))
+                            {
+                                ticket.TicketCode = Guid.NewGuid().ToString();
+                                existingTicketCodes.Add(ticket.TicketCode); // thêm vào để tránh xóa nhầm
+                            }
 
+                            var existingTicket = eventEntity.Tickets.FirstOrDefault(t => t.TicketCode == ticket.TicketCode);
                             if (existingTicket != null)
                             {
                                 existingTicket.Type = ticket.Type;
@@ -425,20 +433,37 @@ namespace EventX.Areas.Host.Controllers
                                 existingTicket.EndDate = ticket.EndDate;
                                 existingTicket.TrangThai = TicketStatus.ConVe;
                                 existingTicket.Description = ticket.Description;
+                                existingTicket.Currency = ticket.Currency;
                             }
                             else
                             {
-                                // Nếu không có vé, thêm mới
-
-                                ticket.EventID = eventEntity.EventID;
-                                _context.Tickets.Add(ticket); // Thêm vé mới vào sự kiện
+                                var newTicket = new Ticket
+                                {
+                                    EventID = eventEntity.EventID,
+                                    TicketCode = ticket.TicketCode,
+                                    Type = ticket.Type,
+                                    Price = ticket.Price,
+                                    Quantity = ticket.Quantity,
+                                    StartDate = ticket.StartDate,
+                                    EndDate = ticket.EndDate,
+                                    TrangThai = TicketStatus.ConVe,
+                                    Description = ticket.Description,
+                                    Currency = ticket.Currency
+                                };
+                                _context.Tickets.Add(newTicket);
+                                existingTicketCodes.Add(newTicket.TicketCode); // tránh xóa nhầm
                             }
                         }
+
+                        var ticketsToDelete = eventEntity.Tickets
+                            .Where(t => !existingTicketCodes.Contains(t.TicketCode) && t.TrangThai != TicketStatus.NgungBan)
+                            .ToList();
+
+                        _context.Tickets.RemoveRange(ticketsToDelete);
                     }
 
+                    await _context.SaveChangesAsync();
 
-
-                    await _context.SaveChangesAsync(); // Make sure to save the changes after adding/updating tickets
 
 
                     if (paymentInfo != null)

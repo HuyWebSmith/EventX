@@ -1,7 +1,7 @@
 ﻿@using EventX.Enums
-@model List<EventX.Models.Event>
+@model EventX.ViewModels.EventListViewModel
 
-<table class="table table-bordered table-hover "    >
+<table class="table table-bordered table-hover">
     <thead class="table-dark">
         <tr>
             <th>Tiêu đề</th>
@@ -13,94 +13,95 @@
             <th>Số vé</th>
             <th>Đã bán</th>
             <th>Trạng thái</th>
-            <th>Hành động</th> <!-- Add a column for actions -->
+            <th>Hành động</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var evt in Model)
+        @foreach (var evt in Model.Events)
         {
-            // Get total tickets and sold tickets with null check
             var total = evt.Tickets?.Sum(t => t.Quantity) ?? 0;
-
-                Console.WriteLine($"Sự kiện: {evt.Title}, vé: {evt.Tickets?.Count}, tổng số vé: {evt.Tickets?.Sum(t => t.Quantity)}");
-
-
             var sold = evt.Tickets?.Sum(t => t.Sold) ?? 0;
+            var firstLocation = evt.Locations.FirstOrDefault();
 
             <tr class="text-center">
                 <td>@evt.Title</td>
                 <td>@evt.OrganizerName</td>
                 <td>@evt.Category?.Name</td>
-                <td>
-                    @{
-                        // Get the first location and display city, district, and city if available
-                        var firstLocation = evt.Locations.FirstOrDefault();
-                    }
-                    @if (firstLocation != null)
-                    {
-                        @firstLocation.City           
-                     }
-                    else
-                    {
-                        <span>Không có địa điểm</span>
-                        // If no location available
-                    }
-                </td>
+                <td>@(firstLocation != null ? firstLocation.City : "Không có địa điểm")</td>
                 <td>@evt.EventStartTime.ToString("dd/MM/yyyy HH:mm")</td>
                 <td>@evt.EventEndTime.ToString("dd/MM/yyyy HH:mm")</td>
                 <td>@total</td>
                 <td>@sold</td>
                 <td>
-
                     <select class="form-control status-dropdown" data-event-id="@evt.EventID">
-                        @foreach (var status in Enum.GetValues(typeof(EventX.Enums.EventStatus)).Cast<EventX.Enums.EventStatus>())
+                        @foreach (var status in Enum.GetValues(typeof(EventStatus)).Cast<EventStatus>())
                         {
                             <option value="@status" @(evt.Status == status ? "selected" : "")>@status.ToVietnamese()</option>
                         }
                     </select>
                 </td>
-
-                <!-- Action Buttons -->
                 <td>
-                    <!-- Detail Button -->
                     <a href="@Url.Action("Display", "Event", new { eventId = evt.EventID })" class="btn btn-info btn-sm">Xem</a>
-
                 </td>
-
             </tr>
         }
     </tbody>
 </table>
+
+<nav>
+    <ul class="pagination justify-content-center">
+        @for (int i = 1; i <= Model.TotalPages; i++)
+        {
+            <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                <a href="#" class="page-link page-number" data-page="@i">@i</a>
+            </li>
+        }
+    </ul>
+</nav>
+
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        $(document).ready(function () {
-            // Gửi yêu cầu Ajax khi trạng thái thay đổi
-            $('.status-dropdown').change(function () {
-                var eventId = $(this).data('event-id');
-                var selectedStatus = $(this).val();
-                     console.log("Event ID: " + eventId);
-                    console.log("Selected Status: " + selectedStatus);
-                $.ajax({
-                    url: '/Admin/Event/UpdateStatus',
-                    type: 'POST',
-                    data: {
-                        eventId: eventId,
-                        status: selectedStatus
-                    },
-                    success: function (response) {
-                        if (response.success) {
-                            // Cập nhật trạng thái trên giao diện
-                            alert('Cập nhật trạng thái thành công');
-                            var selectedStatus = $('.status-dropdown[data-event-id="' + eventId + '"]').val();
-                        } else {
-                            alert('Có lỗi xảy ra khi cập nhật trạng thái');
-                        }
-                    },
-                    error: function () {
-                        alert('Lỗi kết nối đến server');
+        // AJAX cập nhật trạng thái event
+        $(document).on('change', '.status-dropdown', function () {
+            var eventId = $(this).data('event-id');
+            var selectedStatus = $(this).val();
+
+            $.ajax({
+                url: '/Admin/Event/UpdateStatus',
+                type: 'POST',
+                data: { eventId: eventId, status: selectedStatus },
+                success: function (response) {
+                    if (response.success) {
+                        alert('Cập nhật trạng thái thành công');
+                    } else {
+                        alert('Có lỗi xảy ra khi cập nhật trạng thái');
                     }
-                });
+                },
+                error: function () {
+                    alert('Lỗi kết nối đến server');
+                }
+            });
+        });
+
+        // AJAX phân trang khi click số trang
+        $(document).on('click', '.page-number', function (e) {
+            e.preventDefault();
+            var page = $(this).data('page');
+            var keyword = $('#searchBox').val();
+            var status = $('#statusFilter').val();
+            var categoryId = $('#categoryFilter').val();
+
+            $.ajax({
+                url: '/Admin/Event/SearchAndFilter',
+                type: 'GET',
+                data: { keyword: keyword, status: status, categoryId: categoryId, page: page },
+                success: function (html) {
+                    $('#eventList').html(html);
+                },
+                error: function () {
+                    alert('Lỗi khi tải dữ liệu!');
+                }
             });
         });
     </script>

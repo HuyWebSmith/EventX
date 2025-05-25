@@ -1,6 +1,7 @@
 ﻿using EventX.Enums;
 using EventX.Models;
 using EventX.Repositories;
+using EventX.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -34,8 +35,9 @@ namespace EventX.Areas.Admin.Controllers
         {
             var events = await _context.Event
                 .Include(e => e.Category)
-                .Include(e => e.Tickets)        // Bao gồm vé
-                .Include(e => e.Locations)      // Bao gồm địa điểm
+                .Include(e => e.Tickets)       
+                .Include(e => e.Locations)
+                .OrderByDescending(e => e.CreatedAt)
                 .ToListAsync();
 
             var categories = await _categoryRepository.GetAllAsync();
@@ -45,7 +47,13 @@ namespace EventX.Areas.Admin.Controllers
                 Console.WriteLine($"ID: {category.CategoryId} - Name: {category.Name}");
             }
             ViewBag.Categories = new SelectList(categories, "CategoryId", "Name");
-            return View(events);
+            var model = new EventListViewModel
+            {
+                Events = events,
+                CurrentPage = 1,
+                TotalPages = 1
+            };
+            return View(model);
         }
 
 
@@ -202,8 +210,9 @@ namespace EventX.Areas.Admin.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> SearchAndFilter(string keyword, string status, int? categoryId)
+        public async Task<IActionResult> SearchAndFilter(string keyword, string status, int? categoryId, int page = 1)
         {
+            int pageSize = 10; // số bản ghi trên 1 trang
             var query = _context.Event
                 .Include(e => e.Category)
                 .Include(e => e.Tickets)
@@ -225,9 +234,24 @@ namespace EventX.Areas.Admin.Controllers
                 query = query.Where(e => e.CategoryId == categoryId.Value);
             }
 
-            var filteredEvents = await query.ToListAsync();
-            return PartialView("_AdminEventTablePartial", filteredEvents);
+            int totalItems = await query.CountAsync();
+
+            var events = await query
+                .OrderBy(e => e.Title) // hoặc theo ngày tạo, tùy bạn
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var model = new EventListViewModel
+            {
+                Events = events,
+                CurrentPage = page,
+                TotalPages = (int)Math.Ceiling((double)totalItems / pageSize)
+            };
+
+            return PartialView("_AdminEventTablePartial", model);
         }
+
 
     }
 }
