@@ -26,7 +26,7 @@ namespace EventX.Models
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Review> Reviews { get; set; }
 
-
+        public DbSet<HeldTicket> HeldTickets { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

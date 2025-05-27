@@ -8,142 +8,176 @@
 @model EventX.ViewModels.HomeViewModel
 
 <style>
-    .card {
-        transition: transform 0.3s ease; 
-        cursor: pointer;
-        margin-left:20px;
+    /* Giảm chiều cao banner để tránh bị cắt */
+    .banner-swiper-container {
+        position: relative;
+        width: 100%;
+        height: 300px; /* giảm từ 500px xuống 300px cho nhỏ hơn */
+        margin-bottom: 30px;
+        border-radius: 10px;
+        overflow: hidden;
     }
 
-        .card:hover {
-            transform: scale(1.05); 
-            z-index: 10;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.2); 
-        }
+    /* video và ảnh trong banner, giữ tỉ lệ, không bị cắt */
+    .banner-video, .banner-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain; /* cover -> contain để không bị cắt */
+        border-radius: 10px;
+    }
 
+    /* Swiper slide căn giữa và chiều cao cố định phù hợp */
     .swiper-slide {
         display: flex;
         justify-content: center;
-        align-items: flex-start;
-        height: 400px;
-        width: 100%; 
+        align-items: center; /* canh giữa theo chiều dọc */
+        height: 300px; /* đồng bộ với chiều cao banner */
+        width: 100%;
     }
 
+    /* Card */
     .card {
+        transition: transform 0.3s ease;
+        cursor: pointer;
+        margin-left: 20px;
         display: flex;
         flex-direction: column;
-        height: 100%; 
+        height: 100%;
         overflow: hidden;
         border: none !important;
     }
 
-    /* Xử lý hình ảnh card-img-top */
+        /* Hover hiệu ứng card */
+        .card:hover {
+            transform: scale(1.05);
+            z-index: 10;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+    /* Ảnh trong card */
     .card-img-top {
         object-fit: cover; /* Đảm bảo hình ảnh không bị méo */
-        height: 180px; /* Chiều cao hình ảnh cố định */
+        height: 180px; /* chiều cao ảnh trong card */
+        width: 100%; /* đảm bảo ảnh rộng đủ */
     }
 
-    /* Thiết lập cho phần card-body */
+    /* Nội dung card */
     .card-body {
         flex-grow: 1;
         padding: 10px;
-        overflow: hidden; /* Ngăn ngừa việc nội dung bị tràn */
+        overflow: hidden; /* tránh tràn nội dung */
     }
 
-    .banner-swiper-container {
-        position: relative;
-        width: 100%;
-        height: 500px;
-        margin-bottom: 30px;
-        border-radius: 10px;
-        overflow: hidden;
-        
+    /* Swiper nút next/prev */
+    .swiper-button-next, .swiper-button-prev {
+        font-size: 20px;
+        z-index: 10;
+        color: gray;
+        padding: 10px;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+        cursor: pointer;
+        outline: none;
     }
 
-    .swiper-slide img {
-        width: 100%; /* Đảm bảo ảnh chiếm hết chiều rộng */
-        height: 100%; /* Đảm bảo ảnh chiếm hết chiều cao */
-        object-fit: contain; /* Đảm bảo ảnh không bị méo mà vẫn đầy đủ */
+        .swiper-button-next:hover, .swiper-button-prev:hover {
+            color: white !important;
+            background-color: rgba(0, 0, 0, 0.5);
+            transform: scale(1.2);
+            border-radius: 5px;
+        }
+
+    .swiper-button-next {
+        right: 20px;
     }
+
+    .swiper-button-prev {
+        left: 20px;
+    }
+
+    /* Pagination */
     .swiper-pagination {
         position: absolute;
         bottom: 10px;
         left: 50%;
         transform: translateX(-50%);
-        z-index: 10; /* Đảm bảo pagination nằm trên các ảnh */
+        z-index: 10;
         color: white;
     }
 
-    .swiper-button-next, .swiper-button-prev {
-        font-size: 20px; 
-        z-index: 10;
-        color: gray;
-        padding: 10px; /* Tạo khoảng cách giữa biểu tượng và viền */
-        transition: background-color 0.3s ease, transform 0.3s ease; /* Thêm hiệu ứng khi hover */
-        user-select: none;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        cursor: pointer;
-        outline: none;
-    }
-
-
-
-        .swiper-button-next:hover {
-            color: white !important;
-            background-color: rgba(0, 0, 0, 0.5);
-            transform: scale(1.2);
-            border-top-left-radius: 5px;
-            border-bottom-left-radius: 5px;
-        }
-
-        .swiper-button-prev:hover {
-            color: white !important;
-            background-color: rgba(0, 0, 0, 0.5);
-            transform: scale(1.2);
-            border-top-right-radius: 5px;
-            border-bottom-right-radius: 5px;
-        }
-
-
-    .swiper-button-next {
-        right: 20px;
-        color: gray !important;
-    }
-
-    .swiper-button-prev {
-        left: 20px;
-        color: gray !important;
-    }
-
+    /* Nút chi tiết */
     .btn-detail {
         position: absolute;
-        bottom:80px; /* Đặt nút ở phía dưới của ảnh */
-        left: 15%;
-        transform: translateX(-50%); /* Canh giữa */
-        background-color: rgba(0, 0, 0, 0.5); /* Màu nền bán trong suốt */
+        bottom: 30px;
+        left: 15%; /* sửa từ 15% sang 50% để canh giữa */
+        transform: translateX(-50%);
+        background-color: rgba(0, 0, 0, 0.5);
         color: white;
         padding: 10px 20px;
         font-size: 16px;
         border-radius: 5px;
         text-align: center;
         cursor: pointer;
-        z-index: 10; /* Đảm bảo nút không bị che khuất */
-        transition: background-color 0.3s ease; /* Hiệu ứng khi hover */
+        z-index: 10;
+        transition: background-color 0.3s ease;
         text-decoration: none;
     }
 
         .btn-detail:hover {
-            background-color: rgba(0, 0, 0, 0.7); /* Thay đổi màu nền khi hover */
+            background-color: rgba(0, 0, 0, 0.7);
             color: white;
         }
 
+    /* Tiêu đề card */
     .card-title {
         display: -webkit-box;
-        -webkit-line-clamp: 2; /* Giới hạn 2 dòng */
+        -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+
+    #eventTab {
+        position: relative;
+        border-bottom: 2px solid #ddd;
+        display: flex;
+        justify-content: center; /* canh giữa 2 tab */
+        gap: 20px; /* khoảng cách giữa 2 tab */
+        padding-bottom: 5px;
+    }
+
+        #eventTab .nav-item {
+            width: 120px; /* tab nhỏ lại */
+            text-align: center;
+        }
+
+        #eventTab .nav-link {
+            border: none;
+            border-radius: 0;
+            padding: 8px 0;
+            font-weight: 600;
+            font-size: 14px;
+            color: #444;
+            cursor: pointer;
+        }
+
+            #eventTab .nav-link.active {
+                color: #8A2BE2; /* màu vàng cho tab active */
+            }
+    /* Thanh indicator */
+    #indicator {
+        position: absolute;
+        bottom: 0;
+        height: 3px;
+        background-color: #6A0DAD; /* màu vàng kim */
+        border-radius: 3px 3px 0 0;
+        transition: left 0.3s ease, width 0.3s ease;
+    }
+
+    .nav-tabs {
+        border-bottom: none !important; /* bỏ đường kẻ dài dưới cả thanh */
     }
 </style>
 
@@ -154,11 +188,21 @@
     <div class="swiper-wrapper">
         @foreach (var slider in Model.Sliders)
         {
-            <div class="swiper-slide banner-swiper-slide">
-                    <img src="@Url.Content(slider.ImageUrl)" alt="@slider.Title" />
+            <div class="swiper-slide banner-swiper-slide" style="position: relative;">
+                <img src="@Url.Content(slider.ImageUrl)" alt="@slider.Title" class="banner-image" style="width: 100%; height: 100%; object-fit: cover;" />
+
+                @* Thêm video nhưng ẩn mặc định *@
+                @if (!string.IsNullOrEmpty(slider.VideoUrl))
+                {
+                    <video class="banner-video" muted preload="auto" style="display: none; width: 100%; height: 100%; object-fit: cover;">
+                        <source src="@Url.Content(slider.VideoUrl)" type="video/mp4" />
+                        Video không hỗ trợ
+                    </video>
+                }
                 <a href="/Home/Display?eventId=@slider.Link" target="_blank" class="btn-detail">Xem chi tiết</a>
             </div>
         }
+
     </div>
 
     <!-- Các nút điều khiển -->
@@ -346,12 +390,106 @@
             </div>
         </div>
     }
-    
 
+<ul class="nav nav-tabs" id="eventTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="weekend-tab" data-bs-toggle="tab" data-bs-target="#weekend" type="button" role="tab" aria-controls="weekend" aria-selected="true">Cuối tuần này</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="month-tab" data-bs-toggle="tab" data-bs-target="#month" type="button" role="tab" aria-controls="month" aria-selected="false">Tháng này</button>
+    </li>
+    <div id="indicator"></div>
+</ul>
+
+<div class="tab-content" id="eventTabContent" style="margin-top: 20px;">
+    <!-- Tab cuối tuần -->
+    <div class="tab-pane fade show active" id="weekend" role="tabpanel" aria-labelledby="weekend-tab">
+        @if (Model.EventsThisWeekend.Any())
+        {
+            <div class="swiper mySwiperWeekend">
+                <div class="swiper-wrapper">
+                    @foreach (var eventItem in Model.EventsThisWeekend)
+                    {
+                        <div class="swiper-slide">
+                            <a href="@Url.Action("Display", "Home", new { eventId = eventItem.EventID })" class="text-decoration-none text-dark">
+                                <div class="card" style="width: 23rem; cursor: pointer;">
+                                    @foreach (var image in eventItem.EventImages)
+                                    {
+                                        <img src="@image.ImageURL" class="card-img-top" alt="Event Image" style="object-fit: contain; height: 180px;">
+                                    }
+                                    <div class="card-body">
+                                        <h5 class="card-title" style="font-size: 16px; font-weight: bold;">@eventItem.Title</h5>
+                                        @if (eventItem.Tickets != null && eventItem.Tickets.Any())
+                                        {
+                                            <p class="card-text" style="font-size: 14px;">
+                                                Giá vé từ: <strong>@eventItem.Tickets.Min(t => t.Price).ToString("N0")₫</strong>
+                                            </p>
+                                        }
+                                        <p class="card-text" style="font-size: 13px; color: gray;">
+                                            Bắt đầu: @eventItem.EventStartTime.ToString("dd/MM/yyyy HH:mm")
+                                        </p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    }
+                </div>
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+            </div>
+        }
+        else
+        {
+            <p>Không có sự kiện nào vào cuối tuần này.</p>
+        }
+    </div>
+
+    <!-- Tab tháng -->
+    <div class="tab-pane fade" id="month" role="tabpanel" aria-labelledby="month-tab">
+        @if (Model.EventsThisMonth.Any())
+        {
+            <div class="swiper mySwiperMonth">
+                <div class="swiper-wrapper">
+                    @foreach (var eventItem in Model.EventsThisMonth)
+                    {
+                        <div class="swiper-slide">
+                            <a href="@Url.Action("Display", "Home", new { eventId = eventItem.EventID })" class="text-decoration-none text-dark">
+                                <div class="card" style="width: 23rem; cursor: pointer;">
+                                    @foreach (var image in eventItem.EventImages)
+                                    {
+                                        <img src="@image.ImageURL" class="card-img-top" alt="Event Image" style="object-fit: contain; height: 180px;">
+                                    }
+                                    <div class="card-body">
+                                        <h5 class="card-title" style="font-size: 16px; font-weight: bold;">@eventItem.Title</h5>
+                                        @if (eventItem.Tickets != null && eventItem.Tickets.Any())
+                                        {
+                                            <p class="card-text" style="font-size: 14px;">
+                                                Giá vé từ: <strong>@eventItem.Tickets.Min(t => t.Price).ToString("N0")₫</strong>
+                                            </p>
+                                        }
+                                        <p class="card-text" style="font-size: 13px; color: gray;">
+                                            Bắt đầu: @eventItem.EventStartTime.ToString("dd/MM/yyyy HH:mm")
+                                        </p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    }
+                </div>
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+            </div>
+        }
+        else
+        {
+            <p>Không có sự kiện nào trong tháng này.</p>
+        }
+    </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <!-- Khởi tạo sau khi đã load JS -->
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+       document.addEventListener('DOMContentLoaded', function () {
         // Banner swiper
         var swiperBanner = new Swiper('.banner-swiper-container', {
             loop: true,
@@ -367,10 +505,18 @@
                 clickable: true,
             },
             autoplay: {
-                delay: 4000, 
-                disableOnInteraction: false, 
+                delay: 4000,
+                disableOnInteraction: false,
             },
+        });
 
+        // Dừng autoplay khi hover vào slider
+        const bannerContainer = document.querySelector('.banner-swiper-container');
+        bannerContainer.addEventListener('mouseenter', () => {
+            swiperBanner.autoplay.stop();
+        });
+        bannerContainer.addEventListener('mouseleave', () => {
+            swiperBanner.autoplay.start();
         });
 
         // Workshops swiper
@@ -395,28 +541,94 @@
             loop: false,
         });
 
-               const swiperEvents = new Swiper('.mySwiper', {
-      slidesPerView: 1,     // mặc định 1 slide trên màn nhỏ
-      spaceBetween: 20,
-      navigation: {
-        nextEl: '.mySwiper .swiper-button-next',
-        prevEl: '.mySwiper .swiper-button-prev',
-      },
-      breakpoints: {
-        576: {
-          slidesPerView: 2,
-        },
-        768: {
-          slidesPerView: 3,
-        },
-        992: {
-          slidesPerView: 4,
+        const swiperEvents = new Swiper('.mySwiper', {
+            slidesPerView: 1,     // mặc định 1 slide trên màn nhỏ
+            spaceBetween: 20,
+            navigation: {
+                nextEl: '.mySwiper .swiper-button-next',
+                prevEl: '.mySwiper .swiper-button-prev',
+            },
+            breakpoints: {
+                576: {
+                    slidesPerView: 2,
+                },
+                768: {
+                    slidesPerView: 3,
+                },
+                992: {
+                    slidesPerView: 4,
+                }
+            }
+        });
+
+            document.querySelectorAll('.banner-swiper-slide').forEach(slide => {
+        const video = slide.querySelector('.banner-video');
+        const image = slide.querySelector('.banner-image');
+
+        if (video && image) {
+            slide.addEventListener('mouseenter', () => {
+                image.style.display = 'none';
+                video.style.display = 'block';
+
+                video.play().catch(err => {
+                    // Ngăn chặn lỗi "AbortError"
+                    console.warn('Play video failed:', err);
+                });
+            });
+
+            slide.addEventListener('mouseleave', () => {
+                video.pause();
+                video.currentTime = 0;
+                video.style.display = 'none';
+                image.style.display = 'block';
+            });
         }
-      }
     });
 
-
     });
+
+        document.addEventListener('DOMContentLoaded', function () {
+      var swiperWeekend = new Swiper('.mySwiperWeekend', {
+        slidesPerView: 3,
+        spaceBetween: 20,
+        navigation: {
+          nextEl: '.mySwiperWeekend .swiper-button-next',
+          prevEl: '.mySwiperWeekend .swiper-button-prev',
+        },
+      });
+
+      var swiperMonth = new Swiper('.mySwiperMonth', {
+        slidesPerView: 3,
+        spaceBetween: 20,
+        navigation: {
+          nextEl: '.mySwiperMonth .swiper-button-next',
+          prevEl: '.mySwiperMonth .swiper-button-prev',
+        },
+      });
+    });
+
+      const tabs = document.querySelectorAll('#eventTab .nav-link');
+    const indicator = document.getElementById('indicator');
+
+    function updateIndicator() {
+      const activeTab = document.querySelector('#eventTab .nav-link.active');
+      if (!activeTab) return;
+      const tabWidth = activeTab.offsetWidth;
+      const tabLeft = activeTab.offsetLeft;
+      indicator.style.width = tabWidth + 'px';
+      indicator.style.left = tabLeft + 'px';
+    }
+
+    // Khởi tạo vị trí indicator khi load trang
+    updateIndicator();
+
+    // Cập nhật khi đổi tab
+    tabs.forEach(tab => {
+      tab.addEventListener('shown.bs.tab', () => {
+        updateIndicator();
+      });
+    });
+
+    // Cập nhật khi resize để indicator luôn đúng
+    window.addEventListener('resize', updateIndicator);
 </script>
-
-

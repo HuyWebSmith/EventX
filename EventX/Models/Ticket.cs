@@ -60,5 +60,7 @@ namespace EventX.Models
         public string DisplayType => Type == TicketType.Custom && !string.IsNullOrEmpty(CustomType)
         ? CustomType
         : Type.ToString();
+
+
     }
 }

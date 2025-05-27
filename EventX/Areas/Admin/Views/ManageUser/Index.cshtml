@@ -20,7 +20,7 @@
     {
         <div class="alert alert-success">@TempData["Success"]</div>
     }
-    <table class="table table-hover table-bordered shadow-sm ">
+    <table class="table table-hover table-bordered shadow-sm text-center">
         <thead class="table-dark">
             <tr>
                 <th>ID</th>
@@ -44,15 +44,16 @@
                     <td class="fw-bold @(user.IsBlocked ? "text-danger" : "text-success")">
                         @(user.IsBlocked ? "Đã khóa" : "Hoạt động")
                     </td>
-                    <td>
+                    <td >
                         @if (!user.IsBlocked)
                         {
-                            <a href="/Admin/ManageUser/Block/@user.Id" class="btn btn-sm btn-danger">Khóa</a>
+                            <a href="/Admin/ManageUser/Block/@user.Id" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-lock"></i></a>
                         }
                         else
                         {
-                            <a href="/Admin/ManageUser/Unblock/@user.Id" class="btn btn-sm btn-success">Mở khóa</a>
+                            <a href="/Admin/ManageUser/Unblock/@user.Id" class="btn btn-sm btn-outline-success"><i class="fa-solid fa-lock-open"></i></a>
                         }
+
 
                     </td>
 

@@ -249,6 +249,36 @@ namespace EventX.Migrations
                     b.ToTable("EventImage");
                 });
 
+            modelBuilder.Entity("EventX.Models.HeldTicket", b =>
+                {
+                    b.Property<int>("HeldTicketID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HeldTicketID"));
+
+                    b.Property<DateTime>("HeldAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TicketID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("HeldTicketID");
+
+                    b.HasIndex("TicketID");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("HeldTickets");
+                });
+
             modelBuilder.Entity("EventX.Models.IssuedTicket", b =>
                 {
                     b.Property<int>("IssuedTicketID")
@@ -568,6 +598,9 @@ namespace EventX.Migrations
                     b.Property<string>("Title")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("VideoUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.ToTable("Sliders");
@@ -794,6 +827,25 @@ namespace EventX.Migrations
                         .IsRequired();
 
                     b.Navigation("Event");
+                });
+
+            modelBuilder.Entity("EventX.Models.HeldTicket", b =>
+                {
+                    b.HasOne("EventX.Models.Ticket", "Ticket")
+                        .WithMany()
+                        .HasForeignKey("TicketID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EventX.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Ticket");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("EventX.Models.IssuedTicket", b =>

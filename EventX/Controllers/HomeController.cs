@@ -34,21 +34,47 @@ namespace EventX.Controllers
         {
             var allEvents = await _eventRepository.GetAllAsync();
             var approvedEvents = allEvents
-           .Where(e => e.Status == Enums.EventStatus.Approved || e.Status == Enums.EventStatus.Ongoing)
-           .ToList();
+               .Where(e => e.Status == Enums.EventStatus.Approved || e.Status == Enums.EventStatus.Ongoing)
+               .ToList();
 
             var sliders = await _context.Sliders
                 .Where(s => s.IsActive)
                 .OrderBy(s => s.Order)
                 .ToListAsync();
 
+            // Lấy ngày hiện tại
+            var today = DateTime.Today;
+
+            // Tính thứ 6 cuối tuần (hoặc thứ 7, Chủ nhật tùy theo quy định)
+            // Giả sử cuối tuần là thứ 7 và Chủ nhật
+            var saturday = today.AddDays(DayOfWeek.Saturday - today.DayOfWeek);
+            var sunday = saturday.AddDays(1);
+
+            // Sự kiện cuối tuần: diễn ra trong khoảng thứ 7 hoặc chủ nhật tuần này
+            var eventsThisWeekend = approvedEvents
+                .Where(e => e.EventStartTime.Date >= saturday && e.EventStartTime.Date <= sunday)
+                .ToList();
+
+            // Sự kiện trong tháng này (bất kỳ ngày nào trong tháng hiện tại)
+            var firstDayOfMonth = new DateTime(today.Year, today.Month, 1);
+            var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+
+            var eventsThisMonth = approvedEvents
+            .Where(e => e.EventStartTime.Date >= firstDayOfMonth && e.EventStartTime.Date <= lastDayOfMonth)
+            .ToList();
+
+
             var viewModel = new HomeViewModel
             {
                 Events = approvedEvents,
-                Sliders = sliders
+                Sliders = sliders,
+                EventsThisWeekend = eventsThisWeekend,
+                EventsThisMonth = eventsThisMonth
             };
+
             return View(viewModel);
         }
+
 
         public IActionResult Privacy()
         {

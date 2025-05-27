@@ -40,22 +40,21 @@
                 <td>@order.TotalAmount</td>
                 <td>@order.OrderStatus.GetDisplayName()</td>
                 <td>
-                    <a href="@Url.Action("Details", "Order", new { orderId = order.OrderID })" class="btn btn-info">Xem chi tiết</a>
+                    <a href="@Url.Action("Details", "Order", new { orderId = order.OrderID })" class="btn btn-outline-info"><i class="fa-solid fa-eye"></i></a>
 
-                    @if (order.OrderStatus == OrderStatus.Pending || order.OrderStatus == OrderStatus.Paid) // Nếu trạng thái đơn hàng là "Pending"
+                    @if (order.OrderStatus == OrderStatus.Pending || order.OrderStatus == OrderStatus.Paid)
                     {
-                        <a href="@Url.Action("Approve", "Order", new { orderId = order.OrderID })" class="btn btn-success">Duyệt đơn</a>
-                        <a href="@Url.Action("Cancel", "Order", new { orderId = order.OrderID })" class="btn btn-danger">Hủy</a>
+                        <a href="@Url.Action("Approve", "Order", new { orderId = order.OrderID })" class="btn btn-outline-success">Duyệt đơn</a>
+                        <a href="@Url.Action("Cancel", "Order", new { orderId = order.OrderID })" class="btn btn-outline-danger">Hủy</a>
                     }
-                    else if (order.OrderStatus == OrderStatus.Confirmed) // Nếu trạng thái đơn hàng là "Approved"
+                    else if (order.OrderStatus == OrderStatus.Confirmed)
                     {
-                        <a href="@Url.Action("Cancel", "Order", new { orderId = order.OrderID })" class="btn btn-danger">Hủy</a>
+                        <a href="@Url.Action("Cancel", "Order", new { orderId = order.OrderID })" class="btn btn-outline-danger">Hủy</a>
                     }
-                    else if (order.OrderStatus == OrderStatus.Cancelled) // Nếu trạng thái đơn hàng là "Cancelled"
+                    else if (order.OrderStatus == OrderStatus.Cancelled)
                     {
-                        <a href="@Url.Action("Approve", "Order", new { orderId = order.OrderID })" class="btn btn-success">Duyệt đơn</a>
+                        <a href="@Url.Action("Approve", "Order", new { orderId = order.OrderID })" class="btn btn-outline-success">Duyệt đơn</a>
                         <span class="text-muted">Đơn đã hủy</span>
-
                     }
 
                 </td>

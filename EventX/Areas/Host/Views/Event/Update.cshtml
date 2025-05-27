@@ -466,10 +466,7 @@
                                     <label>Mô tả vé</label>
                                     <input type="text" name="Tickets[@index].Description" class="form-control" value="@ticket.Description" />
                                 </div>
-                                <div class="form-group">
-                                    <label>Giảm giá (%)</label>
-                                    <input type="number" name="Tickets[@index].Discount" class="form-control" value="@ticket.Discount" step="0.01" />
-                                </div>
+                                
                                 <div class="form-group">
                                     <label>Tiền tệ</label>
                                     <input type="text" name="Tickets[@index].Currency" class="form-control" value="@ticket.Currency" VND"" required />
@@ -764,10 +761,7 @@
                     <label>Mô tả vé</label>
                     <input type="text" name="Tickets[${ticketIndex}].Description" class="form-control" />
                 </div>
-                <div class="form-group">
-                    <label>Giảm giá (%)</label>
-                    <input type="number" name="Tickets[${ticketIndex}].Discount" class="form-control" step="0.01" />
-                </div>
+               
                 <div class="form-group">
                     <label>Tiền tệ</label>
                     <input type="text" name="Tickets[${ticketIndex}].Currency" class="form-control" value="VND" required />

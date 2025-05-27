@@ -23,6 +23,9 @@ namespace EventX.Models
         public DateTime CreatedDate { get; set; } = DateTime.Now;
         [NotMapped]
         public IFormFile ImageFile { get; set; }
+        public string? VideoUrl { get; set; }
+        [NotMapped]
+        public IFormFile VideoFile { get; set; }
 
     }
 }

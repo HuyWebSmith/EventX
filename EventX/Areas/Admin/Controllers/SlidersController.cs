@@ -1,148 +1,175 @@
-﻿using EventX.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿    using EventX.Models;
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
 
 
-namespace EventX.Areas.Admin.Controllers
-{
-    [Area("Admin")] // Added Area attribute to specify the area
-    [Authorize(Roles = "Admin")]
-    public class SlidersController : Controller
+    namespace EventX.Areas.Admin.Controllers
     {
-        private readonly ApplicationDbContext _context;
-        private readonly IWebHostEnvironment _env;
-
-        public SlidersController(ApplicationDbContext context, IWebHostEnvironment env)
+        [Area("Admin")] // Added Area attribute to specify the area
+        [Authorize(Roles = "Admin")]
+        public class SlidersController : Controller
         {
-            _context = context;
-            _env = env;
-        }
+            private readonly ApplicationDbContext _context;
+            private readonly IWebHostEnvironment _env;
 
-        public async Task<IActionResult> Index()
-        {
-            var sliders = await _context.Sliders.OrderBy(s => s.Order).ToListAsync();
-            return View(sliders);
-        }
+            public SlidersController(ApplicationDbContext context, IWebHostEnvironment env)
+            {
+                _context = context;
+                _env = env;
+            }
 
-        public IActionResult Create()
-        {
-            return View(); // Trả về view tạo slider
-        }
+            public async Task<IActionResult> Index()
+            {
+                var sliders = await _context.Sliders.OrderBy(s => s.Order).ToListAsync();
+                return View(sliders);
+            }
+
+            public IActionResult Create()
+            {
+                return View(); // Trả về view tạo slider
+            }
 
         [HttpPost]
         public async Task<IActionResult> Create(Slider slider)
         {
+            // Upload ảnh
             if (slider.ImageFile != null)
             {
-                var path = "/images/sliders/" + Guid.NewGuid() + Path.GetExtension(slider.ImageFile.FileName);
-                var fullPath = Path.Combine(_env.WebRootPath, path.TrimStart('/'));
-                using (var stream = new FileStream(fullPath, FileMode.Create))
+                var imagePath = "/images/sliders/" + Guid.NewGuid() + Path.GetExtension(slider.ImageFile.FileName);
+                var imageFullPath = Path.Combine(_env.WebRootPath, imagePath.TrimStart('/'));
+                using (var stream = new FileStream(imageFullPath, FileMode.Create))
                 {
                     await slider.ImageFile.CopyToAsync(stream);
                 }
-                slider.ImageUrl = path;
+                slider.ImageUrl = imagePath;
             }
             else
             {
                 ModelState.AddModelError("ImageFile", "Vui lòng chọn ảnh.");
                 return View(slider);
             }
+
+            // Upload video (nếu có)
+            if (slider.VideoFile != null)
+            {
+                var videoPath = "/videos/sliders/" + Guid.NewGuid() + Path.GetExtension(slider.VideoFile.FileName);
+                var videoFullPath = Path.Combine(_env.WebRootPath, videoPath.TrimStart('/'));
+
+                // Tạo folder nếu chưa có
+                var videoFolder = Path.Combine(_env.WebRootPath, "videos", "sliders");
+                if (!Directory.Exists(videoFolder))
+                    Directory.CreateDirectory(videoFolder);
+
+                using (var stream = new FileStream(videoFullPath, FileMode.Create))
+                {
+                    await slider.VideoFile.CopyToAsync(stream);
+                }
+                slider.VideoUrl = videoPath;
+            }
+
             if (!ModelState.IsValid)
             {
-                // Ghi ra các lỗi trong ModelState để kiểm tra
-                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
-                {
-                    Console.WriteLine(error.ErrorMessage);
-                }
+                return View(slider);
             }
-            var sliders = new Slider
-            {
-                Id = slider.Id,
-                Title = slider.Title,
-                Description = slider.Description,
-                Link = slider.Link,
-                Order = slider.Order,
-                ImageUrl = slider.ImageUrl,
-                IsActive = slider.IsActive
-            };
 
-            _context.Add(sliders);
+            _context.Add(slider);
             await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
 
+
         public async Task<IActionResult> Edit(int id)
-        {
-            var slider = await _context.Sliders.FindAsync(id);
-            if (slider == null)
             {
-                return NotFound(); // Nếu không tìm thấy Slider
+                var slider = await _context.Sliders.FindAsync(id);
+                if (slider == null)
+                {
+                    return NotFound(); // Nếu không tìm thấy Slider
+                }
+                return View(slider); // Trả về view với Slider đã tìm thấy
             }
-            return View(slider); // Trả về view với Slider đã tìm thấy
-        }
 
 
         [HttpPost]
-        public async Task<IActionResult> Edit(int id, Slider updatedSlider, IFormFile ImageFile)
+        public async Task<IActionResult> Edit(int id, Slider updatedSlider, IFormFile ImageFile, IFormFile VideoFile)
         {
             if (id != updatedSlider.Id)
             {
-                return BadRequest(); // Kiểm tra nếu id trong URL và id trong dữ liệu không khớp
+                return BadRequest();
             }
 
             var slider = await _context.Sliders.FindAsync(id);
             if (slider == null)
             {
-                return NotFound();  // Nếu không tìm thấy Slider
+                return NotFound();
             }
 
-            // Cập nhật các thông tin của Slider
             slider.Title = updatedSlider.Title;
             slider.Link = updatedSlider.Link;
             slider.Description = updatedSlider.Description;
             slider.Order = updatedSlider.Order;
             slider.IsActive = updatedSlider.IsActive;
 
-            // Nếu người dùng tải lên ảnh mới, cập nhật hình ảnh
+            // Upload ảnh mới
             if (ImageFile != null)
             {
-                var path = "/images/sliders/" + Guid.NewGuid() + Path.GetExtension(ImageFile.FileName);
-                var fullPath = Path.Combine(_env.WebRootPath, path.TrimStart('/'));
-                using (var stream = new FileStream(fullPath, FileMode.Create))
+                var imagePath = "/images/sliders/" + Guid.NewGuid() + Path.GetExtension(ImageFile.FileName);
+                var imageFullPath = Path.Combine(_env.WebRootPath, imagePath.TrimStart('/'));
+                using (var stream = new FileStream(imageFullPath, FileMode.Create))
                 {
                     await ImageFile.CopyToAsync(stream);
                 }
-                slider.ImageUrl = path; // Cập nhật URL hình ảnh
+                slider.ImageUrl = imagePath;
             }
-                _context.Update(slider); // Cập nhật đối tượng trong context
-                await _context.SaveChangesAsync(); // Lưu thay đổi vào database
-                return RedirectToAction(nameof(Index)); // Chuyển hướng về danh sách Slider  
+
+            // Upload video mới
+            if (VideoFile != null)
+            {
+                var videoPath = "/videos/sliders/" + Guid.NewGuid() + Path.GetExtension(VideoFile.FileName);
+                var videoFullPath = Path.Combine(_env.WebRootPath, videoPath.TrimStart('/'));
+
+                var videoFolder = Path.Combine(_env.WebRootPath, "videos", "sliders");
+                if (!Directory.Exists(videoFolder))
+                    Directory.CreateDirectory(videoFolder);
+
+                using (var stream = new FileStream(videoFullPath, FileMode.Create))
+                {
+                    await VideoFile.CopyToAsync(stream);
+                }
+                slider.VideoUrl = videoPath;
+            }
+
+            _context.Update(slider);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
+
 
 
         public async Task<IActionResult> Delete(int id)
-        {
-            var slider = await _context.Sliders.FindAsync(id);
-            if (slider != null)
             {
-                _context.Sliders.Remove(slider);
-                await _context.SaveChangesAsync();
+                var slider = await _context.Sliders.FindAsync(id);
+                if (slider != null)
+                {
+                    _context.Sliders.Remove(slider);
+                    await _context.SaveChangesAsync();
+                }
+                return RedirectToAction(nameof(Index));
             }
-            return RedirectToAction(nameof(Index));
+
+            public async Task<IActionResult> Toggle(int id)
+            {
+                var slider = await _context.Sliders.FindAsync(id);
+                if (slider != null)
+                {
+                    slider.IsActive = !slider.IsActive;
+                    _context.Update(slider);
+                    await _context.SaveChangesAsync();
+                }
+                return RedirectToAction(nameof(Index));
+            }
         }
 
-        public async Task<IActionResult> Toggle(int id)
-        {
-            var slider = await _context.Sliders.FindAsync(id);
-            if (slider != null)
-            {
-                slider.IsActive = !slider.IsActive;
-                _context.Update(slider);
-                await _context.SaveChangesAsync();
-            }
-            return RedirectToAction(nameof(Index));
-        }
     }
-
-}

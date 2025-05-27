@@ -14,32 +14,47 @@ public class TicketService
     {
         var currentDate = DateTime.Now;
 
-        // Tìm các vé đã hết vé
         var soldOutTickets = _context.Tickets
                                       .Where(t => t.Quantity == t.Sold && t.TrangThai != TicketStatus.HetVe)
                                       .ToList();
 
         foreach (var ticket in soldOutTickets)
         {
-            // Cập nhật trạng thái vé thành "Hết vé"
             ticket.TrangThai = TicketStatus.HetVe;
         }
 
-        // Tìm các vé đã hết hạn
         var expiredTickets = _context.Tickets
                                      .Where(t => t.TicketSaleEnd < currentDate && t.TrangThai != TicketStatus.HetHan)
                                      .ToList();
 
         foreach (var ticket in expiredTickets)
         {
-            // Cập nhật trạng thái vé thành "Hết hạn"
+
             ticket.TrangThai = TicketStatus.HetHan;
         }
 
-        // Lưu lại các thay đổi vào cơ sở dữ liệu
         if (soldOutTickets.Any() || expiredTickets.Any())
         {
             _context.SaveChanges();
         }
+    }
+
+    public void ReleaseExpiredHeldTickets()
+    {
+        var expiredTime = DateTime.UtcNow.AddMinutes(-15);
+        var expiredHeldTickets = _context.HeldTickets.Where(h => h.HeldAt < expiredTime).ToList();
+
+        foreach (var expiredHeld in expiredHeldTickets)
+        {
+            var ticket = _context.Tickets.Find(expiredHeld.TicketID);
+            if (ticket != null)
+            {
+                ticket.Sold -= expiredHeld.Quantity;
+                if (ticket.Sold < 0) ticket.Sold = 0;
+            }
+        }
+
+        _context.HeldTickets.RemoveRange(expiredHeldTickets);
+        _context.SaveChanges();
     }
 }

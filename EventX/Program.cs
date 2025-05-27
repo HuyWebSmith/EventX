@@ -74,15 +74,26 @@ recurringJobManager.AddOrUpdate<EventService>(
         TimeZone = TimeZoneInfo.Local  // Thi?t l?p múi gi? ??a ph??ng
     });
 
-// T?o công vi?c ??nh k? ?? c?p nh?t tr?ng thái vé
+
 recurringJobManager.AddOrUpdate<TicketService>(
     recurringJobId: "update-ticket-status", // ID công vi?c
     methodCall: service => service.UpdateTicketStatus(), // Ph??ng th?c c?n g?i
     cronExpression: Cron.Minutely(), // Ch?y m?i phút
     options: new RecurringJobOptions
     {
-        TimeZone = TimeZoneInfo.Local // Thi?t l?p múi gi? ??a ph??ng
+        TimeZone = TimeZoneInfo.Local 
     });
+
+recurringJobManager.AddOrUpdate<TicketService>(
+    recurringJobId: "ReleaseExpiredHeldTickets",
+    methodCall: service => service.ReleaseExpiredHeldTickets(),
+    cronExpression: Cron.Minutely(),
+    options: new RecurringJobOptions
+    {
+        TimeZone = TimeZoneInfo.Local
+    });
+
+
 app.UseHangfireServer();
 
 app.UseSession();

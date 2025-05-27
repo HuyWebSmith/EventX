@@ -441,7 +441,7 @@ namespace EventX.Areas.Host.Controllers
                                 existingTicket.TrangThai = TicketStatus.ConVe;
                                 existingTicket.Description = ticket.Description;
                                 existingTicket.Currency = ticket.Currency;
-                                existingTicket.Discount = ticket.Discount;
+
                             }
                             else
                             {
@@ -459,7 +459,6 @@ namespace EventX.Areas.Host.Controllers
                                     TrangThai = TicketStatus.ConVe,
                                     Description = ticket.Description,
                                     Currency = ticket.Currency,
-                                    Discount = ticket.Discount,
                                 };
                                 _context.Tickets.Add(newTicket);
                                 existingTicketCodes.Add(newTicket.TicketCode); // tránh xóa nhầm

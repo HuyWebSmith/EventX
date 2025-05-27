@@ -23,7 +23,6 @@ namespace EventX.Models
         [MaxLength(100)]
         public string? Branch { get; set; }  // Chi nhánh
 
-        // Liên kết với người tạo (User hoặc Event Organizer)
         public string? CreatorId { get; set; }  // ID người tạo (liên kết với AspNetUsers nếu dùng Identity)
 
         public int? EventId { get; set; }

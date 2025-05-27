@@ -62,10 +62,68 @@ namespace EventX.Controllers
         [HttpPost]
         public IActionResult AddTicket([FromBody] List<TicketItem> cartItems)
         {
+            var expiredTime = DateTime.UtcNow.AddMinutes(-15);
+
+            // Xóa vé giữ quá hạn, hoàn lại vé
+            var expiredHeldTickets = _context.HeldTickets.Where(h => h.HeldAt < expiredTime).ToList();
+            foreach (var expiredHeld in expiredHeldTickets)
+            {
+                var ticket = _context.Tickets.FirstOrDefault(t => t.TicketID == expiredHeld.TicketID);
+                if (ticket != null)
+                {
+                    ticket.Sold -= expiredHeld.Quantity;
+                    if (ticket.Sold < 0) ticket.Sold = 0;
+                }
+            }
+            _context.HeldTickets.RemoveRange(expiredHeldTickets);
+            _context.SaveChanges();
+
             if (cartItems == null || cartItems.Count == 0)
                 return BadRequest("Không có vé nào được gửi lên.");
 
-            // Ghi đè giỏ hàng thay vì cộng dồn
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // Xóa vé giữ cũ của user, hoàn lại vé
+            var oldHeldTickets = _context.HeldTickets.Where(h => h.UserId == userId).ToList();
+            foreach (var oldHeld in oldHeldTickets)
+            {
+                var ticket = _context.Tickets.FirstOrDefault(t => t.TicketID == oldHeld.TicketID);
+                if (ticket != null)
+                {
+                    ticket.Sold -= oldHeld.Quantity;
+                    if (ticket.Sold < 0) ticket.Sold = 0;
+                }
+            }
+            _context.HeldTickets.RemoveRange(oldHeldTickets);
+            _context.SaveChanges();
+
+            // Giữ vé mới
+            foreach (var item in cartItems)
+            {
+                var ticket = _context.Tickets.FirstOrDefault(t => t.TicketID == item.TicketId);
+                if (ticket == null)
+                    return BadRequest($"Vé không tồn tại: {item.TicketId}");
+
+                // Kiểm tra số vé còn lại
+                var available = ticket.Quantity - ticket.Sold;
+                if (available < item.Quantity)
+                    return BadRequest($"Không đủ vé cho vé ID {item.TicketId}");
+
+                // Tăng số vé đã bán tạm thời (giữ vé)
+                ticket.Sold += item.Quantity;
+
+                var heldTicket = new HeldTicket
+                {
+                    TicketID = item.TicketId,
+                    Quantity = item.Quantity,
+                    UserId = userId,
+                    HeldAt = DateTime.UtcNow
+                };
+                _context.HeldTickets.Add(heldTicket);
+            }
+
+            _context.SaveChanges();
+
             var newCart = new TicketCart
             {
                 Items = cartItems
@@ -81,24 +139,26 @@ namespace EventX.Controllers
         public IActionResult Checkout()
         {
             var cart = HttpContext.Session.GetObjectFromJson<TicketCart>("TicketCart");
-            if (cart == null || !cart.Items.Any()) return RedirectToAction("Index", "Home");
+            if (cart == null || !cart.Items.Any())
+                return RedirectToAction("Index", "Home");
 
-            // Lưu thời gian giữ vé
-            HttpContext.Session.SetString("HoldStartTime", DateTime.UtcNow.ToString());
+            // Lưu thời gian bắt đầu giữ vé nếu chưa lưu
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("HoldStartTime")))
+            {
+                HttpContext.Session.SetString("HoldStartTime", DateTime.UtcNow.ToString("o")); // dùng chuẩn ISO 8601
+            }
 
-            // Lấy TicketId từ vé đầu tiên trong giỏ
+            // Lấy vé đầu tiên để lấy EventID
             var ticketItem = cart.Items.FirstOrDefault();
-            if (ticketItem == null) return RedirectToAction("Index", "Home");
+            if (ticketItem == null)
+                return RedirectToAction("Index", "Home");
 
-            // Truy vấn vé từ cơ sở dữ liệu để lấy EventID
             var ticket = _context.Tickets.FirstOrDefault(t => t.TicketID == ticketItem.TicketId);
-            if (ticket == null) return RedirectToAction("Index", "Home");
+            if (ticket == null)
+                return RedirectToAction("Index", "Home");
 
-            // Lấy EventID từ vé và truy vấn sự kiện
             var eventId = ticket.EventID;
 
-
-            // Tạo CheckoutViewModel
             var model = new CheckoutViewModel
             {
                 Tickets = cart.Items,
@@ -107,7 +167,6 @@ namespace EventX.Controllers
 
             return View(model);
         }
-
 
         [HttpPost]
         public IActionResult ClearSession()
@@ -120,71 +179,67 @@ namespace EventX.Controllers
         public IActionResult Checkout(CheckoutViewModel model)
         {
             var cart = HttpContext.Session.GetObjectFromJson<TicketCart>("TicketCart");
- 
+            if (cart == null || !cart.Items.Any())
+                return RedirectToAction("Index", "Home");
+
             // Kiểm tra thời gian giữ vé
             var holdStart = HttpContext.Session.GetString("HoldStartTime");
-            if (DateTime.TryParse(holdStart, out var startTime))
+            if (!string.IsNullOrEmpty(holdStart) && DateTime.TryParse(holdStart, out var startTime))
             {
                 if (DateTime.UtcNow - startTime > TimeSpan.FromMinutes(15))
                 {
+                    // Hết thời gian giữ vé
                     HttpContext.Session.Remove("TicketCart");
-                    return RedirectToAction("Timeout");
+                    HttpContext.Session.Remove("HoldStartTime");
+                    TempData["Error"] = "Thời gian giữ vé đã hết hạn. Vui lòng chọn lại vé.";
+                    return RedirectToAction("Timeout"); // hoặc trang thông báo timeout
                 }
             }
-
+            else
+            {
+                // Nếu không có thời gian giữ vé, chuyển về trang đặt vé lại
+                TempData["Error"] = "Không tìm thấy thời gian giữ vé. Vui lòng chọn lại vé.";
+                return RedirectToAction("Index", "Home");
+            }
 
             if (!ModelState.IsValid)
             {
-                foreach (var entry in ModelState)
-                {
-                    var key = entry.Key;
-                    foreach (var error in entry.Value.Errors)
-                    {
-                        Console.WriteLine($"Lỗi ở trường '{key}': {error.ErrorMessage}");
-                    }
-                }
-                TempData["error"] = "Vui lòng cung cấp đầy đủ thông tin";
+                TempData["Error"] = "Vui lòng cung cấp đầy đủ thông tin.";
                 return View(model);
             }
 
-
-            // Lấy UserID từ Identity
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
             var user = _userManager.FindByIdAsync(userId).Result;
 
-            var totalAmount = cart.Items.Sum(item => item.Quantity * item.Price);
-            // Tạo đối tượng Order
+            var totalAmount = cart.Items.Sum(i => i.Quantity * i.Price);
+
             var order = new Order
             {
                 UserID = userId,
                 ApplicationUser = user,
                 TotalAmount = totalAmount,
-                OrderStatus = OrderStatus.Pending, // Trạng thái mặc định
-                CreatedAt = DateTime.Now, // Thời gian tạo đơn hàng
+                OrderStatus = OrderStatus.Pending,
+                CreatedAt = DateTime.UtcNow,
                 OrderDetails = new List<OrderDetail>(),
                 FullName = model.FullName,
                 Email = model.Email,
                 PhoneNumber = model.PhoneNumber,
             };
 
-            // Kiểm tra nếu chọn VNPAY thì chuyển hướng đến trang thanh toán
-          
-
-            // Tạo OrderDetails từ các vé trong giỏ hàng
-            // 1. Lấy danh sách TicketID từ giỏ hàng
+            // Lấy vé thật từ DB
             var ticketIds = cart.Items.Select(i => i.TicketId).ToList();
-
-            // 2. Truy vấn tất cả vé cùng lúc từ DB
             var realTickets = _context.Tickets
                 .Where(t => ticketIds.Contains(t.TicketID))
                 .ToDictionary(t => t.TicketID);
 
-            // 3. Tạo danh sách OrderDetail
             var orderDetails = new List<OrderDetail>();
             foreach (var item in cart.Items)
             {
                 if (!realTickets.TryGetValue(item.TicketId, out var realTicket))
-                    continue; // hoặc xử lý lỗi nếu cần
+                    continue;
 
                 orderDetails.Add(new OrderDetail
                 {
@@ -195,34 +250,39 @@ namespace EventX.Controllers
                     Ticket = realTicket
                 });
             }
-            
-            // Lưu order vào cơ sở dữ liệu
+
+            order.OrderDetails = orderDetails;
+
             _context.Order.Add(order);
-           
-            _context.OrderDetail.AddRange(orderDetails);
+
+            // Xóa vé giữ của user
+            var heldTickets = _context.HeldTickets.Where(h => h.UserId == userId);
+            _context.HeldTickets.RemoveRange(heldTickets);
 
             _context.SaveChanges();
 
-            // Xoá giỏ hàng trong session
+            // Xóa session giữ vé
             HttpContext.Session.Remove("TicketCart");
             HttpContext.Session.Remove("HoldStartTime");
+
             if (model.PaymentMethod == "VNPAY")
             {
                 var paymentInfo = new PaymentInformationModel
                 {
                     OrderType = "event",
-                    OrderDescription = $"Thanh toán đơn hàng #{order.OrderID} ",
+                    OrderDescription = $"Thanh toán đơn hàng #{order.OrderID}",
                     Amount = totalAmount,
                     Name = user.FullName,
                 };
 
-                // Tạo URL thanh toán VNPay
                 var vnpayUrl = _vnPayService.CreatePaymentUrl(paymentInfo, HttpContext);
-
-                return Redirect(vnpayUrl); // Chuyển hướng tới VNPay để thanh toán
+                return Redirect(vnpayUrl);
             }
+
             return RedirectToAction("Success");
         }
+
+
 
         public IActionResult CreatePaymentUrlVnpay(PaymentInformationModel model)
         {
