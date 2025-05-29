@@ -47,20 +47,20 @@
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
                 <a asp-area="" asp-controller="Home" asp-action="Index">
-                    <img src="~/images/ChatGPT Image Apr 17, 2025, 01_12_24 PM.png" class="navbar-brand object-fit-cover" alt="EventX Logo" style="width:95px; height:60px;" />
+                    <img src="~/images/ChatGPT Image Apr 17, 2025, 01_12_24 PM.png" class="navbar-brand object-fit-cover" alt="EventX Logo" style="width:110px; height:75px;" />
                 </a>
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
                         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <form class="d-flex me-3" method="get" asp-controller="Home" asp-action="Search">
+                <form class="d-flex me-3" method="get" asp-controller="Home" asp-action="Search" style="margin-left: 250px;">
                     <div class="input-group">
                         <span class="input-group-text" id="search-icon">
                             <i class="fa fa-search"></i>
                         </span>
                         <input type="search" name="query" class="form-control" placeholder="Bạn muốn làm gì?..." aria-label="Search" aria-describedby="search-icon" required>
-                        <button class="btn btn-outline-warning text-black" type="submit" style="border-left: 1px solid #ced4da;">Tìm kiếm</button>
+                        <button class="btn btn-outline-secondary text-black" type="submit" style="border-left: 1px solid #ced4da;">Tìm kiếm</button>
                     </div>
                 </form>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between align-items-center">
@@ -70,7 +70,7 @@
 
                     @if (User.IsInRole("Host"))
                     {
-                        <a href="/Host/Home/Index" class="btn btn-warning me-2" style="color:black;">
+                        <a href="/Host/Home/Index" class="btn btn-outline-secondary me-2" style="color:black;">
                             <i class="fa-regular fa-calendar-plus me-1"></i> Tạo sự kiện
                         </a>
                     }
@@ -206,7 +206,7 @@
                 const res = await fetch('/Home/GetNotifications');
                 if (!res.ok) throw new Error('Failed to load notifications');
                 const notifications = await res.json();
-                const unreadCount = notifications.filter(n => !n.isRead).length;
+                let  unreadCount = notifications.filter(n => !n.isRead).length;
 
                 const badge = document.getElementById('notificationCount');
                 const noNotifEl = document.getElementById('noNotification');
@@ -294,6 +294,7 @@
                             badge.style.display = 'none';
                                     if (bellIcon) bellIcon.classList.remove('btnShake');
                                 }
+                                 location.reload();
                             }
                         } catch (error) {
                             console.error('Error marking notification read:', error);

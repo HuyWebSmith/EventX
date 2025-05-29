@@ -314,7 +314,6 @@ namespace EventX.Controllers
 
                         foreach (var detail in order.OrderDetails)
                         {
-                            detail.Ticket.Sold += detail.Quantity;
                             for (int i = 0; i < detail.Quantity; i++)
                             {
                                 string ticketTypeName = detail.Ticket.Type.ToString(); // default là tên enum

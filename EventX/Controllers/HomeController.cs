@@ -151,8 +151,9 @@ namespace EventX.Controllers
 
             var notifications = await _context.Notifications
                 .Where(n => n.UserId == userId)
-                .OrderByDescending(n => n.CreatedAt)
-                .Take(20) // lấy 20 thông báo gần đây nhất, tuỳ chỉnh
+                .OrderBy(n => n.IsRead)              
+                .ThenByDescending(n => n.CreatedAt)
+                .Take(20)
                 .ToListAsync();
 
             return Json(notifications);
