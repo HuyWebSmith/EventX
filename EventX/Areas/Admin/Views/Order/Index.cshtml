@@ -40,7 +40,7 @@
                 <td>@order.TotalAmount</td>
                 <td>@order.OrderStatus.GetDisplayName()</td>
                 <td>
-                    <a href="@Url.Action("Details", "Order", new { orderId = order.OrderID })" class="btn btn-outline-info"><i class="fa-solid fa-eye"></i></a>
+                   
 
                     @if (order.OrderStatus == OrderStatus.Pending || order.OrderStatus == OrderStatus.Paid)
                     {
