@@ -453,6 +453,13 @@
                                 <span class="text-muted" style="cursor: default;">&#9734;</span>
                             }
                         }
+                        <br />
+@if (!string.IsNullOrEmpty(review.Comment))
+{
+    <strong class="text-secondary" style="font-weight: 600; font-size: 1rem;">
+        @review.Comment
+    </strong>
+}
                     </div>
 
                 </div>
