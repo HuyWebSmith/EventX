@@ -10,87 +10,100 @@
 }
 
 <style>
+    /* General container styling for a luxurious feel */
+    .ticket-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f5f7fa;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Table styling */
     table.ticket-table {
         width: 100%;
-        border-collapse: collapse; /* Đóng border */
-        border: 1px solid #ddd;
+        border-collapse: separate;
+        border-spacing: 0;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #ffffff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
         table.ticket-table th,
         table.ticket-table td {
-            border: 1px solid #ddd; /* Đường viền từng ô */
-            padding: 8px;
+            padding: 12px;
             text-align: left;
+            border-bottom: 1px solid #e0e7ff;
         }
 
         table.ticket-table th {
-            background-color: #f8f9fa; /* Màu nền header nhẹ */
-            font-weight: 600;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #e0c3fc;
+            font-weight: 700;
+            font-family: 'Arial', sans-serif;
+            text-transform: uppercase;
+            font-size: 0.9rem;
         }
 
-    /* Giữ nguyên style badge trạng thái */
+        table.ticket-table tr {
+            transition: background 0.2s ease;
+        }
+
+            table.ticket-table tr:hover {
+                background: #e0e7ff;
+            }
+
+        table.ticket-table td {
+            color: #1a1a2e;
+            font-family: 'Arial', sans-serif;
+            font-size: 0.95rem;
+        }
+
+    /* Badge styling */
     .badge-status {
-        background-color: #f59e0b;
+        background: #f59e0b;
         color: white;
         font-weight: 600;
         padding: 6px 14px;
-        border-radius: 18px;
-        display: inline-block;
+        border-radius: 16px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.85rem;
+        transition: transform 0.2s ease;
     }
 
     .badge-checked-in {
-        background-color: #2563eb;
+        background: #2563eb;
         color: white;
         font-weight: 600;
         padding: 6px 14px;
-        border-radius: 18px;
-        display: inline-block;
-    }
-
-    .badge-not-checked-in {
-        background-color: #ef4444;
-        color: white;
-        font-weight: 600;
-        padding: 6px 14px;
-        border-radius: 18px;
-        display: inline-block;
-    }
-
-    .nav-tabs .nav-link {
-        font-size: 0.85rem; /* chữ nhỏ hơn */
-        padding: 6px 12px; /* padding nhỏ hơn */
-        border-radius: 12px; /* bo góc nhẹ cho đẹp */
-    }
-
-        .nav-tabs .nav-link.active {
-            font-weight: 600;
-            background-color: #2563eb; /* màu xanh đậm */
-            color: white;
-        }
-
-    .nav-tabs .nav-link {
-        color: #2563eb; /* màu chữ xanh */
-    }
-
-        .nav-tabs .nav-link:hover {
-            background-color: #e0e7ff;
-        }
-
-    .badge-status,
-    .badge-checked-in,
-    .badge-not-checked-in {
-        white-space: nowrap; /* Không xuống dòng */
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-size: 0.85rem;
+        border-radius: 16px;
         display: inline-flex;
         align-items: center;
-        gap: 4px;
-        max-width: 120px; /* giới hạn rộng tối đa */
-        overflow: hidden; /* nếu vượt thì ẩn */
-        text-overflow: ellipsis; /* nếu quá dài thì hiển thị dấu ... */
+        gap: 6px;
+        font-size: 0.85rem;
     }
 
+    .badge-not-checked-in {
+        background: #ef4444;
+        color: white;
+        font-weight: 600;
+        padding: 6px 14px;
+        border-radius: 16px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.85rem;
+    }
+
+        .badge-status:hover,
+        .badge-checked-in:hover,
+        .badge-not-checked-in:hover {
+            transform: scale(1.05);
+        }
 
         .badge-status i,
         .badge-checked-in i,
@@ -98,162 +111,244 @@
             font-size: 1rem;
         }
 
+    /* Tab styling */
+    .nav-tabs {
+        border-bottom: 2px solid #e0c3fc;
+        margin-bottom: 20px;
+    }
+
+        .nav-tabs .nav-link {
+            font-size: 0.9rem;
+            padding: 8px 16px;
+            border-radius: 12px 12px 0 0;
+            color: #2563eb;
+            font-weight: 500;
+            font-family: 'Arial', sans-serif;
+            transition: all 0.3s ease;
+            margin-right: 4px;
+        }
+
+            .nav-tabs .nav-link:hover {
+                background: #e0e7ff;
+                color: #1a1a2e;
+            }
+
+            .nav-tabs .nav-link.active {
+                background: linear-gradient(135deg, #2563eb, #1e40af);
+                color: white;
+                font-weight: 700;
+                border: none;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            }
+
+    /* No events card */
+    .no-events-card {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 30px;
+        background: linear-gradient(135deg, #1a1a2e, #16213e);
+        border-radius: 12px;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        margin: 20px auto;
+        max-width: 700px;
+        border: 1px solid #e0c3fc;
+        transition: transform 0.3s ease;
+    }
+
+        .no-events-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .no-events-card p {
+            font-size: 1.2em;
+            color: #e0c3fc;
+            font-weight: 600;
+            text-align: center;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            letter-spacing: 0.3px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+    /* Responsive adjustments */
+    
+
+    .no-events-card {
+        padding: 20px;
+        max-width: 90%;
+    }
+
+        .no-events-card p {
+            font-size: 1.1em;
+        }
+
+    .nav-tabs .nav-link {
+        font-size: 0.8rem;
+        padding: 6px 12px;
+    }
+
+    }
 </style>
 
+<div class="ticket-container">
+    <h2 class="mb-4 text-primary fw-bold" style="font-family: 'Arial', sans-serif; color: #1a1a2e; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);">🎫 Vé của tôi</h2>
 
-<h2 class="mb-4 text-primary fw-bold">🎫 Vé của tôi</h2>
+    <ul class="nav nav-tabs mb-3" id="ticketTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="upcoming-tab" data-bs-toggle="tab" data-bs-target="#upcoming" type="button" role="tab" aria-controls="upcoming" aria-selected="true">
+                Vé sắp diễn ra (@upcomingTickets.Count)
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="past-tab" data-bs-toggle="tab" data-bs-target="#past" type="button" role="tab" aria-controls="past" aria-selected="false">
+                Vé đã kết thúc (@pastTickets.Count)
+            </button>
+        </li>
+    </ul>
 
-<ul class="nav nav-tabs mb-3" id="ticketTab" role="tablist">
-    <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="upcoming-tab" data-bs-toggle="tab" data-bs-target="#upcoming" type="button" role="tab" aria-controls="upcoming" aria-selected="true">
-            Vé sắp diễn ra (@upcomingTickets.Count)
-        </button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link" id="past-tab" data-bs-toggle="tab" data-bs-target="#past" type="button" role="tab" aria-controls="past" aria-selected="false">
-            Vé đã kết thúc (@pastTickets.Count)
-        </button>
-    </li>
-</ul>
-
-<div class="tab-content" id="ticketTabContent">
-    <!-- Vé sắp diễn ra -->
-    <div class="tab-pane fade show active" id="upcoming" role="tabpanel" aria-labelledby="upcoming-tab">
-        @if (!upcomingTickets.Any())
-        {
-            <div class="alert alert-info text-center fw-semibold">
-                Bạn không có vé sự kiện sắp diễn ra.
-            </div>
-        }
-        else
-        {
-            <table class="ticket-table">
-                <thead>
-                    <tr>
-                        <th>Mã vé</th>
-                        <th>Sự kiện</th>
-                        <th>Loại vé</th>
-                        <th>Giá</th>
-                        <th>Ngày diễn ra</th>
-                        <th>Thời gian</th>
-                        <th>Ngày mua</th>
-                        <th>Trạng thái vé</th>
-                        <th>Check-in</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var ticket in upcomingTickets)
-                    {
-                        var ticketStatus = ticket.OrderDetail?.Ticket.TrangThai.ToString().ToLower();
-                        <tr title="@(ticket.IsCheckedIn ? $"Đã check-in lúc {ticket.CheckinTime?.ToString("dd/MM/yyyy HH:mm")}" : "Chưa check-in")">
-                            <td>@ticket.TicketCode</td>
-                            <td>@ticket.OrderDetail.Ticket.Event.Title</td>
-                            <td>@ticket.OrderDetail.Ticket.Description</td>
-                            <td>@ticket.OrderDetail.Ticket.Price.ToString("N0") VND</td>
-                            <td>@ticket.OrderDetail.Ticket.StartDate.ToString("dd/MM/yyyy")</td>
-                            <td>@ticket.OrderDetail.Ticket.StartDate.ToString("HH:mm") - @ticket.OrderDetail.Ticket.EndDate.ToString("HH:mm")</td>
-                            <td class="text-muted">@ticket.SoldDate?.ToString("dd/MM/yyyy HH:mm")</td>
-                            <td>
-                                @if (ticketStatus == "hetve")
-                                {
-                                    <span class="badge-status" title="Vé đã hết">
-                                        <i class="bi bi-exclamation-circle-fill"></i> HẾT VÉ
-                                    </span>
-                                }
-                                else if (ticketStatus == "hethan")
-                                {
-                                    <span class="badge-status" title="Vé đã hết hạn">
-                                        <i class="bi bi-clock-history"></i> ĐÃ HẾT HẠN
-                                    </span>
-                                }
-                            </td>
-                            <td>
-                                @if (ticket.IsCheckedIn)
-                                {
-                                    <span class="badge-checked-in" title="Đã check-in">
-                                        <i class="bi bi-check-circle-fill"></i> Đã check-in
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="badge-not-checked-in" title="Chưa check-in">
-                                        <i class="bi bi-x-circle-fill"></i> Chưa check-in
-                                    </span>
-                                }
-                            </td>
-
+    <div class="tab-content" id="ticketTabContent">
+        <!-- Vé sắp diễn ra -->
+        <div class="tab-pane fade show active" id="upcoming" role="tabpanel" aria-labelledby="upcoming-tab">
+            @if (!upcomingTickets.Any())
+            {
+                <div class="no-events-card">
+                    <p>🔔 Hiện tại chưa có vé sự kiện sắp diễn ra nha!</p>
+                </div>
+            }
+            else
+            {
+                <table class="ticket-table">
+                    <thead>
+                        <tr>
+                            <th>Mã vé</th>
+                            <th>Sự kiện</th>
+                            <th>Loại vé</th>
+                            <th>Giá</th>
+                            <th>Ngày diễn ra</th>
+                            <th>Thời gian</th>
+                            <th>Ngày mua</th>
+                            <th>Trạng thái vé</th>
+                            <th>Check-in</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
-        }
-    </div>
+                    </thead>
+                    <tbody>
+                        @foreach (var ticket in upcomingTickets)
+                        {
+                            var ticketStatus = ticket.OrderDetail?.Ticket.TrangThai.ToString().ToLower();
+                            <tr title="@(ticket.IsCheckedIn ? $"Đã check-in lúc {ticket.CheckinTime?.ToString("dd/MM/yyyy HH:mm")}" : "Chưa check-in")">
+                                <td>@ticket.TicketCode</td>
+                                <td>@ticket.OrderDetail.Ticket.Event.Title</td>
+                                <td>@ticket.OrderDetail.Ticket.Description</td>
+                                <td>@ticket.OrderDetail.Ticket.Price.ToString("N0") VND</td>
+                                <td>@ticket.OrderDetail.Ticket.StartDate.ToString("dd/MM/yyyy")</td>
+                                <td>@ticket.OrderDetail.Ticket.StartDate.ToString("HH:mm") - @ticket.OrderDetail.Ticket.EndDate.ToString("HH:mm")</td>
+                                <td class="text-muted">@ticket.SoldDate?.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    @if (ticketStatus == "hetve")
+                                    {
+                                        <span class="badge-status" title="Vé đã hết">
+                                            <i class="bi bi-exclamation-circle-fill"></i> HẾT VÉ
+                                        </span>
+                                    }
+                                    else if (ticketStatus == "hethan")
+                                    {
+                                        <span class="badge-status" title="Vé đã hết hạn">
+                                            <i class="bi bi-clock-history"></i> ĐÃ HẾT HẠN
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (ticket.IsCheckedIn)
+                                    {
+                                        <span class="badge-checked-in" title="Đã check-in">
+                                            <i class="bi bi-check-circle-fill"></i> Đã check-in
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge-not-checked-in" title="Chưa check-in">
+                                            <i class="bi bi-x-circle-fill"></i> Chưa check-in
+                                        </span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
 
-    <!-- Vé đã kết thúc -->
-    <div class="tab-pane fade" id="past" role="tabpanel" aria-labelledby="past-tab">
-        @if (!pastTickets.Any())
-        {
-            <div class="alert alert-info text-center fw-semibold">
-                Bạn không có vé sự kiện đã kết thúc.
-            </div>
-        }
-        else
-        {
-            <table class="ticket-table">
-                <thead>
-                    <tr>
-                        <th>Mã vé</th>
-                        <th>Sự kiện</th>
-                        <th>Loại vé</th>
-                        <th>Giá</th>
-                        <th>Ngày diễn ra</th>
-                        <th>Thời gian</th>
-                        <th>Ngày mua</th>
-                        <th>Trạng thái vé</th>
-                        <th>Check-in</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var ticket in pastTickets)
-                    {
-                        var ticketStatus = ticket.OrderDetail.Ticket.TrangThai.ToString().ToLower() ?? "";
-                        <tr title="@(ticket.IsCheckedIn ? $"Đã check-in lúc {ticket.CheckinTime?.ToString("dd/MM/yyyy HH:mm")}" : "Chưa check-in")">
-                            <td>@ticket.TicketCode</td>
-                            <td>@ticket.OrderDetail.Ticket.Event.Title</td>
-                            <td>@ticket.OrderDetail.Ticket.Description</td>
-                            <td>@ticket.OrderDetail.Ticket.Price.ToString("N0") VND</td>
-                            <td>@ticket.OrderDetail.Ticket.StartDate.ToString("dd/MM/yyyy")</td>
-                            <td>@ticket.OrderDetail.Ticket.StartDate.ToString("HH:mm") - @ticket.OrderDetail.Ticket.EndDate.ToString("HH:mm")</td>
-                            <td class="text-muted">@ticket.SoldDate?.ToString("dd/MM/yyyy HH:mm")</td>
-                            <td>
-                                @if (ticketStatus == "hetve")
-                                {
-                                    <span class="badge-status" title="Vé đã hết">HẾT VÉ</span>
-                                }
-                                else if (ticketStatus == "hethan")
-                                {
-                                    <span class="badge-status" title="Vé đã hết hạn">ĐÃ HẾT HẠN</span>
-                                }
-                            </td>
-                            <td>
-                                @if (ticket.IsCheckedIn)
-                                {
-                                    <span class="badge-checked-in">
-                                        <i class="bi bi-check-circle-fill"></i> Đã check-in
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="badge-not-checked-in">
-                                        <i class="bi bi-x-circle-fill"></i> Chưa check-in
-                                    </span>
-                                }
-                            </td>
+        <!-- Vé đã kết thúc -->
+        <div class="tab-pane fade" id="past" role="tabpanel" aria-labelledby="past-tab">
+            @if (!pastTickets.Any())
+            {
+                <div class="no-events-card">
+                    <p>🔔 Hiện tại chưa có vé sự kiện nào đã kết thúc nha!</p>
+                </div>
+            }
+            else
+            {
+                <table class="ticket-table">
+                    <thead>
+                        <tr>
+                            <th>Mã vé</th>
+                            <th>Sự kiện</th>
+                            <th>Loại vé</th>
+                            <th>Giá</th>
+                            <th>Ngày diễn ra</th>
+                            <th>Thời gian</th>
+                            <th>Ngày mua</th>
+                            <th>Trạng thái vé</th>
+                            <th>Check-in</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
-        }
+                    </thead>
+                    <tbody>
+                        @foreach (var ticket in pastTickets)
+                        {
+                            var ticketStatus = ticket.OrderDetail.Ticket.TrangThai.ToString().ToLower() ?? "";
+                            <tr title="@(ticket.IsCheckedIn ? $"Đã check-in lúc {ticket.CheckinTime?.ToString("dd/MM/yyyy HH:mm")}" : "Chưa check-in")">
+                                <td>@ticket.TicketCode</td>
+                                <td>@ticket.OrderDetail.Ticket.Event.Title</td>
+                                <td>@ticket.OrderDetail.Ticket.Description</td>
+                                <td>@ticket.OrderDetail.Ticket.Price.ToString("N0") VND</td>
+                                <td>@ticket.OrderDetail.Ticket.StartDate.ToString("dd/MM/yyyy")</td>
+                                <td>@ticket.OrderDetail.Ticket.StartDate.ToString("HH:mm") - @ticket.OrderDetail.Ticket.EndDate.ToString("HH:mm")</td>
+                                <td class="text-muted">@ticket.SoldDate?.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    @if (ticketStatus == "hetve")
+                                    {
+                                        <span class="badge-status" title="Vé đã hết">
+                                            <i class="bi bi-exclamation-circle-fill"></i> HẾT VÉ
+                                        </span>
+                                    }
+                                    else if (ticketStatus == "hethan")
+                                    {
+                                        <span class="badge-status" title="Vé đã hết hạn">
+                                            <i class="bi bi-clock-history"></i> ĐÃ HẾT HẠN
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (ticket.IsCheckedIn)
+                                    {
+                                        <span class="badge-checked-in">
+                                            <i class="bi bi-check-circle-fill"></i> Đã check-in
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge-not-checked-in">
+                                            <i class="bi bi-x-circle-fill"></i> Chưa check-in
+                                        </span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
     </div>
 </div>
 

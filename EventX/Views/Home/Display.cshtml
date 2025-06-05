@@ -8,6 +8,7 @@
 @model EventX.Models.Event
 
 <style>
+
     .ticket-wrapper {
         width: 1280px;
         height: 470px;
@@ -267,6 +268,7 @@
     .star-rating label:hover ~ label {
         color: #ffc107; /* Màu vàng */
     }
+
 </style>
 
 <div class="ticket-wrapper shadow-lg mt-5">
@@ -423,6 +425,8 @@
         <p> @Model.OrganizerInfo</p>
     </div>
 </div>
+
+
 @if (Model.Reviews != null && Model.Reviews.Any())
 {
     <div class="mt-5">

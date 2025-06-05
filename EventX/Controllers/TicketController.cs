@@ -40,6 +40,55 @@ namespace EventX.Controllers
             _configuration = config;
         }
 
+        [HttpPost]
+        public async Task<IActionResult> CheckHeldTickets([FromBody] List<TicketSelectionDto> selectedTickets)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            // Giả sử bạn có service hoặc DbContext
+            foreach (var ticket in selectedTickets)
+            {
+                var heldTicket = await _context.HeldTickets
+                    .Where(ht => ht.UserId == userId && ht.HeldTicketID == ticket.TicketId)
+                    .FirstOrDefaultAsync();
+
+                if (heldTicket != null)
+                {
+                    // Trả về thông tin cần thiết
+                    return Json(new { hasHeldTicket = true, ticketId = ticket.TicketId, message = "Bạn đang giữ vé chưa thanh toán. Bạn có muốn tiếp tục không?" });
+                }
+            }
+
+            return Json(new { hasHeldTicket = false });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteHeldTicket([FromBody] int ticketId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var heldTicket = await _context.HeldTickets
+                .Where(ht => ht.UserId == userId && ht.HeldTicketID == ticketId)
+                .FirstOrDefaultAsync();
+
+            if (heldTicket != null)
+            {
+                _context.HeldTickets.Remove(heldTicket);
+                await _context.SaveChangesAsync();
+                return Json(new { success = true });
+            }
+            return Json(new { success = false, message = "Không tìm thấy vé giữ." });
+        }
+
+
         [Route("Ticket/Select/{eventId}")]
         public async Task<IActionResult> Select(int eventId)
         {
@@ -49,22 +98,54 @@ namespace EventX.Controllers
             // Lấy giỏ vé từ session, nếu chưa có thì tạo mới
             var cart = HttpContext.Session.GetObjectFromJson<TicketCart>("TicketCart") ?? new TicketCart();
 
-            // Truyền sự kiện và giỏ vé hiện tại vào view
+            bool hasOldCart = false;
+            int remainMinutes = 0;
+
+            if (cart.Items.Any())
+            {
+                var holdStartString = HttpContext.Session.GetString("HoldStartTime");
+                if (!string.IsNullOrEmpty(holdStartString) && DateTime.TryParse(holdStartString, out var holdStart))
+                {
+                    var elapsed = DateTime.UtcNow - holdStart;
+                    if (elapsed < TimeSpan.FromMinutes(15))
+                    {
+                        hasOldCart = true;
+                        remainMinutes = 15 - (int)elapsed.TotalMinutes;
+                    }
+                    else
+                    {
+                        // Hết hạn thì xóa giỏ cũ
+                        HttpContext.Session.Remove("TicketCart");
+                        HttpContext.Session.Remove("HoldStartTime");
+                        cart = new TicketCart(); // tạo lại giỏ mới rỗng
+                    }
+                }
+            }
+
+            // Truyền dữ liệu ra view
             var model = new TicketSelectionViewModel
             {
                 Event = evt,
                 Cart = cart
             };
 
+            ViewBag.ShowHoldModal = hasOldCart;
+            ViewBag.RemainMinutes = remainMinutes;
+
             return View(model);
         }
+
 
         [HttpPost]
         public IActionResult AddTicket([FromBody] List<TicketItem> cartItems)
         {
             var expiredTime = DateTime.UtcNow.AddMinutes(-15);
 
-            // Xóa vé giữ quá hạn, hoàn lại vé
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            // Xóa vé giữ quá hạn (của mọi người)
             var expiredHeldTickets = _context.HeldTickets.Where(h => h.HeldAt < expiredTime).ToList();
             foreach (var expiredHeld in expiredHeldTickets)
             {
@@ -78,12 +159,38 @@ namespace EventX.Controllers
             _context.HeldTickets.RemoveRange(expiredHeldTickets);
             _context.SaveChanges();
 
-            if (cartItems == null || cartItems.Count == 0)
+            // Kiểm tra nếu user đã giữ vé hợp lệ rồi
+            var validHeld = _context.HeldTickets
+                .Where(h => h.UserId == userId && h.HeldAt >= expiredTime)
+                .ToList();
+
+            if (validHeld.Any())
+            {
+                // Lấy lại giá từng vé từ DB
+                var cart = new TicketCart
+                {
+                    Items = validHeld.Select(h =>
+                    {
+                        var ticket = _context.Tickets.FirstOrDefault(t => t.TicketID == h.TicketID);
+                        return new TicketItem
+                        {
+                            TicketId = h.TicketID,
+                            Quantity = h.Quantity,
+                            Price = ticket?.Price ?? 0
+                        };
+                    }).ToList()
+                };
+
+                HttpContext.Session.SetObjectAsJson("TicketCart", cart);
+                HttpContext.Session.SetString("HoldStartTime", validHeld.Min(h => h.HeldAt).ToString("o"));
+                return Ok(new { message = "Vé đã được giữ trước đó vẫn còn hiệu lực." });
+            }
+
+            // Nếu không có vé giữ hợp lệ thì tiến hành giữ mới
+            if (cartItems == null || !cartItems.Any())
                 return BadRequest("Không có vé nào được gửi lên.");
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            // Xóa vé giữ cũ của user, hoàn lại vé
+            // Xóa vé giữ cũ của user (dù còn thời gian hay không)
             var oldHeldTickets = _context.HeldTickets.Where(h => h.UserId == userId).ToList();
             foreach (var oldHeld in oldHeldTickets)
             {
@@ -104,12 +211,10 @@ namespace EventX.Controllers
                 if (ticket == null)
                     return BadRequest($"Vé không tồn tại: {item.TicketId}");
 
-                // Kiểm tra số vé còn lại
                 var available = ticket.Quantity - ticket.Sold;
                 if (available < item.Quantity)
                     return BadRequest($"Không đủ vé cho vé ID {item.TicketId}");
 
-                // Tăng số vé đã bán tạm thời (giữ vé)
                 ticket.Sold += item.Quantity;
 
                 var heldTicket = new HeldTicket
@@ -124,15 +229,12 @@ namespace EventX.Controllers
 
             _context.SaveChanges();
 
-            var newCart = new TicketCart
-            {
-                Items = cartItems
-            };
+            // Lưu session
+            HttpContext.Session.SetObjectAsJson("TicketCart", new TicketCart { Items = cartItems });
+            HttpContext.Session.SetString("HoldStartTime", DateTime.UtcNow.ToString("o"));
 
-            HttpContext.Session.SetObjectAsJson("TicketCart", newCart);
             return Ok();
         }
-
 
 
         [HttpGet]

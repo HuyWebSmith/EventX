@@ -391,6 +391,20 @@
         </div>
     }
 
+<div class="container my-4">
+    @foreach (var voucher in Model.VoucherImages)
+    {
+        @if (!string.IsNullOrEmpty(voucher.ImageUrl) && voucher.IsActive)
+        {
+            <div class="d-flex justify-content-center mb-4">
+                <a href="@voucher.Link">
+                    <img src="@voucher.ImageUrl" alt="Voucher"
+                         style="width: 100%; max-width: 800px; height: auto; border-radius: 8px; object-fit: cover;" />
+                </a>
+            </div>
+        }
+    }
+</div>
 <ul class="nav nav-tabs" id="eventTab" role="tablist">
     <li class="nav-item" role="presentation">
         <button class="nav-link active" id="weekend-tab" data-bs-toggle="tab" data-bs-target="#weekend" type="button" role="tab" aria-controls="weekend" aria-selected="true">Cuối tuần này</button>
@@ -440,7 +454,11 @@
         }
         else
         {
-            <p>Không có sự kiện nào vào cuối tuần này.</p>
+            <div style="display: flex; justify-content: center; align-items: center; padding: 30px; background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 12px; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); margin: 20px auto; max-width: 700px; border: 1px solid #e0c3fc;">
+                <p style="font-size: 1.2em; color: #e0c3fc; font-weight: 600; text-align: center; margin: 0; font-family: 'Arial', sans-serif; letter-spacing: 0.3px; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);">
+                    🔔 Cuối tuần này chưa có sự kiện nào nha!
+                </p>
+            </div>
         }
     </div>
 
@@ -482,7 +500,11 @@
         }
         else
         {
-            <p>Không có sự kiện nào trong tháng này.</p>
+            <div style="display: flex; justify-content: center; align-items: center; padding: 30px; background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 12px; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); margin: 20px auto; max-width: 700px; border: 1px solid #e0c3fc;">
+                <p style="font-size: 1.2em; color: #e0c3fc; font-weight: 600; text-align: center; margin: 0; font-family: 'Arial', sans-serif; letter-spacing: 0.3px; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);">
+                    🔔 Tháng này chưa có sự kiện nào nha!
+                </p>
+            </div>
         }
     </div>
 </div>

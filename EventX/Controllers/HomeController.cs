@@ -41,6 +41,10 @@ namespace EventX.Controllers
                 .Where(s => s.IsActive)
                 .OrderBy(s => s.Order)
                 .ToListAsync();
+            var vouchers = await _context.VoucherImages
+                .Where(v => v.IsActive)
+                .OrderBy(v => v.Order)
+                .ToListAsync();
 
             // Lấy ngày hiện tại
             var today = DateTime.Today;
@@ -68,6 +72,7 @@ namespace EventX.Controllers
             {
                 Events = approvedEvents,
                 Sliders = sliders,
+                VoucherImages = vouchers,
                 EventsThisWeekend = eventsThisWeekend,
                 EventsThisMonth = eventsThisMonth
             };

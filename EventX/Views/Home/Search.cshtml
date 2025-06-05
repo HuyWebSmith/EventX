@@ -1,54 +1,305 @@
 ﻿@model List<EventX.Models.Event>
+
 @{
     ViewData["Title"] = "Kết quả tìm kiếm";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h3 class="mb-4">Kết quả tìm kiếm:</h3>
+<style>
+    /* Container styling */
+    .search-container {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 20px;
+        background: #f5f7fa;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
 
-@if (!Model.Any())
-{
-    <p>Không tìm thấy sự kiện nào phù hợp với từ khóa.</p>
-}
-else
-{
-    <div class="row">
-        @foreach (var item in Model)
-        {
-            <div class="col-md-4 mb-4">
-                <div class=" h-100">
-                    <a href="@Url.Action("Display", "Home", new { eventId = item.EventID })"
-                       class="text-decoration-none text-dark">
-                        <div class="card h-100" style=" cursor: pointer;">
+    /* Heading styling */
+    h3 {
+        font-family: 'Arial', sans-serif;
+        color: #1a1a2e;
+        font-weight: 700;
+        font-size: 2.2rem;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        margin-bottom: 30px;
+        position: relative;
+    }
+
+        h3::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(90deg, #2563eb, #e0c3fc);
+            border-radius: 2px;
+        }
+
+    /* No results card */
+    .no-results-card {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 30px;
+        background: linear-gradient(135deg, #1a1a2e, #16213e);
+        border-radius: 12px;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        margin: 20px auto;
+        max-width: 700px;
+        border: 1px solid #e0c3fc;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        opacity: 0.95;
+    }
+
+        .no-results-card:hover {
+            transform: translateY(-5px);
+            opacity: 1;
+        }
+
+        .no-results-card p {
+            font-size: 1.2em;
+            color: #e0c3fc;
+            font-weight: 600;
+            text-align: center;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            letter-spacing: 0.3px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+    /* Event card styling */
+    .event-card {
+        background: linear-gradient(180deg, #ffffff, #f9fafb);
+        border: 2px solid #e0c3fc;
+        border-radius: 16px;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+        overflow: hidden;
+        position: relative;
+    }
+
+        .event-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
+        }
+
+        .event-card a {
+            text-decoration: none;
+            display: block;
+            height: 100%;
+        }
+
+        .event-card .card-header {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 10px 15px;
+            border-bottom: 1px solid #e0c3fc;
+        }
+
+        .event-card .card-title {
+            font-family: 'Arial', sans-serif;
+            color: #e0c3fc;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .event-card .card-img-top {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid #e0e7ff;
+            transition: transform 0.3s ease;
+        }
+
+        .event-card:hover .card-img-top {
+            transform: scale(1.05);
+        }
+
+        .event-card .card-img-top.no-image {
+            background: linear-gradient(135deg, #e0e7ff, #d1d5db);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            font-family: 'Arial', sans-serif;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        .event-card .card-body {
+            padding: 20px;
+            background: transparent;
+        }
+
+        .event-card .price-text {
+            font-family: 'Arial', sans-serif;
+            font-size: 0.95rem;
+            color: #4b5563;
+            margin-bottom: 10px;
+        }
+
+            .event-card .price-text .price-badge {
+                display: inline-block;
+                background: linear-gradient(90deg, #2563eb, #1e40af);
+                color: white;
+                padding: 4px 12px;
+                border-radius: 12px;
+                font-weight: 600;
+                font-size: 0.9rem;
+            }
+
+        .event-card .date-text {
+            font-family: 'Arial', sans-serif;
+            color: #6b7280;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+        }
+
+        .event-card .status-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #f59e0b;
+            color: white;
+            font-family: 'Arial', sans-serif;
+            font-weight: 600;
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+            .event-card .status-badge.sold-out {
+                background: #ef4444;
+            }
+
+        .event-card .view-details-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            color: white;
+            font-family: 'Arial', sans-serif;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+            .event-card .view-details-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+                background: linear-gradient(135deg, #1e40af, #2563eb);
+            }
+
+   
+
+    h3 {
+        font-size: 1.8rem;
+    }
+
+    .no-results-card {
+        padding: 20px;
+        max-width: 90%;
+    }
+
+        .no-results-card p {
+            font-size: 1.1em;
+        }
+
+    .event-card .card-img-top {
+        height: 160px;
+    }
+
+    .event-card .card-title {
+        font-size: 1.1rem;
+    }
+
+    .event-card .price-text {
+        font-size: 0.85rem;
+    }
+
+        .event-card .price-text .price-badge {
+            font-size: 0.8rem;
+        }
+
+    .event-card .date-text {
+        font-size: 0.8rem;
+    }
+
+    .event-card .view-details-btn {
+        font-size: 0.85rem;
+        padding: 6px 12px;
+    }
+
+    }
+</style>
+
+<div class="search-container">
+    <h3><i class="fa-solid fa-magnifying-glass"></i> Kết quả tìm kiếm</h3>
+
+    @if (!Model.Any())
+    {
+        <div class="no-results-card">
+            <p>🔔 Không tìm thấy sự kiện nào phù hợp với từ khóa nha!</p>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var item in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="event-card">
+                        <a href="@Url.Action("Display", "Home", new { eventId = item.EventID })">
+                            <div class="card-header">
+                                <h5 class="card-title">@item.Title</h5>
+                            </div>
                             @if (item.EventImages != null && item.EventImages.Any())
                             {
-                                <img src="@item.EventImages.First().ImageURL" class="card-img-top" alt="Event Image" style="object-fit: contain; height: 180px;">
+                                <img src="@item.EventImages.First().ImageURL" class="card-img-top" alt="Event Image">
                             }
                             else
                             {
-                                <img src="~/images/no-image.png" class="card-img-top" alt="No Image" style="object-fit: contain; height: 180px;" />
+                                <div class="card-img-top no-image">Không có hình ảnh</div>
                             }
 
-
                             <div class="card-body">
-                                <h5 class="card-title" style="font-size: 16px; font-weight: bold;">@item.Title</h5>
-
                                 @if (item.Tickets != null && item.Tickets.Any())
                                 {
-                                    <p class="card-text" style="font-size: 14px;">
-                                        Giá vé từ:
-                                        <strong>@item.Tickets.Min(t => t.Price).ToString("N0")₫</strong>
+                                    <p class="price-text">
+                                        Giá vé từ: <span class="price-badge">@item.Tickets.Min(t => t.Price).ToString("N0")₫</span>
                                     </p>
                                 }
 
-                                <p class="card-text" style="font-size: 13px; color: gray;">
+                                <p class="date-text">
                                     Bắt đầu: @item.EventStartTime.ToString("dd/MM/yyyy HH:mm")
                                 </p>
+
+                                @{
+                                    var isSoldOut = item.Tickets != null && item.Tickets.All(t => t.Quantity <= 0);
+                                    var isUpcoming = item.EventStartTime > DateTime.Now;
+                                }
+                               
+
+                                <button class="view-details-btn">Xem chi tiết</button>
                             </div>
-                        </div>
-                    </a>
+                        </a>
+                    </div>
                 </div>
-            </div>
-        }
-    </div>
-}
+            }
+        </div>
+    }
+</div>

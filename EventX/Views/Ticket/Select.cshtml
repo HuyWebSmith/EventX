@@ -181,6 +181,23 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="confirmHoldModal" tabindex="-1" aria-labelledby="confirmHoldModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmHoldModalLabel">Xác nhận</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body" id="confirmHoldModalBody">
+                    <!-- Nội dung sẽ thay đổi bằng JS -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="btnCancelHold" data-bs-dismiss="modal">Không đồng ý</button>
+                    <button type="button" class="btn btn-primary" id="btnConfirmHold">Đồng ý</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </div>
 <!-- Tải jQuery từ CDN -->
@@ -201,7 +218,7 @@
 
     function adjustQuantity(ticketId, delta) {
         var quantityField = document.getElementById("ticket-" + ticketId);
-        var ticket = tickets.find(ticket => ticket.TicketID === ticketId); // Tìm vé tương ứng từ mảng tickets
+        var ticket = tickets.find(ticket => ticket.TicketID === ticketId); 
                var currentQuantity = parseInt(quantityField.value) || 0;
 
              var newQuantity = currentQuantity + delta;
@@ -284,5 +301,71 @@
          window.addEventListener("unload", function () {
             @* navigator.sendBeacon("/Ticket/ClearSession"); *@
         });
+
+            document.getElementById("continueButton").addEventListener("click", function(e) {
+        e.preventDefault();
+
+        // Lấy danh sách vé đã chọn
+        let selectedTickets = [];
+        tickets.forEach(ticket => {
+            let qty = parseInt(document.getElementById("ticket-" + ticket.TicketID).value) || 0;
+            if (qty > 0) {
+                selectedTickets.push({ TicketId: ticket.TicketID, Quantity: qty });
+            }
+        });
+
+        if(selectedTickets.length === 0){
+            alert("Vui lòng chọn vé trước khi tiếp tục.");
+            return;
+        }
+
+        // Gửi AJAX kiểm tra vé giữ
+        $.ajax({
+            url: '@Url.Action("CheckHeldTickets", "Ticket")',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(selectedTickets),
+            success: function(response){
+                if(response.hasHeldTicket){
+                    // Hiện modal hỏi người dùng
+                    $('#confirmHoldModalBody').text(response.message);
+                    var confirmModal = new bootstrap.Modal(document.getElementById('confirmHoldModal'));
+                    confirmModal.show();
+
+                    // Nếu đồng ý
+                    $('#btnConfirmHold').off('click').on('click', function(){
+                        confirmModal.hide();
+                        // Chuyển sang trang thanh toán
+                        window.location.href = '@Url.Action("Checkout", "Ticket")';
+                    });
+
+                    // Nếu không đồng ý - xóa vé giữ
+                    $('#btnCancelHold').off('click').on('click', function(){
+                        $.ajax({
+                            url: '@Url.Action("DeleteHeldTicket", "Ticket")',
+                            method: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify(response.ticketId),
+                            success: function(delResp){
+                                if(delResp.success){
+                                    alert("Đã xóa vé giữ trước đó.");
+                                    confirmModal.hide();
+                                    // Không chuyển trang, giữ nguyên ở trang chọn vé
+                                } else {
+                                    alert("Xóa vé giữ thất bại: " + delResp.message);
+                                }
+                            }
+                        });
+                    });
+                } else {
+                    // Không có vé giữ, chuyển luôn
+                    window.location.href = '@Url.Action("Checkout", "Ticket")';
+                }
+            },
+            error: function(){
+                alert("Lỗi khi kiểm tra vé giữ, vui lòng thử lại.");
+            }
+        });
+    });
 
 </script>

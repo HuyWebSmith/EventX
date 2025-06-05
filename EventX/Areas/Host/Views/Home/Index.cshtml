@@ -2,16 +2,155 @@
     ViewData["Title"] = "Trang chủ Host";
     Layout = "~/Areas/Host/Views/Shared/_HostLayout.cshtml";
 }
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-H5Emcl9P8kZxOON2Zp2Y57v/1CR3+lqG+q5KZ62u0OvDQozlD4
-<section class="py-5 bg-light">
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+<style>
+    /* General container styling */
+    .host-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f5f7fa;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Welcome section */
+    .welcome-section {
+        background: linear-gradient(135deg, #1a1a2e, #16213e);
+        padding: 60px 0;
+        border-radius: 12px;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        border: 1px solid #e0c3fc;
+        margin-bottom: 40px;
+    }
+
+        .welcome-section h1 {
+            font-family: 'Arial', sans-serif;
+            color: #e0c3fc;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            font-weight: 700;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .welcome-section p {
+            font-family: 'Arial', sans-serif;
+            color: #d1d5db;
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin-bottom: 30px;
+        }
+
+        .welcome-section .btn-create {
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            color: white;
+            font-family: 'Arial', sans-serif;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+            .welcome-section .btn-create:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+                background: linear-gradient(135deg, #1e40af, #2563eb);
+            }
+
+    /* Cards section */
+    .card {
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #e0e7ff;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+    .card-body {
+        padding: 20px;
+        text-align: center;
+    }
+
+    .card-title {
+        font-family: 'Arial', sans-serif;
+        color: #1a1a2e;
+        font-weight: 700;
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+    }
+
+    .card-text {
+        font-family: 'Arial', sans-serif;
+        color: #4b5563;
+        font-size: 1rem;
+        margin-bottom: 20px;
+    }
+
+    .card .btn-outline-primary {
+        font-family: 'Arial', sans-serif;
+        color: #2563eb;
+        border-color: #2563eb;
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+        .card .btn-outline-primary:hover {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+            transform: scale(1.05);
+        }
+
+   
+
+    .welcome-section h1 {
+        font-size: 2rem;
+    }
+
+    .welcome-section p {
+        font-size: 1rem;
+    }
+
+    .welcome-section .btn-create {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+
+    .card-body {
+        padding: 15px;
+    }
+
+    .card-title {
+        font-size: 1.3rem;
+    }
+
+    .card-text {
+        font-size: 0.9rem;
+    }
+
+    }
+</style>
+
+<section class="welcome-section">
     <div class="container">
         <div class="row justify-content-center text-center">
             <div class="col-lg-8">
-                <h1 class="display-5 fw-bold text-primary mb-4">🎉 Chào mừng Nhà tổ chức!</h1>
-                <p class="lead text-muted mb-4">
-                    Quản lý và tạo sự kiện một cách dễ dàng, nhanh chóng và chuyên nghiệp.
+                <h1 class="display-5 fw-bold">🎉 Chào mừng Nhà tổ chức!</h1>
+                <p class="lead">
+                    Tạo và quản lý sự kiện của bạn một cách chuyên nghiệp, dễ dàng và hiệu quả.
                 </p>
-                <a href="/Host/Event/Add" class="btn btn-primary btn-lg px-4">
+                <a href="/Host/Event/Add" class="btn btn-create btn-lg px-4">
                     + Tạo sự kiện mới
                 </a>
             </div>
@@ -20,32 +159,31 @@
 </section>
 
 <section class="py-5">
-    <div class="container">
+    <div class="host-container">
         <div class="row text-center">
             <div class="col-md-4 mb-4">
-                <div class="card border-0 shadow-sm h-100">
+                <div class="card h-100">
                     <div class="card-body">
                         <h5 class="card-title">📊 Thống kê</h5>
-                        <p class="card-text">Xem số lượng người tham gia, doanh thu, và các chỉ số quan trọng.</p>
+                        <p class="card-text">Theo dõi số lượng người tham gia, doanh thu và các chỉ số quan trọng.</p>
                         <a href="/Host/Event/index" class="btn btn-outline-primary stretched-link">Xem ngay</a>
-
                     </div>
                 </div>
             </div>
             <div class="col-md-4 mb-4">
-                <div class="card border-0 shadow-sm h-100">
+                <div class="card h-100">
                     <div class="card-body">
                         <h5 class="card-title">📁 Sự kiện của bạn</h5>
-                        <p class="card-text">Quản lý danh sách sự kiện đã tạo, chỉnh sửa và theo dõi trạng thái.</p>
+                        <p class="card-text">Quản lý, chỉnh sửa và theo dõi trạng thái các sự kiện đã tạo.</p>
                         <a href="/Host/Event/index" class="btn btn-outline-primary stretched-link">Quản lý</a>
                     </div>
                 </div>
             </div>
             <div class="col-md-4 mb-4">
-                <div class="card border-0 shadow-sm h-100">
+                <div class="card h-100">
                     <div class="card-body">
                         <h5 class="card-title">⚙️ Cài đặt</h5>
-                        <p class="card-text">Chỉnh sửa hồ sơ cá nhân và thiết lập thông tin tổ chức.</p>
+                        <p class="card-text">Cập nhật hồ sơ và thiết lập thông tin tổ chức của bạn.</p>
                         <a href="/Identity/Account/Manage" class="btn btn-outline-primary stretched-link">Thiết lập</a>
                     </div>
                 </div>

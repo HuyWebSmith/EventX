@@ -37,7 +37,7 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LogoutPath = "/Identity/Account/Logout";
     options.LogoutPath = "/Identity/Account/AccessDenied";
 });
-// ??m b?o thêm t?p c?u hình appsettings.json
+
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
 builder.Services.AddRazorPages();
@@ -61,24 +61,24 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseHangfireDashboard("/hangfire"); // ?? có th? truy c?p Hangfire Dashboard t?i /hangfire
+app.UseHangfireDashboard("/hangfire"); 
 var recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();
 
-// ??ng ký công vi?c ??nh k?
+
 recurringJobManager.AddOrUpdate<EventService>(
-    recurringJobId: "update-event-status",  // ID c?a công vi?c
-    methodCall: service => service.UpdateEventStatus(),  // Ph??ng th?c c?n g?i
-    cronExpression: Cron.Minutely(),  // Bi?u th?c cron: ch?y m?i phút
+    recurringJobId: "update-event-status", 
+    methodCall: service => service.UpdateEventStatus(),
+    cronExpression: Cron.Minutely(),  
     options: new RecurringJobOptions
     {
-        TimeZone = TimeZoneInfo.Local  // Thi?t l?p múi gi? ??a ph??ng
+        TimeZone = TimeZoneInfo.Local  
     });
 
 
 recurringJobManager.AddOrUpdate<TicketService>(
-    recurringJobId: "update-ticket-status", // ID công vi?c
-    methodCall: service => service.UpdateTicketStatus(), // Ph??ng th?c c?n g?i
-    cronExpression: Cron.Minutely(), // Ch?y m?i phút
+    recurringJobId: "update-ticket-status", 
+    methodCall: service => service.UpdateTicketStatus(), 
+    cronExpression: Cron.Minutely(), 
     options: new RecurringJobOptions
     {
         TimeZone = TimeZoneInfo.Local 
@@ -90,7 +90,8 @@ recurringJobManager.AddOrUpdate<TicketService>(
     cronExpression: Cron.Minutely(),
     options: new RecurringJobOptions
     {
-        TimeZone = TimeZoneInfo.Local
+        TimeZone = TimeZoneInfo.Utc
+
     });
 
 
